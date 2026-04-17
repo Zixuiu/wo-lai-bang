@@ -4256,3 +4256,30 @@
 2026-03-11 23:28:43,213 - werkzeug - INFO - 127.0.0.1 - - [11/Mar/2026 23:28:43] "GET /css/style.css?v=3 HTTP/1.1" 200 -
 2026-03-11 23:28:43,227 - werkzeug - INFO - 127.0.0.1 - - [11/Mar/2026 23:28:43] "[33mGET /.well-known/appspecific/com.chrome.devtools.json HTTP/1.1[0m" 404 -
 2026-03-11 23:28:43,547 - werkzeug - INFO - 127.0.0.1 - - [11/Mar/2026 23:28:43] "GET /sw.js HTTP/1.1" 200 -
+2026-04-17 20:57:46,301 - werkzeug - WARNING - Werkzeug appears to be used in a production deployment. Consider switching to a production web server instead.
+2026-04-17 20:57:46,329 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.24.100.188:5000
+2026-04-17 20:57:46,329 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-04-17 20:57:46,329 - werkzeug - INFO -  * Restarting with stat
+2026-04-17 20:57:46,704 - werkzeug - WARNING - Werkzeug appears to be used in a production deployment. Consider switching to a production web server instead.
+2026-04-17 20:57:46,712 - werkzeug - WARNING -  * Debugger is active!
+2026-04-17 20:57:46,724 - werkzeug - INFO -  * Debugger PIN: 930-020-582
+2026-04-17 20:58:11,137 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 20:58:11] "[31m[1mPOST /api/auth/login HTTP/1.1[0m" 401 -
+2026-04-17 20:58:36,969 - werkzeug - INFO -  * Detected change in '/workspace/backend/app.py', reloading
+2026-04-17 20:58:37,031 - werkzeug - INFO -  * Restarting with stat
+2026-04-17 20:58:37,409 - werkzeug - WARNING - Werkzeug appears to be used in a production deployment. Consider switching to a production web server instead.
+2026-04-17 20:58:37,418 - werkzeug - WARNING -  * Debugger is active!
+2026-04-17 20:58:37,431 - werkzeug - INFO -  * Debugger PIN: 930-020-582
+2026-04-17 20:58:53,976 - werkzeug - WARNING - Werkzeug appears to be used in a production deployment. Consider switching to a production web server instead.
+2026-04-17 20:58:53,995 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8000
+ * Running on http://10.24.100.188:8000
+2026-04-17 20:58:53,995 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-04-17 20:58:53,995 - werkzeug - INFO -  * Restarting with stat
+2026-04-17 20:58:54,384 - werkzeug - WARNING - Werkzeug appears to be used in a production deployment. Consider switching to a production web server instead.
+2026-04-17 20:58:54,393 - werkzeug - WARNING -  * Debugger is active!
+2026-04-17 20:58:54,405 - werkzeug - INFO -  * Debugger PIN: 930-020-582
+2026-04-17 20:59:16,108 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 20:59:16] "[31m[1mPOST /api/auth/login HTTP/1.1[0m" 401 -
