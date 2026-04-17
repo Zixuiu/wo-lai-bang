@@ -2130,7 +2130,7 @@ function hideSkeletonLoading() {
 async function loadRequests() {
     const requestsGrid = document.getElementById('requests-grid');
     if (!requestsGrid) {
-        console.error('requests-grid 元素不存在');
+        console.log('requests-grid 元素不存在，跳过加载需求列表');
         return;
     }
     
