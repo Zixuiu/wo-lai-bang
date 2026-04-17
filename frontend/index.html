@@ -1,0 +1,2496 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>我来帮 - 人与人互助平台</title>
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤝</text></svg>">
+    <!-- 提前恢复登录状态，避免导航栏闪烁 -->
+    <script>
+        (function() {
+            const user = localStorage.getItem('current_user');
+            const token = localStorage.getItem('auth_token');
+            if (user && token) {
+                try {
+                    const userData = JSON.parse(user);
+                    window.__INITIAL_USER__ = userData;
+                } catch (e) {}
+            }
+        })();
+    </script>
+    <!-- 预加载关键资源 -->
+    <link rel="preload" href="css/style.css" as="style">
+    <link rel="preload" href="js/app.js" as="script">
+    <link rel="prefetch" href="requests.html">
+    <link rel="prefetch" href="profile.html">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/form-modern.css">
+    <link rel="stylesheet" href="css/mobile-redesign.css">
+    <link rel="stylesheet" href="css/datetime-picker.css">
+    <style>
+        /* 首页禁止滚动 - 仅手机端 */
+        @media (max-width: 768px) {
+            html, body {
+                height: 100%;
+                overflow: hidden;
+                background-color: #ffffff;
+            }
+            
+            body {
+                overflow-y: hidden;
+                padding-bottom: 0 !important;
+            }
+            
+            /* 主容器占满屏幕 */
+            .main-content {
+                height: 100vh;
+                overflow: hidden;
+                background-color: #ffffff;
+            }
+        }
+        
+        /* PC端允许滚动 */
+        @media (min-width: 769px) {
+            html, body {
+                background-color: #ffffff;
+            }
+            
+            .main-content {
+                background-color: #ffffff;
+                min-height: 100vh;
+            }
+        }
+        
+        /* 底部导航栏固定在底部 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            z-index: 1000;
+        }
+    </style>
+    <script>
+        // 全局位置功能 - 提前定义确保可用
+        window.userLocation = { province: '', city: '', district: '', hasPermission: false };
+        
+        // 获取当前位置（弹窗中的按钮使用）- 使用浏览器自带定位
+        window.getCurrentLocation = function() {
+            if (!navigator.geolocation) {
+                alert('您的浏览器不支持定位功能，请手动选择位置');
+                return;
+            }
+            
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    window.reverseGeocode && window.reverseGeocode(position.coords.latitude, position.coords.longitude);
+                    window.closeLocationSelector && window.closeLocationSelector();
+                },
+                function(error) {
+                    console.error('GPS定位失败:', error);
+                    alert('定位失败，请手动选择位置');
+                },
+                { timeout: 10000, enableHighAccuracy: true }
+            );
+        };
+        
+        // 右上角位置按钮点击 - 使用浏览器自带定位
+        window.requestLocationPermission = function() {
+            var locationText = document.getElementById('location-text');
+            var locationIcon = document.getElementById('location-icon');
+            
+            if (window.userLocation && window.userLocation.city) {
+                window.showLocationSelector && window.showLocationSelector();
+                return;
+            }
+            
+            if (locationText) locationText.textContent = '定位中...';
+            if (locationIcon) locationIcon.textContent = '📡';
+            
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        window.reverseGeocode && window.reverseGeocode(position.coords.latitude, position.coords.longitude);
+                    },
+                    function(error) {
+                        console.error('GPS定位失败:', error);
+                        if (locationIcon) locationIcon.textContent = '📍';
+                        if (locationText) locationText.textContent = '选择位置';
+                        window.showLocationSelector && window.showLocationSelector();
+                    },
+                    { timeout: 10000, enableHighAccuracy: true }
+                );
+            } else {
+                // 浏览器不支持GPS
+                if (locationIcon) locationIcon.textContent = '📍';
+                if (locationText) locationText.textContent = '选择位置';
+                window.showLocationSelector && window.showLocationSelector();
+            }
+        };
+        
+        // Android原生定位成功回调
+        window.onLocationSuccess = function(latitude, longitude) {
+            window.reverseGeocode && window.reverseGeocode(latitude, longitude);
+            window.closeLocationSelector && window.closeLocationSelector();
+            if (typeof showToast === 'function') {
+                showToast('位置获取成功', 'success');
+            }
+        };
+        
+        // Android原生定位失败/拒绝回调
+        window.onLocationDenied = function() {
+            var locationIcon = document.getElementById('location-icon');
+            var locationText = document.getElementById('location-text');
+            if (locationIcon) locationIcon.textContent = '📍';
+            if (locationText) locationText.textContent = '选择位置';
+            window.showLocationSelector && window.showLocationSelector();
+        };
+    </script>
+</head>
+<body>
+    <!-- 导航栏 - 与requests.html保持一致 -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <!-- 品牌标志 -->
+            <a href="javascript:void(0)" onclick="navigateTo('index.html')" class="logo">
+            </a>
+
+            <!-- 导航菜单 -->
+            <ul class="nav-menu">
+                <li><a href="javascript:void(0)" onclick="navigateTo('index.html')" class="active">首页</a></li>
+                <li><a href="javascript:void(0)" onclick="navigateTo('requests.html')">需求大厅</a></li>
+                <li><a href="javascript:void(0)" onclick="navigateTo('about.html')">关于我们</a></li>
+            </ul>
+            
+            <!-- 导航操作区 -->
+            <div class="nav-actions">
+                <!-- 发布需求按钮 -->
+                <button class="btn btn-primary" onclick="showPublishModal()">发布需求</button>
+                
+                <!-- 通知图标 -->
+                <div class="notification-icon" onclick="goToNotifications()">
+                    🔔
+                    <span class="notification-badge" id="notification-badge" style="display: none;">0</span>
+                </div>
+                
+                <!-- 用户信息 -->
+                <div class="user-menu">
+                    <div class="user-header">
+                        <div class="user-avatar" id="nav-user-avatar-container" style="position:relative;">
+                            <img id="nav-user-avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'%3E%3C/path%3E%3Ccircle cx='12' cy='7' r='4'%3E%3C/circle%3E%3C/svg%3E" alt="用户头像">
+                            <div id="nav-user-initial" style="display:none; width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg, #22c55e, #4ade80); color:white; font-size:14px; font-weight:bold; text-align:center; line-height:32px; position:absolute; top:0; left:0;"></div>
+                        </div>
+                        <span class="user-name" id="nav-user-name">未登录</span>
+                    </div>
+                    <script>
+                        (function() {
+                            const user = window.__INITIAL_USER__;
+                            if (user) {
+                                const nameEl = document.getElementById('nav-user-name');
+                                const avatarImg = document.getElementById('nav-user-avatar');
+                                const initialDiv = document.getElementById('nav-user-initial');
+                                if (nameEl) nameEl.textContent = user.nickname || user.username || '用户';
+                                if (avatarImg && initialDiv) {
+                                    const seed = user.nickname || user.username || '用户';
+                                    let initial = '';
+                                    if (seed && typeof seed === 'string') {
+                                        const name = seed.trim();
+                                        if (name.length > 0) {
+                                            const firstChar = name.charAt(0);
+                                            if (/[\u4e00-\u9fa5]/.test(firstChar)) {
+                                                initial = firstChar;
+                                            } else {
+                                                initial = firstChar.toUpperCase();
+                                            }
+                                        }
+                                    }
+                                    if (initial) {
+                                        avatarImg.style.display = 'none';
+                                        initialDiv.style.display = 'block';
+                                        initialDiv.textContent = initial;
+                                    }
+                                }
+                            }
+                        })();
+                    </script>
+                    <div class="user-dropdown" id="user-dropdown">
+                        <a href="javascript:void(0)" onclick="navigateTo('profile.html')" class="dropdown-item">个人资料</a>
+                        <button class="dropdown-item admin-only" onclick="showAdminPanel()">管理员中心</button>
+                        <button class="dropdown-item" onclick="logout()">退出登录</button>
+                    </div>
+                </div>
+            </div>
+            
+
+        </div>
+    </nav>
+
+    <!-- 主页横幅 - 桌面端 -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1>让人与人互助变得简单高效</h1>
+            <p>发布你的需求，让热心邻居来帮你；或者帮助他人，收获感谢与友谊</p>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <span class="stat-number" id="stat-users">0</span>
+                    <span class="stat-label">注册用户</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="stat-requests">0</span>
+                    <span class="stat-label">发布需求</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="stat-completed">0</span>
+                    <span class="stat-label">已完成</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="stat-helps">0</span>
+                    <span class="stat-label">帮助次数</span>
+                </div>
+            </div>
+            <div class="hero-actions">
+                <button class="btn btn-large btn-primary" onclick="showPublishModal()">发布我的需求</button>
+                <button class="btn btn-large btn-secondary" onclick="scrollToRequests()">浏览需求</button>
+            </div>
+        </div>
+        <div class="hero-image">
+            <div class="floating-cards">
+                <div class="float-card card-1">
+                    <span class="card-icon">📦</span>
+                    <span>帮忙搬家</span>
+                </div>
+                <div class="float-card card-2">
+                    <span class="card-icon">📚</span>
+                    <span>作业辅导</span>
+                </div>
+                <div class="float-card card-3">
+                    <span class="card-icon">🔧</span>
+                    <span>家电维修</span>
+                </div>
+                <div class="float-card card-4">
+                    <span class="card-icon">🐾</span>
+                    <span>宠物照看</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 手机端首页 - 全新卡片式瀑布流设计 -->
+    <section class="mobile-home">
+        <!-- 顶部状态栏区域 -->
+        <div class="mobile-header">
+            <div class="header-greeting">
+                <span class="greeting-icon">👋</span>
+                <span class="greeting-text" id="mobile-greeting">你好</span>
+            </div>
+            <!-- 位置显示 -->
+            <div class="header-location" id="header-location" onclick="requestLocationPermission()">
+                <span class="location-icon" id="location-icon">📍</span>
+                <span class="location-text" id="location-text">点击获取位置</span>
+            </div>
+        </div>
+
+        <!-- 轮播图组件 - 纯CSS实现 -->
+        <div class="carousel-container">
+            <div class="carousel-wrapper">
+                <div class="carousel-track" id="carousel-track">
+                    <!-- Slide 1: 发布需求 -->
+                    <div class="carousel-slide" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);">
+                        <div class="carousel-content">
+                            <div class="carousel-text">
+                                <h3>发布需求</h3>
+                                <p>快速解决生活难题</p>
+                            </div>
+                            <div class="carousel-icon">📦</div>
+                        </div>
+                    </div>
+                    <!-- Slide 2: 热心帮助 -->
+                    <div class="carousel-slide" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);">
+                        <div class="carousel-content">
+                            <div class="carousel-text">
+                                <h3>热心帮助</h3>
+                                <p>收获感谢与友谊</p>
+                            </div>
+                            <div class="carousel-icon">❤️</div>
+                        </div>
+                    </div>
+                    <!-- Slide 3: 加急服务 -->
+                    <div class="carousel-slide" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);">
+                        <div class="carousel-content">
+                            <div class="carousel-text">
+                                <h3>加急服务</h3>
+                                <p>紧急需求优先处理</p>
+                            </div>
+                            <div class="carousel-icon">⚡</div>
+                        </div>
+                    </div>
+                    <!-- Slide 4: 邻里互助 -->
+                    <div class="carousel-slide" style="background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);">
+                        <div class="carousel-content">
+                            <div class="carousel-text">
+                                <h3>邻里互助</h3>
+                                <p>构建温暖社区</p>
+                            </div>
+                            <div class="carousel-icon">🏠</div>
+                        </div>
+                    </div>
+                </div>
+                <!-- 左右箭头 -->
+                <button class="carousel-arrow prev" onclick="moveCarousel(-1)">‹</button>
+                <button class="carousel-arrow next" onclick="moveCarousel(1)">›</button>
+            </div>
+            <!-- 指示器 -->
+            <div class="carousel-indicators" id="carousel-indicators">
+                <button class="carousel-dot active" onclick="goToSlide(0)"></button>
+                <button class="carousel-dot" onclick="goToSlide(1)"></button>
+                <button class="carousel-dot" onclick="goToSlide(2)"></button>
+                <button class="carousel-dot" onclick="goToSlide(3)"></button>
+            </div>
+        </div>
+
+        <!-- 快捷功能网格 -->
+        <div class="quick-grid">
+            <a href="requests.html" class="quick-grid-item">
+                <div class="quick-item-icon" style="background: linear-gradient(135deg, #dcfce7, #bbf7d0);">
+                    <span>🔍</span>
+                </div>
+                <span class="quick-item-text">浏览需求</span>
+            </a>
+            <a href="requests.html" class="quick-grid-item">
+                <div class="quick-item-icon" style="background: linear-gradient(135deg, #dbeafe, #bfdbfe);">
+                    <span>📋</span>
+                </div>
+                <span class="quick-item-text">我的需求</span>
+            </a>
+            <a href="profile.html" class="quick-grid-item">
+                <div class="quick-item-icon" style="background: linear-gradient(135deg, #fef3c7, #fde68a);">
+                    <span>👤</span>
+                </div>
+                <span class="quick-item-text">个人中心</span>
+            </a>
+            <button class="quick-grid-item" onclick="showCommonScenes()">
+                <div class="quick-item-icon" style="background: linear-gradient(135deg, #fce7f3, #fbcfe8);">
+                    <span>📖</span>
+                </div>
+                <span class="quick-item-text">常见场景</span>
+            </button>
+            <a href="guide.html" class="quick-grid-item">
+                <div class="quick-item-icon" style="background: linear-gradient(135deg, #e0e7ff, #c7d2fe);">
+                    <span>📖</span>
+                </div>
+                <span class="quick-item-text">使用指南</span>
+            </a>
+            <a href="faq.html" class="quick-grid-item">
+                <div class="quick-item-icon" style="background: linear-gradient(135deg, #fef3c7, #fde68a);">
+                    <span>❓</span>
+                </div>
+                <span class="quick-item-text">常见问题</span>
+            </a>
+            <a href="feedback.html" class="quick-grid-item">
+                <div class="quick-item-icon" style="background: linear-gradient(135deg, #fce7f3, #fbcfe8);">
+                    <span>💡</span>
+                </div>
+                <span class="quick-item-text">意见反馈</span>
+            </a>
+            <button class="quick-grid-item more-item" onclick="showMoreMenu()">
+                <div class="quick-item-icon more-icon" style="background: linear-gradient(135deg, #f3f4f6, #e5e7eb);">
+                    <span>⋮</span>
+                </div>
+                <span class="quick-item-text">更多</span>
+            </button>
+        </div>
+
+        <!-- 底部留白 -->
+        <div class="mobile-bottom-spacer"></div>
+    </section>
+
+
+
+
+    <!-- 管理员界面 -->
+    <section id="admin" class="admin-section" style="display: none;">
+        <div class="container">
+            <!-- 用户管理 -->
+            <div class="admin-module">
+                <!-- 搜索和筛选 -->
+                <div class="admin-controls">
+                    <div class="search-box">
+                        <input type="text" id="user-search" placeholder="搜索用户名..." autocomplete="off">
+                        <button onclick="searchUsers()">搜索</button>
+                    </div>
+                </div>
+                
+                <!-- 用户列表 -->
+                <div class="user-list">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>头像</th>
+                                <th>用户名</th>
+                                <th>邮箱</th>
+                                <th>位置</th>
+                                <th>注册时间</th>
+                                <th>评分</th>
+                                <th>帮助次数</th>
+                                <th>发布需求数</th>
+                            </tr>
+                        </thead>
+                        <tbody id="user-table-body">
+                            <!-- 用户数据将通过JavaScript动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- 分页 -->
+                <div class="pagination" id="user-pagination">
+                    <!-- 分页控件将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <span class="logo-icon">🤝</span>
+                    <span class="logo-text">我来帮</span>
+                    <p>让人与人互助变得简单高效</p>
+                </div>
+                <div class="footer-links">
+                    <div class="link-group">
+                        <h4>平台</h4>
+                        <a href="about.html">关于我们</a>
+                        <a href="guide.html">使用指南</a>
+                        <a href="faq.html">常见问题</a>
+                    </div>
+                    <div class="link-group">
+                        <h4>帮助</h4>
+                        <a href="contact.html">联系客服</a>
+                        <a href="feedback.html">意见反馈</a>
+                        <a href="report.html">举报中心</a>
+                    </div>
+                    <div class="link-group">
+                        <h4>法律</h4>
+                        <a href="terms.html">用户协议</a>
+                        <a href="privacy.html">隐私政策</a>
+                        <a href="disclaimer.html">免责声明</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 我来帮. 保留所有权利.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 发布需求弹窗 -->
+    <div class="modal" id="publish-modal">
+        <div class="modal-content modal-xl publish-modal-v2">
+            <!-- 模态框头部 -->
+            <div class="modal-header-v2">
+                <div class="modal-header-content-v2">
+                    <div class="modal-icon-v2">
+                        <span class="icon-xl">✨</span>
+                    </div>
+                    <h2 class="modal-title-v2">发布需求</h2>
+                    <p class="modal-subtitle-v2">分享你的需求，让热心邻居来帮助你</p>
+                </div>
+                <button class="close-btn-v2" onclick="closePublishModal()">
+                    <span class="close-icon-v2">×</span>
+                </button>
+            </div>
+            
+            <!-- 表单主体 -->
+            <form id="publish-form" onsubmit="handlePublish(event)" class="publish-form-v2">
+                <!-- 表单内容区域 -->
+                <div class="form-content-area">
+                    <!-- 左侧步骤指示器 -->
+                    <div class="publish-steps-v2">
+                        <div class="step-item-v2 active" data-step="1" onclick="goToStep(1)">
+                            <div class="step-circle-v2">
+                                <div class="step-number-v2">1</div>
+                                <div class="step-check-v2">✓</div>
+                            </div>
+                            <span class="step-text-v2">基本信息</span>
+                        </div>
+                        <div class="step-item-v2" data-step="2" onclick="goToStep(2)">
+                            <div class="step-circle-v2">
+                                <div class="step-number-v2">2</div>
+                                <div class="step-check-v2">✓</div>
+                            </div>
+                            <span class="step-text-v2">时间信息</span>
+                        </div>
+                        <div class="step-item-v2" data-step="3" onclick="goToStep(3)">
+                            <div class="step-circle-v2">
+                                <div class="step-number-v2">3</div>
+                                <div class="step-check-v2">✓</div>
+                            </div>
+                            <span class="step-text-v2">确认发布</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 右侧表单内容 -->
+                    <div class="publish-step-content-v2">
+                        <!-- 第一步：基本信息 -->
+                        <div class="form-section-v2 active" data-step="1">
+                            <div class="form-group-v2">
+                                <label class="form-label-v2" for="publish-title">
+                                    <span class="label-icon-v2">📋</span>
+                                    需求标题
+                                    <span class="required-mark-v2">*</span>
+                                </label>
+                                <input type="text" name="title" id="publish-title" placeholder="简单描述你的需求，如：帮忙搬家具" required maxlength="100" style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); font-size: 14px; box-sizing: border-box;">
+                            </div>
+
+                            <div class="form-group-v2">
+                                <label class="form-label-v2" for="publish-description">
+                                    <span class="label-icon-v2">📝</span>
+                                    需求描述
+                                </label>
+                                <textarea name="description" id="publish-description" placeholder="详细描述你的需求..." rows="3" style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); font-size: 14px; box-sizing: border-box; resize: vertical;"></textarea>
+                            </div>
+
+                            <!-- 位置信息 -->
+                            <div class="form-group-v2">
+                                <label class="form-label-v2" for="province-select">
+                                    <span class="label-icon-v2">📍</span>
+                                    位置
+                                    <span class="required-mark-v2">*</span>
+                                </label>
+                                <div style="display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap;">
+                                    <select name="province" id="province-select" required onchange="updateCities()" style="flex: 1; min-width: 80px; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); font-size: 14px;" autocomplete="address-level1">
+                                        <option value="">省份</option>
+                                        <option value="北京市">北京</option>
+                                        <option value="天津市">天津</option>
+                                        <option value="上海市">上海</option>
+                                        <option value="重庆市">重庆</option>
+                                        <option value="河北省">河北</option>
+                                        <option value="山西省">山西</option>
+                                        <option value="辽宁省">辽宁</option>
+                                        <option value="吉林省">吉林</option>
+                                        <option value="黑龙江省">黑龙江</option>
+                                        <option value="江苏省">江苏</option>
+                                        <option value="浙江省">浙江</option>
+                                        <option value="安徽省">安徽</option>
+                                        <option value="福建省">福建</option>
+                                        <option value="江西省">江西</option>
+                                        <option value="山东省">山东</option>
+                                        <option value="河南省">河南</option>
+                                        <option value="湖北省">湖北</option>
+                                        <option value="湖南省">湖南</option>
+                                        <option value="广东省">广东</option>
+                                        <option value="海南省">海南</option>
+                                        <option value="四川省">四川</option>
+                                        <option value="贵州省">贵州</option>
+                                        <option value="云南省">云南</option>
+                                        <option value="陕西省">陕西</option>
+                                        <option value="甘肃省">甘肃</option>
+                                        <option value="青海省">青海</option>
+                                        <option value="台湾省">台湾</option>
+                                        <option value="内蒙古自治区">内蒙古</option>
+                                        <option value="广西壮族自治区">广西</option>
+                                        <option value="西藏自治区">西藏</option>
+                                        <option value="宁夏回族自治区">宁夏</option>
+                                        <option value="新疆维吾尔自治区">新疆</option>
+                                    </select>
+                                    <select name="city" id="city-select" required onchange="updateDistricts()" style="flex: 1; min-width: 80px; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); font-size: 14px;" autocomplete="address-level2">
+                                        <option value="">城市</option>
+                                    </select>
+                                    <select name="district" id="district-select" style="flex: 1; min-width: 80px; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); font-size: 14px;" autocomplete="address-level3">
+                                        <option value="">区域/区县（可选）</option>
+                                    </select>
+                                    <button type="button" onclick="getCurrentLocation()" title="自动定位" style="padding: 10px 14px; background: var(--primary-color); border: none; border-radius: 8px; color: white; cursor: pointer; font-size: 14px; white-space: nowrap;">
+                                        📍 定位
+                                    </button>
+                                </div>
+                                <span id="location-status" style="font-size: 12px; color: var(--success-color); margin-left: 4px;"></span>
+                            </div>
+
+                            <div class="form-group-v2">
+                                <input type="text" name="address" id="address-input" placeholder="详细地址：如xx小区xx号楼xx室" required style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); font-size: 14px; box-sizing: border-box;" autocomplete="street-address">
+                            </div>
+
+                            <div class="form-group-v2">
+                                <label class="form-label-v2" for="publish-reward">
+                                    <span class="label-icon-v2">💰</span>
+                                    报酬
+                                    <span class="required-mark-v2">*</span>
+                                </label>
+                                <input type="text" name="reward" id="publish-reward" placeholder="如：100元" required style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); font-size: 14px; box-sizing: border-box;" autocomplete="off">
+                            </div>
+
+                            <!-- 技能标签 -->
+                            <div class="form-group-v2">
+                                <label class="form-label-v2" for="publish-skills">
+                                    <span class="label-icon-v2">🎯</span>
+                                    技能标签
+                                    <span class="hint-text-v2" style="font-size: 12px; color: var(--gray-500); font-weight: normal; margin-left: 8px;">（填写后可更快找到对接的人）</span>
+                                </label>
+                                <input type="text" name="skills" id="publish-skills" placeholder="例如：搬运,设计,编程,摄影..." style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); font-size: 14px; box-sizing: border-box;" autocomplete="off">
+                                <div style="margin-top: 8px;">
+                                    <span style="font-size: 12px; color: var(--gray-500);">常用标签：</span>
+                                    <span class="skill-tag-suggest" onclick="addSkillTag('搬运')" style="display: inline-block; padding: 4px 10px; margin: 4px; background: var(--gray-100); border-radius: 12px; font-size: 12px; cursor: pointer; color: var(--gray-600);">搬运</span>
+                                    <span class="skill-tag-suggest" onclick="addSkillTag('设计')" style="display: inline-block; padding: 4px 10px; margin: 4px; background: var(--gray-100); border-radius: 12px; font-size: 12px; cursor: pointer; color: var(--gray-600);">设计</span>
+                                    <span class="skill-tag-suggest" onclick="addSkillTag('编程')" style="display: inline-block; padding: 4px 10px; margin: 4px; background: var(--gray-100); border-radius: 12px; font-size: 12px; cursor: pointer; color: var(--gray-600);">编程</span>
+                                    <span class="skill-tag-suggest" onclick="addSkillTag('摄影')" style="display: inline-block; padding: 4px 10px; margin: 4px; background: var(--gray-100); border-radius: 12px; font-size: 12px; cursor: pointer; color: var(--gray-600);">摄影</span>
+                                    <span class="skill-tag-suggest" onclick="addSkillTag('家政')" style="display: inline-block; padding: 4px 10px; margin: 4px; background: var(--gray-100); border-radius: 12px; font-size: 12px; cursor: pointer; color: var(--gray-600);">家政</span>
+                                    <span class="skill-tag-suggest" onclick="addSkillTag('维修')" style="display: inline-block; padding: 4px 10px; margin: 4px; background: var(--gray-100); border-radius: 12px; font-size: 12px; cursor: pointer; color: var(--gray-600);">维修</span>
+                                    <span class="skill-tag-suggest" onclick="addSkillTag('教育')" style="display: inline-block; padding: 4px 10px; margin: 4px; background: var(--gray-100); border-radius: 12px; font-size: 12px; cursor: pointer; color: var(--gray-600);">教育</span>
+                                    <span class="skill-tag-suggest" onclick="addSkillTag('跑腿')" style="display: inline-block; padding: 4px 10px; margin: 4px; background: var(--gray-100); border-radius: 12px; font-size: 12px; cursor: pointer; color: var(--gray-600);">跑腿</span>
+                                </div>
+                            </div>
+
+                            <input type="hidden" name="lat" id="lat-input">
+                            <input type="hidden" name="lng" id="lng-input">
+
+                            <div class="form-group-v2">
+                                <label class="checkbox-label-v2" for="is_urgent_checkbox" style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; padding: 1rem; background: rgba(239, 68, 68, 0.05); border-radius: var(--radius-lg); border: 1px solid rgba(239, 68, 68, 0.2);">
+                                    <input
+                                        type="checkbox"
+                                        name="is_urgent"
+                                        id="is_urgent_checkbox"
+                                        class="checkbox-input-v2"
+                                        style="width: 20px; height: 20px; cursor: pointer;"
+                                        autocomplete="off"
+                                    >
+                                    <span style="color: var(--danger-color); font-weight: 500;">🔥 加急服务（优先展示，更快响应）</span>
+                                </label>
+                            </div>
+                            
+                            <div class="form-group-v2">
+                                <label class="checkbox-label-v2" for="need_photo_verify_checkbox" style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; padding: 1rem; background: rgba(59, 130, 246, 0.05); border-radius: var(--radius-lg); border: 1px solid rgba(59, 130, 246, 0.2);">
+                                    <input
+                                        type="checkbox"
+                                        name="need_photo_verify"
+                                        id="need_photo_verify_checkbox"
+                                        class="checkbox-input-v2"
+                                        style="width: 20px; height: 20px; cursor: pointer;"
+                                        autocomplete="off"
+                                    >
+                                    <span style="color: #3b82f6; font-weight: 500;">📷 需要拍照验收</span>
+                                </label>
+                            </div>
+                            
+                            <div class="form-group-v2">
+                                <label for="deposit_amount_input" style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: rgba(245, 158, 11, 0.05); border-radius: var(--radius-lg); border: 1px solid rgba(245, 158, 11, 0.2);">
+                                    <span style="color: #f59e0b; font-weight: 500;">💎 押金（借工具需支付）</span>
+                                </label>
+                                <div style="margin-top: 0.5rem;">
+                                    <input
+                                        type="number"
+                                        name="deposit_amount"
+                                        id="deposit_amount_input"
+                                        class="form-input-v2"
+                                        placeholder="输入押金金额（如：10）"
+                                        min="0"
+                                        step="1"
+                                        style="width: 100%;"
+                                        autocomplete="off"
+                                    >
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 第二步：时间信息 -->
+                        <div class="form-section-v2" data-step="2">
+                            <div class="form-group-v2">
+                                <label class="form-label-v2" for="start_time_select">
+                                    <span class="label-icon-v2">📅</span>
+                                    什么时候需要
+                                    <span class="required-mark-v2">*</span>
+                                </label>
+                                <select name="start_time" id="start_time_select" required onchange="toggleCustomStartTime()" style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); font-size: 14px; box-sizing: border-box;" autocomplete="off">
+                                    <option value="now">现在</option>
+                                    <option value="12h">12小时内</option>
+                                    <option value="week">一周内</option>
+                                    <option value="custom">自定义</option>
+                                </select>
+                                <input type="datetime-local" name="start_time_custom" id="start_time_custom" style="display: none; width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); font-size: 14px; box-sizing: border-box; margin-top: 8px;" autocomplete="off">
+                            </div>
+
+                            <div class="form-group-v2">
+                                <label class="form-label-v2" for="deadline-input">
+                                    <span class="label-icon-v2">⏰</span>
+                                    最晚什么时候
+                                    <span class="required-mark-v2">*</span>
+                                </label>
+                                <div class="deadline-selector" style="display: flex; align-items: center; gap: 8px;">
+                                    <button type="button" onclick="adjustDeadline(-1)" style="width: 36px; height: 36px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); cursor: pointer; font-size: 18px;">−</button>
+                                    <input type="date" name="deadline" id="deadline-input" required style="flex: 1; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); font-size: 14px; text-align: center;" autocomplete="off">
+                                    <button type="button" onclick="adjustDeadline(1)" style="width: 36px; height: 36px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); cursor: pointer; font-size: 18px;">+</button>
+                                </div>
+                            </div>
+
+                        </div>
+                        
+                        <!-- 第三步：确认发布 -->
+                        <div class="form-section-v2 confirm-section-v2" data-step="3">
+                            <div class="confirm-card-v2">
+                                <div class="confirm-header-v2">
+                                    <span class="confirm-icon-v2">📋</span>
+                                    <h4 class="confirm-title-v2">确认需求信息</h4>
+                                </div>
+                                <div class="confirm-body-v2">
+                                    <div class="confirm-item-v2">
+                                        <span class="confirm-label-v2">需求标题：</span>
+                                        <span class="confirm-value-v2" id="confirm-title">未填写</span>
+                                    </div>
+                                    <div class="confirm-item-v2">
+                                        <span class="confirm-label-v2">位置：</span>
+                                        <span class="confirm-value-v2" id="confirm-location">未填写</span>
+                                    </div>
+                                    <div class="confirm-item-v2">
+                                        <span class="confirm-label-v2">详细地址：</span>
+                                        <span class="confirm-value-v2" id="confirm-address">未填写</span>
+                                    </div>
+                                    <div class="confirm-item-v2">
+                                        <span class="confirm-label-v2">报酬：</span>
+                                        <span class="confirm-value-v2" id="confirm-reward">未填写</span>
+                                    </div>
+                                    <div class="confirm-item-v2">
+                                        <span class="confirm-label-v2">需要时间：</span>
+                                        <span class="confirm-value-v2" id="confirm-start-time">未填写</span>
+                                    </div>
+                                    <div class="confirm-item-v2">
+                                        <span class="confirm-label-v2">最晚时间：</span>
+                                        <span class="confirm-value-v2" id="confirm-deadline">未填写</span>
+                                    </div>
+                                    <div class="confirm-item-v2">
+                                        <span class="confirm-label-v2">加急服务：</span>
+                                        <span class="confirm-value-v2" id="confirm-urgent">否</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 表单操作（箭头按钮） -->
+                <div class="form-actions-v2">
+                    <div class="step-navigation-v2">
+                        <button type="button" class="btn-secondary-v2" onclick="prevStep()" id="prev-step-btn">
+                            <span class="btn-icon-v2">←</span>
+                            <span class="btn-text-v2">上一步</span>
+                        </button>
+                        <button type="button" class="btn-primary-v2" onclick="nextStep()" id="next-step-btn">
+                            <span class="btn-icon-v2">→</span>
+                            <span class="btn-text-v2">下一步</span>
+                        </button>
+                    </div>
+                    <div class="submit-actions-v2">
+                        <button type="button" class="btn-secondary-v2" onclick="closePublishModal()">
+                            <span class="btn-icon-v2">✕</span>
+                            <span class="btn-text-v2">取消</span>
+                        </button>
+                        <button type="submit" class="btn-primary-v2" id="submit-btn">
+                            <span class="btn-icon-v2">📤</span>
+                            <span class="btn-text-v2">发布需求</span>
+                            <span class="btn-loader-v2"></span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 需求详情弹窗 -->
+    <div class="modal" id="detail-modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3 id="detail-title">需求详情</h3>
+                <button class="close-btn" onclick="closeDetailModal()">&times;</button>
+            </div>
+            <div class="detail-content" id="detail-content">
+                <!-- 动态生成详情内容 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 登录弹窗 -->
+    <div class="modal" id="login-modal">
+        <div class="modal-content login-modal-content">
+            <div class="auth-wrapper">
+                <!-- 左侧品牌展示区 - PC端显示 -->
+                <div class="auth-brand-section pc-only">
+                    <div class="auth-brand-content">
+                        <div class="auth-logo">
+                            <span class="logo-icon">🤝</span>
+                        </div>
+                        <h2 class="auth-brand-title">我来帮</h2>
+                        <p class="auth-brand-subtitle">人与人互助，温暖社区</p>
+                        <div class="auth-illustration">
+                            <div class="floating-elements">
+                                <div class="float-element element-1">
+                                    <span class="element-icon">📦</span>
+                                    <span class="element-text">帮忙搬运</span>
+                                </div>
+                                <div class="float-element element-2">
+                                    <span class="element-icon">📚</span>
+                                    <span class="element-text">知识分享</span>
+                                </div>
+                                <div class="float-element element-3">
+                                    <span class="element-icon">🔧</span>
+                                    <span class="element-text">维修服务</span>
+                                </div>
+                                <div class="float-element element-4">
+                                    <span class="element-icon">🐾</span>
+                                    <span class="element-text">宠物照看</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 右侧登录表单区 -->
+                <div class="auth-form-section">
+                    <button class="close-btn" onclick="closeLoginModal()">&times;</button>
+                    <div class="auth-form-header">
+                        <h1 class="auth-title">欢迎回来</h1>
+                    </div>
+                    <form id="login-form" onsubmit="handleLogin(event)" class="auth-form">
+                        <div class="form-group">
+                            <label class="form-label" for="login-username">
+                                <span class="label-icon">🎭</span>
+                                用户名/邮箱
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="text" name="username" id="login-username" class="form-input" placeholder="请输入用户名或邮箱" required autocomplete="username">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="form-group-header">
+                                <label class="form-label" for="login-password">
+                                    <span class="label-icon">🔒</span>
+                                    密码
+                                </label>
+                                <a href="forgot.html" class="forgot-password">忘记密码？</a>
+                            </div>
+                            <div class="input-wrapper">
+                                <input type="password" name="password" id="login-password" class="form-input" placeholder="请输入密码" required autocomplete="current-password">
+                                <button type="button" class="password-toggle-btn" onclick="togglePassword('login-password')">
+                                    <span class="eye-icon">👁</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-options">
+                            <label class="checkbox-label" for="login-remember">
+                                <input type="checkbox" name="remember" id="login-remember" class="checkbox-input" autocomplete="off">
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-text">记住我</span>
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block btn-large auth-btn">
+                            <span class="btn-text">登录</span>
+                            <span class="btn-icon">→</span>
+                        </button>
+                        <div class="form-footer" style="margin: 1.5rem 0 2rem; padding: 1rem 0; text-align: center; border-top: 1px solid var(--gray-200);">
+                            <span class="footer-text" style="color: var(--gray-600); font-size: 0.875rem;">还没有账户？</span>
+                            <button type="button" class="btn-link" onclick="showRegisterModal()" style="color: var(--primary-color); font-weight: 600; font-size: 0.875rem; margin-left: 0.5rem; cursor: pointer; border: none; background: none;">立即注册</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 注册弹窗 -->
+    <div class="modal" id="register-modal">
+        <div class="modal-content register-modal">
+            <div class="auth-wrapper">
+                <!-- 左侧品牌展示区 -->
+                <div class="auth-brand-section">
+                    <div class="auth-brand-content">
+                        <div class="auth-logo">
+                            <span class="logo-icon">🤝</span>
+                        </div>
+                        <h2 class="auth-brand-title">我来帮</h2>
+                        <p class="auth-brand-subtitle">人与人互助，温暖社区</p>
+                        <div class="auth-illustration">
+                            <div class="floating-elements">
+                                <div class="float-element element-1">
+                                    <span class="element-icon">🌟</span>
+                                    <span class="element-text">安全可靠</span>
+                                </div>
+                                <div class="float-element element-2">
+                                    <span class="element-icon">🚀</span>
+                                    <span class="element-text">快速响应</span>
+                                </div>
+                                <div class="float-element element-3">
+                                    <span class="element-icon">🤗</span>
+                                    <span class="element-text">温暖社区</span>
+                                </div>
+                                <div class="float-element element-4">
+                                    <span class="element-icon">💪</span>
+                                    <span class="element-text">互帮互助</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="auth-benefits">
+                            <div class="benefit-item">
+                                <span class="benefit-icon">📢</span>
+                                <span class="benefit-text">发布需求，快速获得帮助</span>
+                            </div>
+                            <div class="benefit-item">
+                                <span class="benefit-icon">❤️</span>
+                                <span class="benefit-text">帮助他人，收获友谊和感谢</span>
+                            </div>
+                            <div class="benefit-item">
+                                <span class="benefit-icon">🏆</span>
+                                <span class="benefit-text">获得徽章和积分奖励</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 右侧注册表单区 -->
+                <div class="auth-form-section">
+                    <button class="close-btn" onclick="closeRegisterModal()">&times;</button>
+                    <div class="auth-form-header">
+                        <h1 class="auth-title">加入我们的社区</h1>
+                        <p class="auth-subtitle">创建账户，开始人与人互助之旅</p>
+                    </div>
+                    <form id="register-form" onsubmit="handleRegister(event)" class="auth-form">
+                        <div class="form-group">
+                            <label class="form-label" for="register-nickname">
+                                <span class="label-icon">🎭</span>
+                                用户名
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="text" name="nickname" id="register-nickname" class="form-input" placeholder="请输入用户名" required>
+                            </div>
+                            <div class="form-hint">3-20个字符，用户名</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="register-password">
+                                <span class="label-icon">🔒</span>
+                                密码
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="password" name="password" id="register-password" class="form-input" placeholder="请输入密码" required>
+                                <button type="button" class="password-toggle-btn" onclick="togglePassword('register-password')">
+                                    <span class="eye-icon">👁</span>
+                                </button>
+                            </div>
+                            <div class="form-hint">至少8个字符，包含字母和数字</div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label" for="register-email">
+                                    <span class="label-icon">📧</span>
+                                    邮箱
+                                </label>
+                                <div class="input-wrapper">
+                                    <input type="email" name="email" id="register-email" class="form-input" placeholder="请输入邮箱" required autocomplete="email">
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 验证码输入 -->
+                        <div class="form-group">
+                            <label class="form-label" for="register-verification-code">
+                                <span class="label-icon">🔢</span>
+                                验证码
+                            </label>
+                            <div class="input-wrapper verification-code-wrapper">
+                                <input type="text" name="verification_code" id="register-verification-code" class="form-input" placeholder="请输入6位验证码" maxlength="6" required autocomplete="one-time-code">
+                                <button type="button" class="btn btn-secondary btn-send-code" id="send-code-btn" onclick="sendVerificationCode()">
+                                    获取验证码
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-options">
+                            <label class="checkbox-label" for="register-agree">
+                                <input type="checkbox" name="agree" id="register-agree" class="checkbox-input" required autocomplete="off">
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-text">我同意<a href="terms.html">用户协议</a>和<a href="privacy.html">隐私政策</a></span>
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block btn-large auth-btn">
+                            <span class="btn-text">立即注册</span>
+                            <span class="btn-icon">→</span>
+                        </button>
+                        <div class="form-footer" style="margin: 1.5rem 0 2rem; padding: 1rem 0; text-align: center; border-top: 1px solid var(--gray-200);">
+                            <span class="footer-text" style="color: var(--gray-600); font-size: 0.875rem;">已有账号？</span>
+                            <button type="button" class="btn-link" onclick="showLoginModal()" style="color: var(--primary-color); font-weight: 600; font-size: 0.875rem; margin-left: 0.5rem; cursor: pointer; border: none; background: none;">立即登录</button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 忘记密码弹窗 - 移动端简化版 -->
+    <div class="modal" id="forgot-modal">
+        <div class="modal-content mobile-forgot-modal">
+            <div class="mobile-login-wrapper">
+                <!-- 关闭按钮 -->
+                <button class="mobile-login-close" onclick="closeForgotModal()">&times;</button>
+                
+                <!-- 头部 -->
+                <div class="mobile-login-header">
+                    <h2 class="mobile-login-title">忘记密码？</h2>
+                    <p class="mobile-login-subtitle" id="forgot-subtitle">请输入邮箱和新密码</p>
+                </div>
+                
+                <!-- 步骤1：输入邮箱+验证码+新密码 -->
+                <div id="forgot-step-1" class="forgot-step">
+                    <form id="forgot-form-step-1" onsubmit="handleForgotStep1(event); return false;" class="mobile-login-form">
+                        <!-- 邮箱 -->
+                        <div class="mobile-login-field">
+                            <label class="mobile-login-label">
+                                <span class="mobile-login-icon">📧</span>
+                                邮箱
+                            </label>
+                            <input type="email" id="forgot-contact" name="contact" class="mobile-login-input" placeholder="请输入邮箱" required>
+                        </div>
+                        
+                        <!-- 验证码 -->
+                        <div class="mobile-login-field">
+                            <label class="mobile-login-label">
+                                <span class="mobile-login-icon">🔢</span>
+                                验证码
+                            </label>
+                            <div class="mobile-login-input-wrapper">
+                                <input type="text" id="forgot-code" name="code" class="mobile-login-input" placeholder="请输入6位验证码" maxlength="6" required autocomplete="one-time-code" style="flex: 1;">
+                                <button type="button" class="mobile-login-code-btn" id="forgot-send-code-btn" onclick="sendForgotCode()">
+                                    获取验证码
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- 新密码 -->
+                        <div class="mobile-login-field">
+                            <label class="mobile-login-label">
+                                <span class="mobile-login-icon">🔒</span>
+                                新密码
+                            </label>
+                            <div class="mobile-login-input-wrapper">
+                                <input type="password" id="forgot-new-password" name="newPassword" class="mobile-login-input" placeholder="请输入新密码" oninput="checkPasswordStrength(this.value, 'forgot-strength')" required autocomplete="new-password">
+                                <button type="button" class="mobile-login-eye" onclick="togglePassword('forgot-new-password')">
+                                    👁
+                                </button>
+                            </div>
+                            <div class="password-strength" id="forgot-strength" style="margin-top: 0.5rem;">
+                                <div class="strength-bar"><div class="strength-fill" id="forgot-strength-fill"></div></div>
+                                <span class="strength-text" id="forgot-strength-text"></span>
+                            </div>
+                        </div>
+                        
+                        <!-- 确认新密码 -->
+                        <div class="mobile-login-field">
+                            <label class="mobile-login-label">
+                                <span class="mobile-login-icon">🔒</span>
+                                确认新密码
+                            </label>
+                            <div class="mobile-login-input-wrapper">
+                                <input type="password" id="forgot-confirm-password" name="confirmPassword" class="mobile-login-input" placeholder="请再次输入新密码" required autocomplete="new-password">
+                                <button type="button" class="mobile-login-eye" onclick="togglePassword('forgot-confirm-password')">
+                                    👁
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- 重置按钮 -->
+                        <button type="submit" class="mobile-login-btn">
+                            <span>重置密码</span>
+                            <span class="mobile-login-arrow">→</span>
+                        </button>
+                    </form>
+                        </form>
+                    </div>
+                    </div>
+                    
+                    <div class="form-footer" style="margin: 1.5rem 0 2rem; padding: 1rem 0; text-align: center; border-top: 1px solid var(--gray-200);">
+                        <span class="footer-text" style="color: var(--gray-600); font-size: 0.875rem;">想起密码了？</span>
+                        <button type="button" class="btn-link" onclick="closeForgotModal(); showLoginModal()" style="color: var(--primary-color); font-weight: 600; font-size: 0.875rem; margin-left: 0.5rem; cursor: pointer; border: none; background: none;">立即登录</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 移动端底部导航栏 -->
+    <nav class="mobile-bottom-nav">
+        <div class="nav-items">
+            <a href="javascript:void(0)" onclick="navigateTo('index.html')" class="nav-item active" data-page="home">
+                <span class="icon">🏠</span>
+                <span>首页</span>
+            </a>
+            <a href="javascript:void(0)" onclick="navigateTo('requests.html')" class="nav-item" data-page="requests">
+                <span class="icon">📋</span>
+                <span>需求</span>
+            </a>
+            <button class="nav-item publish-btn" onclick="showPublishModal()">
+                <span class="icon">+</span>
+            </button>
+            <button class="nav-item" onclick="goToNotifications()">
+                <span class="icon">🔔</span>
+                <span>消息</span>
+                <span class="nav-badge" id="message-badge" style="display: none;">0</span>
+            </button>
+            <a href="javascript:void(0)" onclick="navigateTo('profile.html')" class="nav-item">
+                <span class="icon">👤</span>
+                <span>我的</span>
+            </a>
+        </div>
+    </nav>
+
+    <script src="js/core.js"></script>
+    <script src="js/mockData.js"></script>
+    <script src="js/datetime-picker.js" defer></script>
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js" defer></script>
+    <script src="js/app.js" defer></script>
+    <script>
+        // 常见场景功能（提前定义，避免onclick找不到函数）
+        window.showCommonScenes = function() {
+            const scenes = [
+                { icon: '⚡', title: '帮我推下电闸', desc: '家里跳闸了，需要有人帮忙推一下电闸', urgent: true, timePreset: 'now', deadlineDays: 1, category: 'urgent' },
+                { icon: '📦', title: '帮我拿个快递', desc: '快递到了，没时间去取，需要帮忙代取', urgent: false, timePreset: '12h', deadlineDays: 2, category: 'normal' },
+                { icon: '🐕', title: '帮我遛遛狗', desc: '临时有事，需要有人帮忙遛狗', urgent: false, timePreset: '12h', deadlineDays: 1, category: 'normal' },
+                { icon: '📱', title: '教老人用下手机', desc: '家里老人不会使用智能手机，需要耐心教学', urgent: false, timePreset: 'week', deadlineDays: 7, category: 'normal' },
+                { icon: '🗑️', title: '顺手帮我扔个垃圾', desc: '行动不便，需要帮忙扔一下垃圾', urgent: true, timePreset: 'now', deadlineDays: 1, category: 'urgent' },
+                { icon: '💊', title: '帮我带盒药', desc: '身体不舒服，需要帮忙买药送药', urgent: true, timePreset: 'now', deadlineDays: 1, category: 'urgent' },
+                { icon: '🏥', title: '陪我去趟医院', desc: '需要有人陪同去医院看病', urgent: true, timePreset: 'now', deadlineDays: 1, category: 'urgent' }
+            ];
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.id = 'commonScenesModal';
+            modal.innerHTML = `
+                <div class="modal-overlay" onclick="closeCommonScenes()"></div>
+                <div class="modal-content" style="padding: 20px; max-width: 90%; border-radius: 16px; position: relative; margin: auto; z-index: 1;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="margin: 0; font-size: 18px;">常见场景</h3>
+                        <button onclick="closeCommonScenes()" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        ${scenes.map(scene => `
+                            <div onclick="selectCommonScene('${scene.title}', '${scene.desc}', ${scene.urgent}, '${scene.timePreset}', ${scene.deadlineDays}, '${scene.category}')" 
+                                 style="display: flex; align-items: center; padding: 14px; background: #f9fafb; border-radius: 10px; cursor: pointer; transition: background 0.2s;"
+                                 onmouseover="this.style.background='#f3f4f6'" 
+                                 onmouseout="this.style.background='#f9fafb'">
+                                <span style="font-size: 28px; margin-right: 14px;">${scene.icon}</span>
+                                <div style="flex: 1;">
+                                    <div style="font-weight: 600; font-size: 15px; color: #1f2937; display: flex; align-items: center; gap: 6px;">
+                                        ${scene.title}
+                                        ${scene.urgent ? '<span style="background: #ef4444; color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px;">加急</span>' : ''}
+                                    </div>
+                                    <div style="font-size: 13px; color: #6b7280; margin-top: 2px;">${scene.desc}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        };
+        
+        window.closeCommonScenes = function() {
+            const modal = document.getElementById('commonScenesModal');
+            if (modal) {
+                modal.classList.remove('active');
+                setTimeout(() => modal.remove(), 300);
+            }
+        };
+        
+        window.selectCommonScene = function(title, desc, urgent = false, timePreset = 'now', deadlineDays = 1, category = 'normal') {
+            const user = JSON.parse(localStorage.getItem('current_user') || '{}');
+            if (!user || !user.id) {
+                closeCommonScenes();
+                if (typeof showLoginModal === 'function') {
+                    showLoginModal();
+                } else {
+                    window.location.href = 'index.html?showLogin=true';
+                }
+                return;
+            }
+            closeCommonScenes();
+            
+            // 移动端跳转到独立页面（带参数）
+            if (window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                // 使用 localStorage 传递数据，避免浏览器自动填充问题
+                localStorage.setItem('pendingPublishData', JSON.stringify({ title, desc, urgent, timePreset, deadlineDays, category }));
+                window.location.href = 'publish.html';
+            } else {
+                // PC端显示发布弹窗
+                if (typeof showPublishModal === 'function') {
+                    showPublishModal();
+                    // 填充数据
+                    setTimeout(() => {
+                        fillPublishForm(title, desc, urgent, timePreset, deadlineDays, category);
+                    }, 100);
+                }
+            }
+        };
+        
+        // 填充发布表单
+        window.fillPublishForm = function(title, desc, urgent, timePreset, deadlineDays, category) {
+            // 填充标题和描述
+            const titleInput = document.querySelector('#publish-form [name="title"]');
+            const descInput = document.querySelector('#publish-form [name="description"]');
+            const urgentCheckbox = document.querySelector('#publish-form [name="is_urgent"]');
+            
+            if (titleInput) titleInput.value = title;
+            if (descInput) descInput.value = desc;
+            if (urgentCheckbox) urgentCheckbox.checked = urgent;
+            
+            // 设置时间预设
+            const timePresetSelect = document.querySelector('#publish-form [name="time_preset"]');
+            if (timePresetSelect) {
+                timePresetSelect.value = timePreset;
+                // 触发自定义事件通知 datetime-picker
+                timePresetSelect.dispatchEvent(new Event('change'));
+            }
+            
+            // 设置截止时间
+            const deadlineInput = document.querySelector('#publish-form [name="deadline"]');
+            if (deadlineInput) {
+                const now = new Date();
+                now.setDate(now.getDate() + deadlineDays);
+                now.setHours(23, 59, 0, 0);
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                deadlineInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+            }
+            
+            // 设置分类
+            const categorySelect = document.querySelector('#publish-form [name="category"]');
+            if (categorySelect) {
+                categorySelect.value = category;
+            }
+            
+            // 如果是加急，自动选择加急类型
+            if (urgent) {
+                const urgentTypeGroup = document.getElementById('urgent_type_group');
+                if (urgentTypeGroup) {
+                    urgentTypeGroup.style.display = 'block';
+                }
+                // 根据场景自动选择加急类型
+                const urgentTypeSelect = document.querySelector('#publish-form [name="urgent_type"]');
+                if (urgentTypeSelect) {
+                    if (title.includes('医院') || title.includes('药')) {
+                        urgentTypeSelect.value = 'medical';
+                    } else if (title.includes('电闸')) {
+                        urgentTypeSelect.value = 'repair';
+                    } else {
+                        urgentTypeSelect.value = 'other';
+                    }
+                }
+            }
+        };
+
+        // 测试函数
+        function testNotificationClick() {
+            console.log('testNotificationClick called');
+            // 直接显示 detail-modal
+            const modal = document.getElementById('detail-modal');
+            console.log('detail-modal element:', modal);
+            if (modal) {
+                modal.classList.add('active');
+                console.log('active class added');
+                // 设置标题
+                const title = document.getElementById('detail-title');
+                if (title) title.textContent = '消息通知';
+                // 设置内容
+                const content = document.getElementById('detail-content');
+                if (content) {
+                    content.innerHTML = '<div style="padding: 2rem; text-align: center;"><p>测试通知内容</p></div>';
+                }
+            } else {
+                console.error('detail-modal not found');
+                showToast('页面加载失败，请刷新重试', 'error');
+            }
+        }
+        
+        // 位置相关功能
+        window.userLocation = {
+            province: '',
+            city: '',
+            district: '',
+            hasPermission: false
+        };
+        
+        // 获取用户位置
+        function initUserLocation() {
+            // 先尝试从 localStorage 读取保存的位置
+            const savedLocation = localStorage.getItem('userLocation');
+            if (savedLocation) {
+                try {
+                    window.userLocation = JSON.parse(savedLocation);
+                    updateLocationDisplay();
+                    return;
+                } catch (e) {
+                    console.error('解析保存的位置失败:', e);
+                }
+            }
+            
+            // 移动端需要用户点击才能触发定位权限请求
+            // 显示提示用户点击获取位置
+            const locationText = document.getElementById('location-text');
+            if (locationText && !window.userLocation.city) {
+                locationText.textContent = '点击获取位置';
+            }
+        }
+        
+        // 用户点击后请求位置权限
+        // 定位失败标志，用于判断是否需要直接进入手动选择
+        window.locationPermissionDenied = window.locationPermissionDenied || false;
+        
+        function requestLocationPermission() {
+            const locationText = document.getElementById('location-text');
+            const locationIcon = document.getElementById('location-icon');
+            
+            // 如果已有位置，显示选择器
+            if (window.userLocation && window.userLocation.city) {
+                showLocationSelector();
+                return;
+            }
+            
+            // 如果之前定位失败过（权限被拒绝），直接显示手动选择器
+            if (window.locationPermissionDenied) {
+                showLocationSelector();
+                return;
+            }
+            
+            // 显示加载中
+            if (locationText) locationText.textContent = '定位中...';
+            if (locationIcon) locationIcon.textContent = '📡';
+            
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        // 使用经纬度反编码获取城市信息
+                        reverseGeocode(position.coords.latitude, position.coords.longitude);
+                    },
+                    (error) => {
+                        console.error('获取位置失败:', error);
+                        if (locationIcon) locationIcon.textContent = '📍';
+                        if (locationText) locationText.textContent = '选择位置';
+                        
+                        // 标记定位失败，下次点击将直接进入手动选择
+                        window.locationPermissionDenied = true;
+                        
+                        // 显示提示，告知用户可以手动选择
+                        showToast('定位失败，点击再次尝试或手动选择位置', 'info');
+                    },
+                    { timeout: 10000, enableHighAccuracy: true }
+                );
+            } else {
+                if (locationIcon) locationIcon.textContent = '📍';
+                if (locationText) locationText.textContent = '选择位置';
+                showToast('您的浏览器不支持定位功能，请手动选择位置', 'error');
+                showLocationSelector();
+            }
+        }
+        
+        // 繁简转换函数
+        function toSimplifiedChinese(text) {
+            if (!text) return text;
+            const traditionalToSimplified = {
+                '區': '区',
+                '縣': '县',
+                '市': '市'
+            };
+            let simplified = text;
+            for (const [traditional, simplifiedChar] of Object.entries(traditionalToSimplified)) {
+                simplified = simplified.replace(new RegExp(traditional, 'g'), simplifiedChar);
+            }
+            return simplified;
+        }
+
+        // 根据区县名查找所属城市
+        function findCityByDistrictName(districtName) {
+            const districtData = {
+                '北京市': ['东城区', '西城区', '朝阳区', '丰台区', '石景山区', '海淀区', '门头沟区', '房山区', '通州区', '顺义区', '昌平区', '大兴区', '怀柔区', '平谷区', '密云区', '延庆区'],
+                '上海市': ['黄浦区', '徐汇区', '长宁区', '静安区', '普陀区', '虹口区', '杨浦区', '闵行区', '宝山区', '嘉定区', '浦东新区', '金山区', '松江区', '青浦区', '奉贤区', '崇明区'],
+                '广州市': ['荔湾区', '越秀区', '海珠区', '天河区', '白云区', '黄埔区', '番禺区', '花都区', '南沙区', '从化区', '增城区'],
+                '深圳市': ['罗湖区', '福田区', '南山区', '宝安区', '龙岗区', '盐田区', '龙华区', '坪山区', '光明区'],
+                '杭州市': ['上城区', '拱墅区', '西湖区', '滨江区', '萧山区', '余杭区', '富阳区', '临安区', '临平区', '钱塘区'],
+                '南京市': ['玄武区', '秦淮区', '建邺区', '鼓楼区', '浦口区', '栖霞区', '雨花台区', '江宁区', '六合区', '溧水区', '高淳区'],
+                '成都市': ['锦江区', '青羊区', '金牛区', '武侯区', '成华区', '龙泉驿区', '青白江区', '新都区', '温江区', '双流区', '郫都区', '新津区'],
+                '武汉市': ['江岸区', '江汉区', '硚口区', '汉阳区', '武昌区', '青山区', '洪山区', '东西湖区', '汉南区', '蔡甸区', '江夏区', '黄陂区', '新洲区'],
+                '西安市': ['新城区', '碑林区', '莲湖区', '雁塔区', '灞桥区', '未央区', '阎良区', '临潼区', '长安区', '高陵区', '鄠邑区'],
+                '重庆市': ['万州区', '涪陵区', '渝中区', '大渡口区', '江北区', '沙坪坝区', '九龙坡区', '南岸区', '北碚区', '渝北区', '巴南区', '长寿区', '江津区', '合川区', '永川区', '南川区', '綦江区', '大足区', '璧山区', '铜梁区', '潼南区', '荣昌区', '开州区', '梁平区', '武隆区'],
+                '天津市': ['和平区', '河东区', '河西区', '南开区', '河北区', '红桥区', '东丽区', '西青区', '津南区', '北辰区', '武清区', '宝坻区', '滨海新区', '宁河区', '静海区', '蓟州区'],
+                '苏州市': ['虎丘区', '吴中区', '相城区', '姑苏区', '吴江区', '工业园区', '常熟市', '张家港市', '昆山市', '太仓市'],
+                '郑州市': ['中原区', '二七区', '管城回族区', '金水区', '上街区', '惠济区', '郑东新区', '高新区', '经开区'],
+                '长沙市': ['芙蓉区', '天心区', '岳麓区', '开福区', '雨花区', '望城区', '长沙县', '浏阳市', '宁乡市'],
+                '沈阳市': ['和平区', '沈河区', '大东区', '皇姑区', '铁西区', '苏家屯区', '浑南区', '沈北新区', '于洪区', '辽中区', '康平县', '法库县', '新民市'],
+                '青岛市': ['市南区', '市北区', '黄岛区', '崂山区', '李沧区', '城阳区', '即墨区', '胶州市', '平度市', '莱西市'],
+                '宁波市': ['海曙区', '江北区', '北仑区', '镇海区', '鄞州区', '奉化区', '余姚市', '慈溪市', '象山县', '宁海县']
+            };
+            
+            const simplifiedDistrict = toSimplifiedChinese(districtName);
+            
+            for (const [city, districts] of Object.entries(districtData)) {
+                if (districts.includes(simplifiedDistrict)) {
+                    return city;
+                }
+                const districtWithoutSuffix = simplifiedDistrict.replace(/[区县市]$/, '');
+                for (const district of districts) {
+                    if (district.replace(/[区县市]$/, '') === districtWithoutSuffix) {
+                        return city;
+                    }
+                }
+            }
+            return '';
+        }
+
+        // 反编码获取城市名称
+        async function reverseGeocode(lat, lng) {
+            // 尝试使用多个地理编码服务
+            const services = [
+                // 服务1: 使用国内的地图服务 (BigDataCloud - 免费，国内可访问)
+                async () => {
+                    const response = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lng}&localityLanguage=zh`);
+                    const data = await response.json();
+                    if (data && data.city) {
+                        // 优先使用区/县级别，如果没有则使用市
+                        let district = data.locality || data.suburb || data.district || '';
+                        let city = data.city || data.locality || data.principalSubdivision || '';
+                        
+                        // 清理城市名中的多余后缀
+                        city = city.replace(/[市]$/, '');
+                        
+                        // 判断是城市还是区县
+                        if (city.includes('区') || city.includes('區') || city.includes('县') || city.includes('縣')) {
+                            district = city;
+                            city = findCityByDistrictName(district);
+                        }
+                        
+                        // 转换为简体字
+                        district = toSimplifiedChinese(district);
+                        city = toSimplifiedChinese(city);
+                        
+                        return {
+                            province: data.principalSubdivision || '',
+                            city: city,
+                            district: district,
+                            displayName: district || city,
+                            hasPermission: true
+                        };
+                    }
+                    throw new Error('BigDataCloud 解析失败');
+                },
+                // 服务2: OpenStreetMap Nominatim API
+                async () => {
+                    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=10&addressdetails=1`, {
+                        headers: { 'User-Agent': 'HelpEachOther/1.0' }
+                    });
+                    const data = await response.json();
+                    if (data && data.address) {
+                        const address = data.address;
+                        // 优先使用区/县级别
+                        let district = address.suburb || address.district || address.town || address.county || '';
+                        let city = address.city || address.town || address.county || address.state || '';
+                        
+                        // 判断city是否是区县名
+                        if (city && (city.includes('区') || city.includes('縣') || city.includes('县'))) {
+                            district = city;
+                            city = findCityByDistrictName(district);
+                        }
+                        
+                        // 转换为简体字
+                        district = toSimplifiedChinese(district);
+                        city = toSimplifiedChinese(city);
+                        
+                        return {
+                            province: address.state || address.province || '',
+                            city: city,
+                            district: district,
+                            displayName: district || city,
+                            hasPermission: true
+                        };
+                    }
+                    throw new Error('Nominatim 解析失败');
+                }
+            ];
+            
+            // 依次尝试各个服务
+            for (const service of services) {
+                try {
+                    const location = await service();
+                    // 添加经纬度信息
+                    location.lat = lat;
+                    location.lng = lng;
+                    window.userLocation = location;
+                    localStorage.setItem('userLocation', JSON.stringify(window.userLocation));
+                    updateLocationDisplay();
+                    return;
+                } catch (err) {
+                    console.log('地理编码服务尝试失败:', err.message);
+                    continue;
+                }
+            }
+            
+            // 所有服务都失败，使用经纬度作为位置信息
+            console.error('所有地理编码服务都失败');
+            window.userLocation = {
+                province: '',
+                city: '附近',
+                district: '',
+                displayName: '附近',
+                lat: lat,
+                lng: lng,
+                hasPermission: true
+            };
+            localStorage.setItem('userLocation', JSON.stringify(window.userLocation));
+            updateLocationDisplay();
+            showToast('已获取位置，请手动选择城市', 'info');
+        }
+        
+        // 更新位置显示
+        function updateLocationDisplay() {
+            const locationText = document.getElementById('location-text');
+            const locationIcon = document.getElementById('location-icon');
+            if (locationText) {
+                // 优先显示区，如果没有则显示市
+                const displayName = window.userLocation.displayName || window.userLocation.district || window.userLocation.city;
+                if (displayName) {
+                    locationText.textContent = displayName;
+                    // 定位完成，显示房子图标
+                    if (locationIcon) locationIcon.textContent = '🏠';
+                } else {
+                    locationText.textContent = '选择位置';
+                    if (locationIcon) locationIcon.textContent = '📍';
+                }
+            }
+        }
+        
+        // 显示位置权限提示
+        function showLocationPermissionTip() {
+            const locationText = document.getElementById('location-text');
+            if (locationText) {
+                locationText.textContent = '选择位置';
+            }
+            
+            // 显示提示
+            showToast('请允许获取位置权限，或手动选择您的位置', 'info');
+        }
+        
+        // 显示位置选择器
+        function showLocationSelector() {
+            // 创建位置选择弹窗
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.id = 'locationSelectorModal';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 90vw; width: 360px; max-height: 80vh; overflow: visible;">
+                    <div class="modal-header">
+                        <h3 style="margin: 0; font-size: 1.125rem; color: var(--gray-800);">选择位置</h3>
+                        <button class="close-btn" onclick="closeLocationSelector()">&times;</button>
+                    </div>
+                    <div class="modal-body" style="padding: 1.25rem;">
+                        <!-- 三级选择器 -->
+                        <div style="margin-bottom: 0.75rem;">
+                            <div style="display: flex; gap: 0.5rem;">
+                                <div style="flex: 1;">
+                                    <label style="display: block; font-size: 0.75rem; color: var(--gray-600); margin-bottom: 0.25rem;">省份</label>
+                                    <div class="custom-dropdown" id="province-dropdown" style="position: relative;">
+                                        <div class="dropdown-trigger" onclick="toggleDropdown('province')" style="width: 100%; padding: 0.5rem 1.5rem 0.5rem 0.5rem; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 0.8125rem; box-sizing: border-box; background-color: white; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background-image: url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"12\" height=\"12\" viewBox=\"0 0 12 12\"><path fill=\"%23666\" d=\"M6 8L1 3h10z\"/></svg>'); background-repeat: no-repeat; background-position: right 0.5rem center;">
+                                            请选择
+                                        </div>
+                                        <div class="dropdown-menu" id="province-menu" style="display: none; position: absolute; top: 100%; left: 0; width: 240px; max-height: 280px; overflow-y: auto; background: white; border: 1px solid var(--gray-300); border-radius: 8px; margin-top: 4px; z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.15); padding: 0.5rem;">
+                                            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem;">
+                                                <div class="dropdown-item" onclick="selectProvince('')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">请选择</div>
+                                                <div class="dropdown-item" onclick="selectProvince('北京市')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">北京</div>
+                                                <div class="dropdown-item" onclick="selectProvince('天津市')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">天津</div>
+                                                <div class="dropdown-item" onclick="selectProvince('上海市')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">上海</div>
+                                                <div class="dropdown-item" onclick="selectProvince('重庆市')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">重庆</div>
+                                                <div class="dropdown-item" onclick="selectProvince('河北省')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">河北</div>
+                                                <div class="dropdown-item" onclick="selectProvince('山西省')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">山西</div>
+                                                <div class="dropdown-item" onclick="selectProvince('辽宁省')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">辽宁</div>
+                                                <div class="dropdown-item" onclick="selectProvince('吉林省')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">吉林</div>
+                                                <div class="dropdown-item" onclick="selectProvince('黑龙江省')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">黑龙江</div>
+                                                <div class="dropdown-item" onclick="selectProvince('江苏省')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">江苏</div>
+                                                <div class="dropdown-item" onclick="selectProvince('浙江省')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">浙江</div>
+                                                <div class="dropdown-item" onclick="selectProvince('安徽省')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">安徽</div>
+                                                <div class="dropdown-item" onclick="selectProvince('福建省')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">福建</div>
+                                                <div class="dropdown-item" onclick="selectProvince('江西省')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">江西</div>
+                                                <div class="dropdown-item" onclick="selectProvince('山东省')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">山东</div>
+                                                <div class="dropdown-item" onclick="selectProvince('河南省')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">河南</div>
+                                                <div class="dropdown-item" onclick="selectProvince('湖北省')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">湖北</div>
+                                                <div class="dropdown-item" onclick="selectProvince('湖南省')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">湖南</div>
+                                                <div class="dropdown-item" onclick="selectProvince('广东省')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">广东</div>
+                                                <div class="dropdown-item" onclick="selectProvince('海南省')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">海南</div>
+                                                <div class="dropdown-item" onclick="selectProvince('四川省')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">四川</div>
+                                                <div class="dropdown-item" onclick="selectProvince('贵州省')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">贵州</div>
+                                                <div class="dropdown-item" onclick="selectProvince('云南省')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">云南</div>
+                                                <div class="dropdown-item" onclick="selectProvince('陕西省')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">陕西</div>
+                                                <div class="dropdown-item" onclick="selectProvince('甘肃省')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">甘肃</div>
+                                                <div class="dropdown-item" onclick="selectProvince('青海省')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">青海</div>
+                                                <div class="dropdown-item" onclick="selectProvince('台湾省')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">台湾</div>
+                                                <div class="dropdown-item" onclick="selectProvince('内蒙古自治区')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">内蒙古</div>
+                                                <div class="dropdown-item" onclick="selectProvince('广西壮族自治区')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">广西</div>
+                                                <div class="dropdown-item" onclick="selectProvince('西藏自治区')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">西藏</div>
+                                                <div class="dropdown-item" onclick="selectProvince('宁夏回族自治区')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">宁夏</div>
+                                                <div class="dropdown-item" onclick="selectProvince('新疆维吾尔自治区')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">新疆</div>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" id="location-province" value="">
+                                    </div>
+                                </div>
+                                <div style="flex: 1;">
+                                    <label style="display: block; font-size: 0.75rem; color: var(--gray-600); margin-bottom: 0.25rem;">城市</label>
+                                    <div class="custom-dropdown" id="city-dropdown" style="position: relative;">
+                                        <div class="dropdown-trigger" onclick="toggleDropdown('city')" style="width: 100%; padding: 0.5rem 1.5rem 0.5rem 0.5rem; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 0.8125rem; box-sizing: border-box; background-color: white; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background-image: url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"12\" height=\"12\" viewBox=\"0 0 12 12\"><path fill=\"%23666\" d=\"M6 8L1 3h10z\"/></svg>'); background-repeat: no-repeat; background-position: right 0.5rem center;">
+                                            请选择
+                                        </div>
+                                        <div class="dropdown-menu" id="city-menu" style="display: none; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); width: 240px; max-height: 240px; overflow-y: auto; background: white; border: 1px solid var(--gray-300); border-radius: 8px; margin-top: 4px; z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.15); padding: 0.5rem;">
+                                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;" id="city-grid">
+                                                <div class="dropdown-item" onclick="selectCity('')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">请选择</div>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" id="location-city" value="">
+                                    </div>
+                                </div>
+                                <div style="flex: 1;">
+                                    <label style="display: block; font-size: 0.75rem; color: var(--gray-600); margin-bottom: 0.25rem;">区县</label>
+                                    <div class="custom-dropdown" id="district-dropdown" style="position: relative;">
+                                        <div class="dropdown-trigger" onclick="toggleDropdown('district')" style="width: 100%; padding: 0.5rem 1.5rem 0.5rem 0.5rem; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 0.8125rem; box-sizing: border-box; background-color: white; cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background-image: url('data:image/svg+xml;utf8,<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"12\" height=\"12\" viewBox=\"0 0 12 12\"><path fill=\"%23666\" d=\"M6 8L1 3h10z\"/></svg>'); background-repeat: no-repeat; background-position: right 0.5rem center;">
+                                            请选择
+                                        </div>
+                                        <div class="dropdown-menu" id="district-menu" style="display: none; position: absolute; top: 100%; right: 0; width: 240px; max-height: 240px; overflow-y: auto; background: white; border: 1px solid var(--gray-300); border-radius: 8px; margin-top: 4px; z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.15); padding: 0.5rem;">
+                                            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;" id="district-grid">
+                                                <div class="dropdown-item" onclick="selectDistrict('')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">请选择</div>
+                                            </div>
+                                        </div>
+                                        <input type="hidden" id="location-district" value="">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 定位按钮 -->
+                        <button onclick="window.getCurrentLocation();" style="width: 100%; padding: 0.625rem; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; border: none; border-radius: 8px; font-size: 0.875rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-bottom: 1rem;" title="获取当前位置">
+                            <span style="font-size: 1rem;">📍</span>
+                            <span>自动定位当前位置</span>
+                        </button>
+                        <button onclick="saveLocation()" style="width: 100%; padding: 0.75rem; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; border: none; border-radius: 8px; font-size: 0.875rem; cursor: pointer;">
+                            确认选择
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            // 如果已有位置信息，填充到选择器
+            if (window.userLocation.province) {
+                const provinceDisplay = window.userLocation.province === '广西壮族自治区' ? '广西' : 
+                                       window.userLocation.province === '内蒙古自治区' ? '内蒙古' : 
+                                       window.userLocation.province === '宁夏回族自治区' ? '宁夏' : 
+                                       window.userLocation.province === '新疆维吾尔自治区' ? '新疆' : 
+                                       window.userLocation.province === '西藏自治区' ? '西藏' : 
+                                       window.userLocation.province === '黑龙江省' ? '黑龙江' : 
+                                       window.userLocation.province;
+                document.querySelector('#province-dropdown .dropdown-trigger').textContent = provinceDisplay;
+                document.getElementById('location-province').value = window.userLocation.province;
+                onProvinceChange();
+                setTimeout(() => {
+                    if (window.userLocation.city) {
+                        document.querySelector('#city-dropdown .dropdown-trigger').textContent = window.userLocation.city;
+                        document.getElementById('location-city').value = window.userLocation.city;
+                        onCityChange();
+                        setTimeout(() => {
+                            if (window.userLocation.district) {
+                                document.querySelector('#district-dropdown .dropdown-trigger').textContent = window.userLocation.district;
+                                document.getElementById('location-district').value = window.userLocation.district;
+                            }
+                        }, 100);
+                    }
+                }, 100);
+            }
+        }
+        
+        // 关闭位置选择器
+        function closeLocationSelector() {
+            const modal = document.getElementById('locationSelectorModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+        
+        // 获取当前位置 - 使用浏览器自带定位
+        function getCurrentLocation() {
+            if (!navigator.geolocation) {
+                showToast('您的浏览器不支持获取位置', 'error');
+                return;
+            }
+            
+            showToast('正在获取位置...', 'info');
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    reverseGeocode(position.coords.latitude, position.coords.longitude);
+                    closeLocationSelector();
+                    showToast('位置获取成功', 'success');
+                },
+                (error) => {
+                    console.error('获取位置失败:', error);
+                    let message = '获取位置失败';
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            message = '请允许获取位置权限';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            message = '位置信息不可用';
+                            break;
+                        case error.TIMEOUT:
+                            message = '获取位置超时';
+                            break;
+                    }
+                    showToast(message, 'error');
+                },
+                { timeout: 10000, enableHighAccuracy: false }
+            );
+        }
+        
+        // 初始化城市列表（设置默认选项）
+        function initCityList() {
+            // 自定义下拉组件初始化 - 重置为默认状态
+            const provinceTrigger = document.querySelector('#province-dropdown .dropdown-trigger');
+            const cityTrigger = document.querySelector('#city-dropdown .dropdown-trigger');
+            const districtTrigger = document.querySelector('#district-dropdown .dropdown-trigger');
+            
+            if (provinceTrigger) provinceTrigger.textContent = '请选择省份';
+            if (cityTrigger) cityTrigger.textContent = '请选择';
+            if (districtTrigger) districtTrigger.textContent = '请选择';
+            
+            // 重置隐藏input的值
+            const provinceInput = document.getElementById('location-province');
+            const cityInput = document.getElementById('location-city');
+            const districtInput = document.getElementById('location-district');
+            
+            if (provinceInput) provinceInput.value = '';
+            if (cityInput) cityInput.value = '';
+            if (districtInput) districtInput.value = '';
+        }
+        
+        // 城市数据（位置选择器专用）
+        const locationCityData = {
+            '北京市': ['北京市'],
+            '天津市': ['天津市'],
+            '上海市': ['上海市'],
+            '重庆市': ['重庆市'],
+            '安徽省': ['合肥市', '芜湖市', '蚌埠市', '淮南市', '马鞍山市', '淮北市', '铜陵市', '安庆市', '黄山市', '滁州市', '阜阳市', '宿州市', '六安市', '亳州市', '池州市', '宣城市'],
+            '福建省': ['福州市', '厦门市', '莆田市', '三明市', '泉州市', '漳州市', '南平市', '龙岩市', '宁德市'],
+            '甘肃省': ['兰州市', '嘉峪关市', '金昌市', '白银市', '天水市', '武威市', '张掖市', '平凉市', '酒泉市', '庆阳市', '定西市', '陇南市', '临夏回族自治州', '甘南藏族自治州'],
+            '广东省': ['广州市', '深圳市', '珠海市', '汕头市', '佛山市', '韶关市', '湛江市', '肇庆市', '江门市', '茂名市', '惠州市', '梅州市', '汕尾市', '河源市', '阳江市', '清远市', '东莞市', '中山市', '潮州市', '揭阳市', '云浮市'],
+            '广西壮族自治区': ['南宁市', '柳州市', '桂林市', '梧州市', '北海市', '防城港市', '钦州市', '贵港市', '玉林市', '百色市', '贺州市', '河池市', '来宾市', '崇左市'],
+            '贵州省': ['贵阳市', '六盘水市', '遵义市', '安顺市', '毕节市', '铜仁市', '黔西南布依族苗族自治州', '黔东南苗族侗族自治州', '黔南布依族苗族自治州'],
+            '海南省': ['海口市', '三亚市', '三沙市', '儋州市', '五指山市', '琼海市', '文昌市', '万宁市', '东方市', '定安县', '屯昌县', '澄迈县', '临高县', '白沙黎族自治县', '昌江黎族自治县', '乐东黎族自治县', '陵水黎族自治县', '保亭黎族苗族自治县', '琼中黎族苗族自治县'],
+            '河北省': ['石家庄市', '唐山市', '秦皇岛市', '邯郸市', '邢台市', '保定市', '张家口市', '承德市', '沧州市', '廊坊市', '衡水市'],
+            '河南省': ['郑州市', '开封市', '洛阳市', '平顶山市', '安阳市', '鹤壁市', '新乡市', '焦作市', '濮阳市', '许昌市', '漯河市', '三门峡市', '南阳市', '商丘市', '信阳市', '周口市', '驻马店市', '济源市'],
+            '黑龙江省': ['哈尔滨市', '齐齐哈尔市', '鸡西市', '鹤岗市', '双鸭山市', '大庆市', '伊春市', '佳木斯市', '七台河市', '牡丹江市', '黑河市', '绥化市', '大兴安岭地区'],
+            '湖北省': ['武汉市', '黄石市', '十堰市', '宜昌市', '襄阳市', '鄂州市', '荆门市', '孝感市', '荆州市', '黄冈市', '咸宁市', '随州市', '恩施土家族苗族自治州', '仙桃市', '潜江市', '天门市', '神农架林区'],
+            '湖南省': ['长沙市', '株洲市', '湘潭市', '衡阳市', '邵阳市', '岳阳市', '常德市', '张家界市', '益阳市', '郴州市', '永州市', '怀化市', '娄底市', '湘西土家族苗族自治州'],
+            '吉林省': ['长春市', '吉林市', '四平市', '辽源市', '通化市', '白山市', '松原市', '白城市', '延边朝鲜族自治州', '长白山保护开发区'],
+            '江苏省': ['南京市', '无锡市', '徐州市', '常州市', '苏州市', '南通市', '连云港市', '淮安市', '盐城市', '扬州市', '镇江市', '泰州市', '宿迁市'],
+            '江西省': ['南昌市', '景德镇市', '萍乡市', '九江市', '新余市', '鹰潭市', '赣州市', '吉安市', '宜春市', '抚州市', '上饶市'],
+            '辽宁省': ['沈阳市', '大连市', '鞍山市', '抚顺市', '本溪市', '丹东市', '锦州市', '营口市', '阜新市', '辽阳市', '盘锦市', '铁岭市', '朝阳市', '葫芦岛市'],
+            '内蒙古自治区': ['呼和浩特市', '包头市', '乌海市', '赤峰市', '通辽市', '鄂尔多斯市', '呼伦贝尔市', '巴彦淖尔市', '乌兰察布市', '兴安盟', '锡林郭勒盟', '阿拉善盟'],
+            '宁夏回族自治区': ['银川市', '石嘴山市', '吴忠市', '固原市', '中卫市'],
+            '青海省': ['西宁市', '海东市', '海北藏族自治州', '黄南藏族自治州', '海南藏族自治州', '果洛藏族自治州', '玉树藏族自治州', '海西蒙古族藏族自治州'],
+            '山东省': ['济南市', '青岛市', '淄博市', '枣庄市', '东营市', '烟台市', '潍坊市', '济宁市', '泰安市', '威海市', '日照市', '莱芜市', '临沂市', '德州市', '聊城市', '滨州市', '菏泽市'],
+            '山西省': ['太原市', '大同市', '阳泉市', '长治市', '晋城市', '朔州市', '晋中市', '运城市', '忻州市', '临汾市', '吕梁市'],
+            '陕西省': ['西安市', '铜川市', '宝鸡市', '咸阳市', '渭南市', '延安市', '汉中市', '榆林市', '安康市', '商洛市'],
+            '四川省': ['成都市', '自贡市', '攀枝花市', '泸州市', '德阳市', '绵阳市', '广元市', '遂宁市', '内江市', '乐山市', '南充市', '眉山市', '宜宾市', '广安市', '达州市', '雅安市', '巴中市', '资阳市', '阿坝藏族羌族自治州', '甘孜藏族自治州', '凉山彝族自治州'],
+            '台湾省': ['台北市', '高雄市', '基隆市', '台中市', '台南市', '新竹市', '嘉义市', '新北市', '桃园市', '新竹县', '苗栗县', '彰化县', '南投县', '云林县', '嘉义县', '屏东县', '宜兰县', '花莲县', '台东县', '澎湖县', '金门县', '连江县'],
+            '西藏自治区': ['拉萨市', '日喀则市', '昌都市', '林芝市', '山南市', '那曲市', '阿里地区'],
+            '新疆维吾尔自治区': ['乌鲁木齐市', '克拉玛依市', '吐鲁番市', '哈密市', '昌吉回族自治州', '博尔塔拉蒙古自治州', '巴音郭楞蒙古自治州', '阿克苏地区', '克孜勒苏柯尔克孜自治州', '喀什地区', '和田地区', '伊犁哈萨克自治州', '塔城地区', '阿勒泰地区', '石河子市', '阿拉尔市', '图木舒克市', '五家渠市', '北屯市', '铁门关市', '双河市', '可克达拉市', '昆玉市', '胡杨河市', '新星市'],
+            '云南省': ['昆明市', '曲靖市', '玉溪市', '保山市', '昭通市', '丽江市', '普洱市', '临沧市', '楚雄彝族自治州', '红河哈尼族彝族自治州', '文山壮族苗族自治州', '西双版纳傣族自治州', '大理白族自治州', '德宏傣族景颇族自治州', '怒江傈僳族自治州', '迪庆藏族自治州'],
+            '浙江省': ['杭州市', '宁波市', '温州市', '嘉兴市', '湖州市', '绍兴市', '金华市', '衢州市', '舟山市', '台州市', '丽水市']
+        };
+        
+        // 切换下拉框显示
+        function toggleDropdown(type) {
+            const menu = document.getElementById(type + '-menu');
+            const allMenus = document.querySelectorAll('.dropdown-menu');
+            allMenus.forEach(m => {
+                if (m !== menu) m.style.display = 'none';
+            });
+            menu.style.display = menu.style.display === 'block' ? 'none' : 'block';
+        }
+        
+        // 选择省份
+        function selectProvince(value) {
+            const displayText = value === '' ? '请选择' : (value === '广西壮族自治区' ? '广西' : value === '内蒙古自治区' ? '内蒙古' : value === '宁夏回族自治区' ? '宁夏' : value === '新疆维吾尔自治区' ? '新疆' : value === '西藏自治区' ? '西藏' : value === '黑龙江省' ? '黑龙江' : value);
+            document.querySelector('#province-dropdown .dropdown-trigger').textContent = displayText;
+            document.getElementById('location-province').value = value;
+            document.getElementById('province-menu').style.display = 'none';
+            onProvinceChange();
+        }
+        
+        // 选择城市
+        function selectCity(value) {
+            document.querySelector('#city-dropdown .dropdown-trigger').textContent = value || '请选择';
+            document.getElementById('location-city').value = value;
+            document.getElementById('city-menu').style.display = 'none';
+            onCityChange();
+        }
+        
+        // 选择区县
+        function selectDistrict(value) {
+            document.querySelector('#district-dropdown .dropdown-trigger').textContent = value || '请选择';
+            document.getElementById('location-district').value = value;
+            document.getElementById('district-menu').style.display = 'none';
+        }
+        
+        // 点击外部关闭下拉框
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.custom-dropdown')) {
+                document.querySelectorAll('.dropdown-menu').forEach(m => m.style.display = 'none');
+            }
+        });
+        
+        // 省份变化时更新城市列表
+        function onProvinceChange() {
+            const province = document.getElementById('location-province').value;
+            const cityMenu = document.getElementById('city-menu');
+            const districtMenu = document.getElementById('district-menu');
+            
+            // 重置城市显示
+            document.querySelector('#city-dropdown .dropdown-trigger').textContent = '请选择';
+            document.getElementById('location-city').value = '';
+            
+            // 重置区县显示
+            document.querySelector('#district-dropdown .dropdown-trigger').textContent = '请选择';
+            document.getElementById('location-district').value = '';
+            
+            if (locationCityData[province]) {
+                cityMenu.innerHTML = '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">' +
+                    '<div class="dropdown-item" onclick="selectCity(\'\')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">请选择</div>' +
+                    locationCityData[province].map(city => `<div class="dropdown-item" onclick="selectCity('${city}')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${city.replace('市', '')}</div>`).join('') +
+                    '</div>';
+            } else {
+                cityMenu.innerHTML = '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;"><div class="dropdown-item" onclick="selectCity(\'\')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px;">请选择</div></div>';
+            }
+            
+            // 清空区县选择器
+            districtMenu.innerHTML = '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;"><div class="dropdown-item" onclick="selectDistrict(\'\')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px;">请选择</div></div>';
+        }
+        
+        // 城市改变时更新区县
+        function onCityChange() {
+            const city = document.getElementById('location-city').value;
+            const districtMenu = document.getElementById('district-menu');
+            
+            if (!districtMenu) return;
+            
+            // 重置区县显示
+            document.querySelector('#district-dropdown .dropdown-trigger').textContent = '请选择';
+            document.getElementById('location-district').value = '';
+            
+            // 区县数据（完整版）
+            const districts = {
+                '北京市': ['东城区', '西城区', '朝阳区', '丰台区', '石景山区', '海淀区', '门头沟区', '房山区', '通州区', '顺义区', '昌平区', '大兴区', '怀柔区', '平谷区', '密云区', '延庆区'],
+                '上海市': ['黄浦区', '徐汇区', '长宁区', '静安区', '普陀区', '虹口区', '杨浦区', '闵行区', '宝山区', '嘉定区', '浦东新区', '金山区', '松江区', '青浦区', '奉贤区', '崇明区'],
+                '天津市': ['和平区', '河东区', '河西区', '南开区', '河北区', '红桥区', '东丽区', '西青区', '津南区', '北辰区', '武清区', '宝坻区', '滨海新区', '宁河区', '静海区', '蓟州区'],
+                '重庆市': ['万州区', '涪陵区', '渝中区', '大渡口区', '江北区', '沙坪坝区', '九龙坡区', '南岸区', '北碚区', '綦江区', '大足区', '渝北区', '巴南区', '黔江区', '长寿区', '江津区', '合川区', '永川区', '南川区', '璧山区', '铜梁区', '潼南区', '荣昌区', '开州区', '梁平区', '武隆区'],
+                '石家庄市': ['长安区', '桥西区', '新华区', '井陉矿区', '裕华区', '藁城区', '鹿泉区', '栾城区', '井陉县', '正定县', '行唐县', '灵寿县', '高邑县', '深泽县', '赞皇县', '无极县', '平山县', '元氏县', '赵县', '辛集市', '晋州市', '新乐市'],
+                '唐山市': ['路南区', '路北区', '古冶区', '开平区', '丰南区', '丰润区', '曹妃甸区', '滦南县', '乐亭县', '迁西县', '玉田县', '遵化市', '迁安市', '滦州市'],
+                '秦皇岛市': ['海港区', '山海关区', '北戴河区', '抚宁区', '青龙满族自治县', '昌黎县', '卢龙县'],
+                '邯郸市': ['邯山区', '丛台区', '复兴区', '峰峰矿区', '肥乡区', '永年区', '临漳县', '成安县', '大名县', '涉县', '磁县', '邱县', '鸡泽县', '广平县', '馆陶县', '魏县', '曲周县', '武安市'],
+                '邢台市': ['襄都区', '信都区', '任泽区', '南和区', '临城县', '内丘县', '柏乡县', '隆尧县', '宁晋县', '巨鹿县', '新河县', '广宗县', '平乡县', '威县', '清河县', '临西县', '南宫市', '沙河市'],
+                '保定市': ['竞秀区', '莲池区', '满城区', '清苑区', '徐水区', '涞水县', '阜平县', '定兴县', '唐县', '高阳县', '容城县', '涞源县', '望都县', '安新县', '易县', '曲阳县', '蠡县', '顺平县', '博野县', '雄县', '涿州市', '定州市', '安国市', '高碑店市'],
+                '张家口市': ['桥东区', '桥西区', '宣化区', '下花园区', '万全区', '崇礼区', '张北县', '康保县', '沽源县', '尚义县', '蔚县', '阳原县', '怀安县', '怀来县', '涿鹿县', '赤城县'],
+                '承德市': ['双桥区', '双滦区', '鹰手营子矿区', '承德县', '兴隆县', '滦平县', '隆化县', '丰宁满族自治县', '宽城满族自治县', '围场满族蒙古族自治县', '平泉市'],
+                '沧州市': ['新华区', '运河区', '沧县', '青县', '东光县', '海兴县', '盐山县', '肃宁县', '南皮县', '吴桥县', '献县', '孟村回族自治县', '泊头市', '任丘市', '黄骅市', '河间市'],
+                '廊坊市': ['安次区', '广阳区', '固安县', '永清县', '香河县', '大城县', '文安县', '大厂回族自治县', '霸州市', '三河市'],
+                '衡水市': ['桃城区', '冀州区', '枣强县', '武邑县', '武强县', '饶阳县', '安平县', '故城县', '景县', '阜城县', '深州市'],
+                '太原市': ['小店区', '迎泽区', '杏花岭区', '尖草坪区', '万柏林区', '晋源区', '清徐县', '阳曲县', '娄烦县', '古交市'],
+                '大同市': ['新荣区', '平城区', '云冈区', '云州区', '阳高县', '天镇县', '广灵县', '灵丘县', '浑源县', '左云县'],
+                '阳泉市': ['城区', '矿区', '郊区', '平定县', '盂县'],
+                '长治市': ['潞州区', '上党区', '屯留区', '潞城区', '襄垣县', '平顺县', '黎城县', '壶关县', '长子县', '武乡县', '沁县', '沁源县'],
+                '晋城市': ['城区', '沁水县', '阳城县', '陵川县', '泽州县', '高平市'],
+                '朔州市': ['朔城区', '平鲁区', '山阴县', '应县', '右玉县', '怀仁市'],
+                '晋中市': ['榆次区', '太谷区', '榆社县', '左权县', '和顺县', '昔阳县', '寿阳县', '祁县', '平遥县', '灵石县', '介休市'],
+                '运城市': ['盐湖区', '临猗县', '万荣县', '闻喜县', '稷山县', '新绛县', '绛县', '垣曲县', '夏县', '平陆县', '芮城县', '永济市', '河津市'],
+                '忻州市': ['忻府区', '定襄县', '五台县', '代县', '繁峙县', '宁武县', '静乐县', '神池县', '五寨县', '岢岚县', '河曲县', '保德县', '偏关县', '原平市'],
+                '临汾市': ['尧都区', '曲沃县', '翼城县', '襄汾县', '洪洞县', '古县', '安泽县', '浮山县', '吉县', '乡宁县', '大宁县', '隰县', '永和县', '蒲县', '汾西县', '侯马市', '霍州市'],
+                '吕梁市': ['离石区', '文水县', '交城县', '兴县', '临县', '柳林县', '石楼县', '岚县', '方山县', '中阳县', '交口县', '孝义市', '汾阳市'],
+                '沈阳市': ['和平区', '沈河区', '大东区', '皇姑区', '铁西区', '苏家屯区', '浑南区', '沈北新区', '于洪区', '辽中区', '康平县', '法库县', '新民市'],
+                '大连市': ['中山区', '西岗区', '沙河口区', '甘井子区', '旅顺口区', '金州区', '普兰店区', '长海县', '瓦房店市', '庄河市'],
+                '鞍山市': ['铁东区', '铁西区', '立山区', '千山区', '台安县', '岫岩满族自治县', '海城市'],
+                '抚顺市': ['新抚区', '东洲区', '望花区', '顺城区', '抚顺县', '新宾满族自治县', '清原满族自治县'],
+                '本溪市': ['平山区', '溪湖区', '明山区', '南芬区', '本溪满族自治县', '桓仁满族自治县'],
+                '丹东市': ['元宝区', '振兴区', '振安区', '宽甸满族自治县', '东港市', '凤城市'],
+                '锦州市': ['古塔区', '凌河区', '太和区', '黑山县', '义县', '凌海市', '北镇市'],
+                '营口市': ['站前区', '西市区', '鲅鱼圈区', '老边区', '盖州市', '大石桥市'],
+                '阜新市': ['海州区', '新邱区', '太平区', '清河门区', '细河区', '阜新蒙古族自治县', '彰武县'],
+                '辽阳市': ['白塔区', '文圣区', '宏伟区', '弓长岭区', '太子河区', '辽阳县', '灯塔市'],
+                '盘锦市': ['双台子区', '兴隆台区', '大洼区', '盘山县'],
+                '铁岭市': ['银州区', '清河区', '铁岭县', '西丰县', '昌图县', '调兵山市', '开原市'],
+                '朝阳市': ['双塔区', '龙城区', '朝阳县', '建平县', '喀喇沁左翼蒙古族自治县', '北票市', '凌源市'],
+                '葫芦岛市': ['连山区', '龙港区', '南票区', '绥中县', '建昌县', '兴城市'],
+                '长春市': ['南关区', '宽城区', '朝阳区', '二道区', '绿园区', '双阳区', '九台区', '农安县', '榆树市', '德惠市', '公主岭市'],
+                '吉林市': ['昌邑区', '龙潭区', '船营区', '丰满区', '永吉县', '蛟河市', '桦甸市', '舒兰市', '磐石市'],
+                '四平市': ['铁西区', '铁东区', '梨树县', '伊通满族自治县', '双辽市'],
+                '辽源市': ['龙山区', '西安区', '东丰县', '东辽县'],
+                '通化市': ['东昌区', '二道江区', '通化县', '辉南县', '柳河县', '梅河口市', '集安市'],
+                '白山市': ['浑江区', '江源区', '抚松县', '靖宇县', '长白朝鲜族自治县', '临江市'],
+                '松原市': ['宁江区', '前郭尔罗斯蒙古族自治县', '长岭县', '乾安县', '扶余市'],
+                '白城市': ['洮北区', '镇赉县', '通榆县', '洮南市', '大安市'],
+                '延边朝鲜族自治州': ['延吉市', '图们市', '敦化市', '珲春市', '龙井市', '和龙市', '汪清县', '安图县'],
+                '哈尔滨市': ['道里区', '南岗区', '道外区', '平房区', '松北区', '香坊区', '呼兰区', '阿城区', '双城区', '依兰县', '方正县', '宾县', '巴彦县', '木兰县', '通河县', '延寿县', '尚志市', '五常市'],
+                '齐齐哈尔市': ['龙沙区', '建华区', '铁锋区', '昂昂溪区', '富拉尔基区', '碾子山区', '梅里斯达斡尔族区', '龙江县', '依安县', '泰来县', '甘南县', '富裕县', '克山县', '克东县', '拜泉县', '讷河市'],
+                '鸡西市': ['鸡冠区', '恒山区', '滴道区', '梨树区', '城子河区', '麻山区', '鸡东县', '虎林市', '密山市'],
+                '鹤岗市': ['向阳区', '工农区', '南山区', '兴安区', '东山区', '兴山区', '萝北县', '绥滨县'],
+                '双鸭山市': ['尖山区', '岭东区', '四方台区', '宝山区', '集贤县', '友谊县', '宝清县', '饶河县'],
+                '大庆市': ['萨尔图区', '龙凤区', '让胡路区', '红岗区', '大同区', '肇州县', '肇源县', '林甸县', '杜尔伯特蒙古族自治县'],
+                '伊春市': ['伊美区', '乌翠区', '友好区', '嘉荫县', '汤旺县', '丰林县', '大箐山县', '南岔县', '金林区', '铁力市'],
+                '佳木斯市': ['向阳区', '前进区', '东风区', '郊区', '桦南县', '桦川县', '汤原县', '同江市', '富锦市', '抚远市'],
+                '七台河市': ['新兴区', '桃山区', '茄子河区', '勃利县'],
+                '牡丹江市': ['东安区', '阳明区', '爱民区', '西安区', '林口县', '绥芬河市', '海林市', '宁安市', '穆棱市', '东宁市'],
+                '黑河市': ['爱辉区', '逊克县', '孙吴县', '北安市', '五大连池市', '嫩江市'],
+                '绥化市': ['北林区', '望奎县', '兰西县', '青冈县', '庆安县', '明水县', '绥棱县', '安达市', '肇东市', '海伦市'],
+                '大兴安岭地区': ['漠河市', '呼玛县', '塔河县'],
+                '南京市': ['玄武区', '秦淮区', '建邺区', '鼓楼区', '浦口区', '栖霞区', '雨花台区', '江宁区', '六合区', '溧水区', '高淳区'],
+                '无锡市': ['锡山区', '惠山区', '滨湖区', '梁溪区', '新吴区', '江阴市', '宜兴市'],
+                '徐州市': ['鼓楼区', '云龙区', '贾汪区', '泉山区', '铜山区', '丰县', '沛县', '睢宁县', '新沂市', '邳州市'],
+                '常州市': ['天宁区', '钟楼区', '新北区', '武进区', '金坛区', '溧阳市'],
+                '苏州市': ['虎丘区', '吴中区', '相城区', '姑苏区', '吴江区', '常熟市', '张家港市', '昆山市', '太仓市'],
+                '南通市': ['崇川区', '通州区', '海门区', '如东县', '启东市', '如皋市', '海安市'],
+                '连云港市': ['连云区', '海州区', '赣榆区', '东海县', '灌云县', '灌南县'],
+                '淮安市': ['淮安区', '淮阴区', '清江浦区', '洪泽区', '涟水县', '盱眙县', '金湖县'],
+                '盐城市': ['亭湖区', '盐都区', '大丰区', '响水县', '滨海县', '阜宁县', '射阳县', '建湖县', '东台市'],
+                '扬州市': ['广陵区', '邗江区', '江都区', '宝应县', '仪征市', '高邮市'],
+                '镇江市': ['京口区', '润州区', '丹徒区', '丹阳市', '扬中市', '句容市'],
+                '泰州市': ['海陵区', '高港区', '姜堰区', '兴化市', '靖江市', '泰兴市'],
+                '宿迁市': ['宿城区', '宿豫区', '沭阳县', '泗阳县', '泗洪县'],
+                '杭州市': ['上城区', '拱墅区', '西湖区', '滨江区', '萧山区', '余杭区', '富阳区', '临安区', '临平区', '钱塘区', '桐庐县', '淳安县', '建德市'],
+                '宁波市': ['海曙区', '江北区', '北仑区', '镇海区', '鄞州区', '奉化区', '象山县', '宁海县', '余姚市', '慈溪市'],
+                '温州市': ['鹿城区', '龙湾区', '瓯海区', '洞头区', '永嘉县', '平阳县', '苍南县', '文成县', '泰顺县', '瑞安市', '乐清市', '龙港市'],
+                '嘉兴市': ['南湖区', '秀洲区', '嘉善县', '海盐县', '海宁市', '平湖市', '桐乡市'],
+                '湖州市': ['吴兴区', '南浔区', '德清县', '长兴县', '安吉县'],
+                '绍兴市': ['越城区', '柯桥区', '上虞区', '新昌县', '诸暨市', '嵊州市'],
+                '金华市': ['婺城区', '金东区', '武义县', '浦江县', '磐安县', '兰溪市', '义乌市', '东阳市', '永康市'],
+                '衢州市': ['柯城区', '衢江区', '常山县', '开化县', '龙游县', '江山市'],
+                '舟山市': ['定海区', '普陀区', '岱山县', '嵊泗县'],
+                '台州市': ['椒江区', '黄岩区', '路桥区', '三门县', '天台县', '仙居县', '温岭市', '临海市', '玉环市'],
+                '丽水市': ['莲都区', '青田县', '缙云县', '遂昌县', '松阳县', '云和县', '庆元县', '景宁畲族自治县', '龙泉市'],
+                '合肥市': ['瑶海区', '庐阳区', '蜀山区', '包河区', '长丰县', '肥东县', '肥西县', '庐江县', '巢湖市'],
+                '芜湖市': ['镜湖区', '鸠江区', '弋江区', '湾沚区', '繁昌区', '南陵县', '无为市'],
+                '蚌埠市': ['龙子湖区', '蚌山区', '禹会区', '淮上区', '怀远县', '五河县', '固镇县'],
+                '淮南市': ['大通区', '田家庵区', '谢家集区', '八公山区', '潘集区', '凤台县', '寿县'],
+                '马鞍山市': ['花山区', '雨山区', '博望区', '当涂县', '含山县', '和县'],
+                '淮北市': ['杜集区', '相山区', '烈山区', '濉溪县'],
+                '铜陵市': ['铜官区', '义安区', '郊区', '枞阳县'],
+                '安庆市': ['迎江区', '大观区', '宜秀区', '怀宁县', '太湖县', '宿松县', '望江县', '岳西县', '桐城市', '潜山市'],
+                '黄山市': ['屯溪区', '黄山区', '徽州区', '歙县', '休宁县', '黟县', '祁门县'],
+                '滁州市': ['琅琊区', '南谯区', '来安县', '全椒县', '定远县', '凤阳县', '天长市', '明光市'],
+                '阜阳市': ['颍州区', '颍东区', '颍泉区', '临泉县', '太和县', '阜南县', '颍上县', '界首市'],
+                '宿州市': ['埇桥区', '砀山县', '萧县', '灵璧县', '泗县'],
+                '六安市': ['金安区', '裕安区', '叶集区', '霍邱县', '舒城县', '金寨县', '霍山县'],
+                '亳州市': ['谯城区', '涡阳县', '蒙城县', '利辛县'],
+                '池州市': ['贵池区', '东至县', '石台县', '青阳县'],
+                '宣城市': ['宣州区', '郎溪县', '泾县', '绩溪县', '旌德县', '宁国市', '广德市'],
+                '福州市': ['鼓楼区', '台江区', '仓山区', '马尾区', '晋安区', '长乐区', '闽侯县', '连江县', '罗源县', '闽清县', '永泰县', '平潭县', '福清市'],
+                '厦门市': ['思明区', '海沧区', '湖里区', '集美区', '同安区', '翔安区'],
+                '莆田市': ['城厢区', '涵江区', '荔城区', '秀屿区', '仙游县'],
+                '三明市': ['梅列区', '三元区', '明溪县', '清流县', '宁化县', '大田县', '尤溪县', '沙县', '将乐县', '泰宁县', '建宁县', '永安市'],
+                '泉州市': ['鲤城区', '丰泽区', '洛江区', '泉港区', '惠安县', '安溪县', '永春县', '德化县', '金门县', '石狮市', '晋江市', '南安市'],
+                '漳州市': ['芗城区', '龙文区', '云霄县', '漳浦县', '诏安县', '长泰县', '东山县', '南靖县', '平和县', '华安县', '龙海市'],
+                '南平市': ['延平区', '建阳区', '顺昌县', '浦城县', '光泽县', '松溪县', '政和县', '邵武市', '武夷山市', '建瓯市'],
+                '龙岩市': ['新罗区', '永定区', '长汀县', '上杭县', '武平县', '连城县', '漳平市'],
+                '宁德市': ['蕉城区', '霞浦县', '古田县', '屏南县', '寿宁县', '周宁县', '柘荣县', '福安市', '福鼎市'],
+                '南昌市': ['东湖区', '西湖区', '青云谱区', '青山湖区', '新建区', '红谷滩区', '南昌县', '安义县', '进贤县'],
+                '景德镇市': ['昌江区', '珠山区', '浮梁县', '乐平市'],
+                '萍乡市': ['安源区', '湘东区', '莲花县', '上栗县', '芦溪县'],
+                '九江市': ['濂溪区', '浔阳区', '柴桑区', '武宁县', '修水县', '永修县', '德安县', '都昌县', '湖口县', '彭泽县', '瑞昌市', '共青城市', '庐山市'],
+                '新余市': ['渝水区', '分宜县'],
+                '鹰潭市': ['月湖区', '余江区', '贵溪市'],
+                '赣州市': ['章贡区', '南康区', '赣县区', '信丰县', '大余县', '上犹县', '崇义县', '安远县', '定南县', '全南县', '宁都县', '于都县', '兴国县', '会昌县', '寻乌县', '石城县', '瑞金市', '龙南市'],
+                '吉安市': ['吉州区', '青原区', '吉安县', '吉水县', '峡江县', '新干县', '永丰县', '泰和县', '遂川县', '万安县', '安福县', '永新县', '井冈山市'],
+                '宜春市': ['袁州区', '奉新县', '万载县', '上高县', '宜丰县', '靖安县', '铜鼓县', '丰城市', '樟树市', '高安市'],
+                '抚州市': ['临川区', '东乡区', '南城县', '黎川县', '南丰县', '崇仁县', '乐安县', '宜黄县', '金溪县', '资溪县', '广昌县'],
+                '上饶市': ['信州区', '广丰区', '广信区', '玉山县', '铅山县', '横峰县', '弋阳县', '余干县', '鄱阳县', '万年县', '婺源县', '德兴市'],
+                '济南市': ['历下区', '市中区', '槐荫区', '天桥区', '历城区', '长清区', '章丘区', '济阳区', '莱芜区', '钢城区', '平阴县', '商河县'],
+                '青岛市': ['市南区', '市北区', '黄岛区', '崂山区', '李沧区', '城阳区', '即墨区', '胶州市', '平度市', '莱西市'],
+                '淄博市': ['淄川区', '张店区', '博山区', '临淄区', '周村区', '桓台县', '高青县', '沂源县'],
+                '枣庄市': ['市中区', '薛城区', '峄城区', '台儿庄区', '山亭区', '滕州市'],
+                '东营市': ['东营区', '河口区', '垦利区', '利津县', '广饶县'],
+                '烟台市': ['芝罘区', '福山区', '牟平区', '莱山区', '蓬莱区', '龙口市', '莱阳市', '莱州市', '招远市', '栖霞市', '海阳市'],
+                '潍坊市': ['潍城区', '寒亭区', '坊子区', '奎文区', '临朐县', '昌乐县', '青州市', '诸城市', '寿光市', '安丘市', '高密市', '昌邑市'],
+                '济宁市': ['任城区', '兖州区', '微山县', '鱼台县', '金乡县', '嘉祥县', '汶上县', '泗水县', '梁山县', '曲阜市', '邹城市'],
+                '泰安市': ['泰山区', '岱岳区', '宁阳县', '东平县', '新泰市', '肥城市'],
+                '威海市': ['环翠区', '文登区', '荣成市', '乳山市'],
+                '日照市': ['东港区', '岚山区', '五莲县', '莒县'],
+                '临沂市': ['兰山区', '罗庄区', '河东区', '沂南县', '郯城县', '沂水县', '兰陵县', '费县', '平邑县', '莒南县', '蒙阴县', '临沭县'],
+                '德州市': ['德城区', '陵城区', '宁津县', '庆云县', '临邑县', '齐河县', '平原县', '夏津县', '武城县', '乐陵市', '禹城市'],
+                '聊城市': ['东昌府区', '茌平区', '阳谷县', '莘县', '东阿县', '冠县', '高唐县', '临清市'],
+                '滨州市': ['滨城区', '沾化区', '惠民县', '阳信县', '无棣县', '博兴县', '邹平市'],
+                '菏泽市': ['牡丹区', '定陶区', '曹县', '单县', '成武县', '巨野县', '郓城县', '鄄城县', '东明县'],
+                '郑州市': ['中原区', '二七区', '管城回族区', '金水区', '上街区', '惠济区', '中牟县', '巩义市', '荥阳市', '新密市', '新郑市', '登封市'],
+                '开封市': ['龙亭区', '顺河回族区', '鼓楼区', '禹王台区', '祥符区', '杞县', '通许县', '尉氏县', '兰考县'],
+                '洛阳市': ['老城区', '西工区', '瀍河回族区', '涧西区', '吉利区', '洛龙区', '孟津县', '新安县', '栾川县', '嵩县', '汝阳县', '宜阳县', '洛宁县', '伊川县', '偃师市'],
+                '平顶山市': ['新华区', '卫东区', '石龙区', '湛河区', '宝丰县', '叶县', '鲁山县', '郏县', '舞钢市', '汝州市'],
+                '安阳市': ['文峰区', '北关区', '殷都区', '龙安区', '安阳县', '汤阴县', '滑县', '内黄县', '林州市'],
+                '鹤壁市': ['鹤山区', '山城区', '淇滨区', '浚县', '淇县'],
+                '新乡市': ['红旗区', '卫滨区', '凤泉区', '牧野区', '新乡县', '获嘉县', '原阳县', '延津县', '封丘县', '卫辉市', '辉县市', '长垣市'],
+                '焦作市': ['解放区', '中站区', '马村区', '山阳区', '修武县', '博爱县', '武陟县', '温县', '沁阳市', '孟州市'],
+                '濮阳市': ['华龙区', '清丰县', '南乐县', '范县', '台前县', '濮阳县'],
+                '许昌市': ['魏都区', '建安区', '鄢陵县', '襄城县', '禹州市', '长葛市'],
+                '漯河市': ['源汇区', '郾城区', '召陵区', '舞阳县', '临颍县'],
+                '三门峡市': ['湖滨区', '陕州区', '渑池县', '卢氏县', '义马市', '灵宝市'],
+                '南阳市': ['宛城区', '卧龙区', '南召县', '方城县', '西峡县', '镇平县', '内乡县', '淅川县', '社旗县', '唐河县', '新野县', '桐柏县', '邓州市'],
+                '商丘市': ['梁园区', '睢阳区', '民权县', '睢县', '宁陵县', '柘城县', '虞城县', '夏邑县', '永城市'],
+                '信阳市': ['浉河区', '平桥区', '罗山县', '光山县', '新县', '商城县', '固始县', '潢川县', '淮滨县', '息县'],
+                '周口市': ['川汇区', '淮阳区', '扶沟县', '西华县', '商水县', '沈丘县', '郸城县', '太康县', '鹿邑县', '项城市'],
+                '驻马店市': ['驿城区', '西平县', '上蔡县', '平舆县', '正阳县', '确山县', '泌阳县', '汝南县', '遂平县', '新蔡县', '济源市'],
+                '武汉市': ['江岸区', '江汉区', '硚口区', '汉阳区', '武昌区', '青山区', '洪山区', '东西湖区', '汉南区', '蔡甸区', '江夏区', '黄陂区', '新洲区'],
+                '黄石市': ['黄石港区', '西塞山区', '下陆区', '铁山区', '阳新县', '大冶市'],
+                '十堰市': ['茅箭区', '张湾区', '郧阳区', '郧西县', '竹山县', '竹溪县', '房县', '丹江口市'],
+                '宜昌市': ['西陵区', '伍家岗区', '点军区', '猇亭区', '夷陵区', '远安县', '兴山县', '秭归县', '长阳土家族自治县', '五峰土家族自治县', '宜都市', '当阳市', '枝江市'],
+                '襄阳市': ['襄城区', '樊城区', '襄州区', '南漳县', '谷城县', '保康县', '老河口市', '枣阳市', '宜城市'],
+                '鄂州市': ['梁子湖区', '华容区', '鄂城区'],
+                '荆门市': ['东宝区', '掇刀区', '沙洋县', '钟祥市', '京山市'],
+                '孝感市': ['孝南区', '孝昌县', '大悟县', '云梦县', '应城市', '安陆市', '汉川市'],
+                '荆州市': ['沙市区', '荆州区', '公安县', '监利县', '江陵县', '石首市', '洪湖市', '松滋市'],
+                '黄冈市': ['黄州区', '团风县', '红安县', '罗田县', '英山县', '浠水县', '蕲春县', '黄梅县', '麻城市', '武穴市'],
+                '咸宁市': ['咸安区', '嘉鱼县', '通城县', '崇阳县', '通山县', '赤壁市'],
+                '随州市': ['曾都区', '随县', '广水市'],
+                '恩施土家族苗族自治州': ['恩施市', '利川市', '建始县', '巴东县', '宣恩县', '咸丰县', '来凤县', '鹤峰县'],
+                '长沙市': ['芙蓉区', '天心区', '岳麓区', '开福区', '雨花区', '望城区', '长沙县', '浏阳市', '宁乡市'],
+                '株洲市': ['荷塘区', '芦淞区', '石峰区', '天元区', '渌口区', '攸县', '茶陵县', '炎陵县', '醴陵市'],
+                '湘潭市': ['雨湖区', '岳塘区', '湘潭县', '湘乡市', '韶山市'],
+                '衡阳市': ['珠晖区', '雁峰区', '石鼓区', '蒸湘区', '南岳区', '衡阳县', '衡南县', '衡山县', '衡东县', '祁东县', '耒阳市', '常宁市'],
+                '邵阳市': ['双清区', '大祥区', '北塔区', '新邵县', '邵阳县', '隆回县', '洞口县', '绥宁县', '新宁县', '城步苗族自治县', '武冈市', '邵东市'],
+                '岳阳市': ['岳阳楼区', '云溪区', '君山区', '岳阳县', '华容县', '湘阴县', '平江县', '汨罗市', '临湘市'],
+                '常德市': ['武陵区', '鼎城区', '安乡县', '汉寿县', '澧县', '临澧县', '桃源县', '石门县', '津市市'],
+                '张家界市': ['永定区', '武陵源区', '慈利县', '桑植县'],
+                '益阳市': ['资阳区', '赫山区', '南县', '桃江县', '安化县', '沅江市'],
+                '郴州市': ['北湖区', '苏仙区', '桂阳县', '宜章县', '永兴县', '嘉禾县', '临武县', '汝城县', '桂东县', '安仁县', '资兴市'],
+                '永州市': ['零陵区', '冷水滩区', '祁阳县', '东安县', '双牌县', '道县', '江永县', '宁远县', '蓝山县', '新田县', '江华瑶族自治县'],
+                '怀化市': ['鹤城区', '中方县', '沅陵县', '辰溪县', '溆浦县', '会同县', '麻阳苗族自治县', '新晃侗族自治县', '芷江侗族自治县', '靖州苗族侗族自治县', '通道侗族自治县', '洪江市'],
+                '娄底市': ['娄星区', '双峰县', '新化县', '冷水江市', '涟源市'],
+                '湘西土家族苗族自治州': ['吉首市', '泸溪县', '凤凰县', '花垣县', '保靖县', '古丈县', '永顺县', '龙山县'],
+                '广州市': ['荔湾区', '越秀区', '海珠区', '天河区', '白云区', '黄埔区', '番禺区', '花都区', '南沙区', '从化区', '增城区'],
+                '韶关市': ['武江区', '浈江区', '曲江区', '始兴县', '仁化县', '翁源县', '乳源瑶族自治县', '新丰县', '乐昌市', '南雄市'],
+                '深圳市': ['罗湖区', '福田区', '南山区', '宝安区', '龙岗区', '盐田区', '龙华区', '坪山区', '光明区'],
+                '珠海市': ['香洲区', '斗门区', '金湾区'],
+                '汕头市': ['龙湖区', '金平区', '濠江区', '潮阳区', '潮南区', '澄海区', '南澳县'],
+                '佛山市': ['禅城区', '南海区', '顺德区', '三水区', '高明区'],
+                '江门市': ['蓬江区', '江海区', '新会区', '台山市', '开平市', '鹤山市', '恩平市'],
+                '湛江市': ['赤坎区', '霞山区', '坡头区', '麻章区', '遂溪县', '徐闻县', '廉江市', '雷州市', '吴川市'],
+                '茂名市': ['茂南区', '电白区', '高州市', '化州市', '信宜市'],
+                '肇庆市': ['端州区', '鼎湖区', '高要区', '广宁县', '怀集县', '封开县', '德庆县', '四会市'],
+                '惠州市': ['惠城区', '惠阳区', '博罗县', '惠东县', '龙门县'],
+                '梅州市': ['梅江区', '梅县区', '大埔县', '丰顺县', '五华县', '平远县', '蕉岭县', '兴宁市'],
+                '汕尾市': ['城区', '海丰县', '陆河县', '陆丰市'],
+                '河源市': ['源城区', '紫金县', '龙川县', '连平县', '和平县', '东源县'],
+                '阳江市': ['江城区', '阳东区', '阳西县', '阳春市'],
+                '清远市': ['清城区', '清新区', '佛冈县', '阳山县', '连山壮族瑶族自治县', '连南瑶族自治县', '英德市', '连州市'],
+                '东莞市': ['东城街道', '南城街道', '万江街道', '莞城街道', '石碣镇', '石龙镇', '茶山镇', '石排镇', '企石镇', '横沥镇', '桥头镇', '谢岗镇', '东坑镇', '常平镇', '寮步镇', '樟木头镇', '大朗镇', '黄江镇', '清溪镇', '塘厦镇', '凤岗镇', '大岭山镇', '长安镇', '虎门镇', '厚街镇', '沙田镇', '道滘镇', '洪梅镇', '麻涌镇', '望牛墩镇', '中堂镇', '高埗镇'],
+                '中山市': ['石岐街道', '东区街道', '中山港街道', '西区街道', '南区街道', '五桂山街道', '民众街道', '南朗街道', '黄圃镇', '东凤镇', '古镇镇', '沙溪镇', '坦洲镇', '港口镇', '三角镇', '横栏镇', '南头镇', '阜沙镇', '三乡镇', '板芙镇', '大涌镇', '神湾镇', '小榄镇'],
+                '潮州市': ['湘桥区', '潮安区', '饶平县'],
+                '揭阳市': ['榕城区', '揭东区', '揭西县', '惠来县', '普宁市'],
+                '云浮市': ['云城区', '云安区', '新兴县', '郁南县', '罗定市'],
+                '南宁市': ['兴宁区', '青秀区', '江南区', '西乡塘区', '良庆区', '邕宁区', '武鸣区', '隆安县', '马山县', '上林县', '宾阳县', '横县'],
+                '柳州市': ['城中区', '鱼峰区', '柳南区', '柳北区', '柳江区', '柳城县', '鹿寨县', '融安县', '融水苗族自治县', '三江侗族自治县'],
+                '桂林市': ['秀峰区', '叠彩区', '象山区', '七星区', '雁山区', '临桂区', '阳朔县', '灵川县', '全州县', '兴安县', '永福县', '灌阳县', '龙胜各族自治县', '资源县', '平乐县', '恭城瑶族自治县', '荔浦市'],
+                '梧州市': ['万秀区', '长洲区', '龙圩区', '苍梧县', '藤县', '蒙山县', '岑溪市'],
+                '北海市': ['海城区', '银海区', '铁山港区', '合浦县'],
+                '防城港市': ['港口区', '防城区', '上思县', '东兴市'],
+                '钦州市': ['钦南区', '钦北区', '灵山县', '浦北县'],
+                '贵港市': ['港北区', '港南区', '覃塘区', '平南县', '桂平市'],
+                '玉林市': ['玉州区', '福绵区', '容县', '陆川县', '博白县', '兴业县', '北流市'],
+                '百色市': ['右江区', '田阳区', '田东县', '德保县', '那坡县', '凌云县', '乐业县', '田林县', '西林县', '隆林各族自治县', '靖西市', '平果市'],
+                '贺州市': ['八步区', '平桂区', '昭平县', '钟山县', '富川瑶族自治县'],
+                '河池市': ['金城江区', '宜州区', '南丹县', '天峨县', '凤山县', '东兰县', '罗城仫佬族自治县', '环江毛南族自治县', '巴马瑶族自治县', '都安瑶族自治县', '大化瑶族自治县'],
+                '来宾市': ['兴宾区', '忻城县', '象州县', '武宣县', '金秀瑶族自治县', '合山市'],
+                '崇左市': ['江州区', '扶绥县', '宁明县', '龙州县', '大新县', '天等县', '凭祥市'],
+                '海口市': ['秀英区', '龙华区', '琼山区', '美兰区'],
+                '三亚市': ['海棠区', '吉阳区', '天涯区', '崖州区'],
+                '三沙市': ['西沙群岛', '南沙群岛', '中沙群岛'],
+                '儋州市': ['那大镇', '和庆镇', '南丰镇', '大成镇', '雅星镇', '兰洋镇', '光村镇', '木棠镇', '海头镇', '峨蔓镇', '王五镇', '白马井镇', '中和镇', '排浦镇', '东成镇', '新州镇'],
+                '成都市': ['锦江区', '青羊区', '金牛区', '武侯区', '成华区', '龙泉驿区', '青白江区', '新都区', '温江区', '双流区', '郫都区', '新津区', '金堂县', '大邑县', '蒲江县', '都江堰市', '彭州市', '邛崃市', '崇州市', '简阳市'],
+                '自贡市': ['自流井区', '贡井区', '大安区', '沿滩区', '荣县', '富顺县'],
+                '攀枝花市': ['东区', '西区', '仁和区', '米易县', '盐边县'],
+                '泸州市': ['江阳区', '纳溪区', '龙马潭区', '泸县', '合江县', '叙永县', '古蔺县'],
+                '德阳市': ['旌阳区', '罗江区', '中江县', '广汉市', '什邡市', '绵竹市'],
+                '绵阳市': ['涪城区', '游仙区', '安州区', '三台县', '盐亭县', '梓潼县', '北川县', '平武县', '江油市'],
+                '广元市': ['利州区', '昭化区', '朝天区', '旺苍县', '青川县', '剑阁县', '苍溪县'],
+                '遂宁市': ['船山区', '安居区', '蓬溪县', '大英县', '射洪市'],
+                '内江市': ['市中区', '东兴区', '威远县', '资中县', '隆昌市'],
+                '乐山市': ['市中区', '沙湾区', '五通桥区', '金口河区', '犍为县', '井研县', '夹江县', '沐川县', '峨边彝族自治县', '马边彝族自治县', '峨眉山市'],
+                '南充市': ['顺庆区', '高坪区', '嘉陵区', '南部县', '营山县', '蓬安县', '仪陇县', '西充县', '阆中市'],
+                '眉山市': ['东坡区', '彭山区', '仁寿县', '洪雅县', '丹棱县', '青神县'],
+                '宜宾市': ['翠屏区', '南溪区', '叙州区', '江安县', '长宁县', '高县', '珙县', '筠连县', '兴文县', '屏山县'],
+                '广安市': ['广安区', '前锋区', '岳池县', '武胜县', '邻水县', '华蓥市'],
+                '达州市': ['通川区', '达川区', '宣汉县', '开江县', '大竹县', '渠县', '万源市'],
+                '雅安市': ['雨城区', '名山区', '荥经县', '汉源县', '石棉县', '天全县', '芦山县', '宝兴县'],
+                '巴中市': ['巴州区', '恩阳区', '通江县', '南江县', '平昌县'],
+                '资阳市': ['雁江区', '安岳县', '乐至县'],
+                '阿坝藏族羌族自治州': ['马尔康市', '汶川县', '理县', '茂县', '松潘县', '九寨沟县', '金川县', '小金县', '黑水县', '壤塘县', '阿坝县', '若尔盖县', '红原县'],
+                '甘孜藏族自治州': ['康定市', '泸定县', '丹巴县', '九龙县', '雅江县', '道孚县', '炉霍县', '甘孜县', '新龙县', '德格县', '白玉县', '石渠县', '色达县', '理塘县', '巴塘县', '乡城县', '稻城县', '得荣县'],
+                '凉山彝族自治州': ['西昌市', '会理市', '木里藏族自治县', '盐源县', '德昌县', '会东县', '宁南县', '普格县', '布拖县', '金阳县', '昭觉县', '喜德县', '冕宁县', '越西县', '甘洛县', '美姑县', '雷波县'],
+                '贵阳市': ['南明区', '云岩区', '花溪区', '乌当区', '白云区', '观山湖区', '开阳县', '息烽县', '修文县', '清镇市'],
+                '六盘水市': ['钟山区', '六枝特区', '水城区', '盘州市'],
+                '遵义市': ['红花岗区', '汇川区', '播州区', '桐梓县', '绥阳县', '正安县', '道真仡佬族苗族自治县', '务川仡佬族苗族自治县', '凤冈县', '湄潭县', '余庆县', '习水县', '赤水市', '仁怀市'],
+                '安顺市': ['西秀区', '平坝区', '普定县', '镇宁布依族苗族自治县', '关岭布依族苗族自治县', '紫云苗族布依族自治县'],
+                '毕节市': ['七星关区', '大方县', '黔西县', '金沙县', '织金县', '纳雍县', '威宁彝族回族苗族自治县', '赫章县'],
+                '铜仁市': ['碧江区', '万山区', '江口县', '玉屏侗族自治县', '石阡县', '思南县', '印江土家族苗族自治县', '德江县', '沿河土家族自治县', '松桃苗族自治县'],
+                '黔西南布依族苗族自治州': ['兴义市', '兴仁市', '普安县', '晴隆县', '贞丰县', '望谟县', '册亨县', '安龙县'],
+                '黔东南苗族侗族自治州': ['凯里市', '黄平县', '施秉县', '三穗县', '镇远县', '岑巩县', '天柱县', '锦屏县', '剑河县', '台江县', '黎平县', '榕江县', '从江县', '雷山县', '麻江县', '丹寨县'],
+                '黔南布依族苗族自治州': ['都匀市', '福泉市', '荔波县', '贵定县', '瓮安县', '独山县', '平塘县', '罗甸县', '长顺县', '龙里县', '惠水县', '三都水族自治县'],
+                '昆明市': ['五华区', '盘龙区', '官渡区', '西山区', '东川区', '呈贡区', '晋宁区', '富民县', '宜良县', '石林彝族自治县', '嵩明县', '禄劝彝族苗族自治县', '寻甸回族彝族自治县', '安宁市'],
+                '曲靖市': ['麒麟区', '沾益区', '马龙区', '陆良县', '师宗县', '罗平县', '富源县', '会泽县', '宣威市'],
+                '玉溪市': ['红塔区', '江川区', '通海县', '华宁县', '易门县', '峨山彝族自治县', '新平彝族傣族自治县', '元江哈尼族彝族傣族自治县', '澄江市'],
+                '保山市': ['隆阳区', '施甸县', '龙陵县', '昌宁县', '腾冲市'],
+                '昭通市': ['昭阳区', '鲁甸县', '巧家县', '盐津县', '大关县', '永善县', '绥江县', '镇雄县', '彝良县', '威信县', '水富市'],
+                '丽江市': ['古城区', '玉龙纳西族自治县', '永胜县', '华坪县', '宁蒗彝族自治县'],
+                '普洱市': ['思茅区', '宁洱哈尼族彝族自治县', '墨江哈尼族自治县', '景东彝族自治县', '景谷傣族彝族自治县', '镇沅彝族哈尼族拉祜族自治县', '江城哈尼族彝族自治县', '孟连傣族拉祜族佤族自治县', '澜沧拉祜族自治县', '西盟佤族自治县'],
+                '临沧市': ['临翔区', '凤庆县', '云县', '永德县', '镇康县', '双江拉祜族佤族布朗族傣族自治县', '耿马傣族佤族自治县', '沧源佤族自治县'],
+                '楚雄彝族自治州': ['楚雄市', '双柏县', '牟定县', '南华县', '姚安县', '大姚县', '永仁县', '元谋县', '武定县', '禄丰县'],
+                '红河哈尼族彝族自治州': ['个旧市', '开远市', '蒙自市', '弥勒市', '屏边苗族自治县', '建水县', '石屏县', '泸西县', '元阳县', '红河县', '金平苗族瑶族傣族自治县', '绿春县', '河口瑶族自治县'],
+                '文山壮族苗族自治州': ['文山市', '砚山县', '西畴县', '麻栗坡县', '马关县', '丘北县', '广南县', '富宁县'],
+                '西双版纳傣族自治州': ['景洪市', '勐海县', '勐腊县'],
+                '大理白族自治州': ['大理市', '漾濞彝族自治县', '祥云县', '宾川县', '弥渡县', '南涧彝族自治县', '巍山彝族回族自治县', '永平县', '云龙县', '洱源县', '剑川县', '鹤庆县'],
+                '德宏傣族景颇族自治州': ['瑞丽市', '芒市', '梁河县', '盈江县', '陇川县'],
+                '怒江傈僳族自治州': ['泸水市', '福贡县', '贡山独龙族怒族自治县', '兰坪白族普米族自治县'],
+                '迪庆藏族自治州': ['香格里拉市', '德钦县', '维西傈僳族自治县'],
+                '西安市': ['新城区', '碑林区', '莲湖区', '雁塔区', '灞桥区', '未央区', '阎良区', '临潼区', '长安区', '高陵区', '鄠邑区', '蓝田县', '周至县'],
+                '铜川市': ['王益区', '印台区', '耀州区', '宜君县'],
+                '宝鸡市': ['渭滨区', '金台区', '陈仓区', '凤翔区', '岐山县', '扶风县', '眉县', '陇县', '千阳县', '麟游县', '凤县', '太白县'],
+                '咸阳市': ['秦都区', '杨陵区', '渭城区', '三原县', '泾阳县', '乾县', '礼泉县', '永寿县', '长武县', '旬邑县', '淳化县', '武功县', '兴平市', '彬州市'],
+                '渭南市': ['临渭区', '华州区', '潼关县', '大荔县', '合阳县', '澄城县', '蒲城县', '白水县', '富平县', '韩城市', '华阴市'],
+                '延安市': ['宝塔区', '安塞区', '延长县', '延川县', '志丹县', '吴起县', '甘泉县', '富县', '洛川县', '宜川县', '黄龙县', '黄陵县', '子长市'],
+                '汉中市': ['汉台区', '南郑区', '城固县', '洋县', '西乡县', '勉县', '宁强县', '略阳县', '镇巴县', '留坝县', '佛坪县'],
+                '榆林市': ['榆阳区', '横山区', '府谷县', '靖边县', '定边县', '绥德县', '米脂县', '佳县', '吴堡县', '清涧县', '子洲县', '神木市'],
+                '安康市': ['汉滨区', '汉阴县', '石泉县', '宁陕县', '紫阳县', '岚皋县', '平利县', '镇坪县', '旬阳县', '白河县'],
+                '商洛市': ['商州区', '洛南县', '丹凤县', '商南县', '山阳县', '镇安县', '柞水县'],
+                '兰州市': ['城关区', '七里河区', '西固区', '安宁区', '红古区', '永登县', '皋兰县', '榆中县'],
+                '嘉峪关市': ['雄关区', '镜铁区', '长城区'],
+                '金昌市': ['金川区', '永昌县'],
+                '白银市': ['白银区', '平川区', '靖远县', '会宁县', '景泰县'],
+                '天水市': ['秦州区', '麦积区', '清水县', '秦安县', '甘谷县', '武山县', '张家川回族自治县'],
+                '武威市': ['凉州区', '民勤县', '古浪县', '天祝藏族自治县'],
+                '张掖市': ['甘州区', '肃南裕固族自治县', '民乐县', '临泽县', '高台县', '山丹县'],
+                '平凉市': ['崆峒区', '泾川县', '灵台县', '崇信县', '庄浪县', '静宁县', '华亭市'],
+                '酒泉市': ['肃州区', '金塔县', '瓜州县', '肃北蒙古族自治县', '阿克塞哈萨克族自治县', '玉门市', '敦煌市'],
+                '庆阳市': ['西峰区', '庆城县', '环县', '华池县', '合水县', '正宁县', '宁县', '镇原县'],
+                '定西市': ['安定区', '通渭县', '陇西县', '渭源县', '临洮县', '漳县', '岷县'],
+                '陇南市': ['武都区', '成县', '文县', '宕昌县', '康县', '西和县', '礼县', '徽县', '两当县'],
+                '临夏回族自治州': ['临夏市', '临夏县', '康乐县', '永靖县', '广河县', '和政县', '东乡族自治县', '积石山保安族东乡族撒拉族自治县'],
+                '甘南藏族自治州': ['合作市', '临潭县', '卓尼县', '舟曲县', '迭部县', '玛曲县', '碌曲县', '夏河县'],
+                '西宁市': ['城东区', '城中区', '城西区', '城北区', '湟中区', '大通回族土族自治县', '湟源县'],
+                '海东市': ['乐都区', '平安区', '民和回族土族自治县', '互助土族自治县', '化隆回族自治县', '循化撒拉族自治县'],
+                '海北藏族自治州': ['门源回族自治县', '祁连县', '海晏县', '刚察县'],
+                '黄南藏族自治州': ['同仁县', '尖扎县', '泽库县', '河南蒙古族自治县'],
+                '海南藏族自治州': ['共和县', '同德县', '贵德县', '兴海县', '贵南县'],
+                '果洛藏族自治州': ['玛沁县', '班玛县', '甘德县', '达日县', '久治县', '玛多县'],
+                '玉树藏族自治州': ['玉树市', '杂多县', '称多县', '治多县', '囊谦县', '曲麻莱县'],
+                '海西蒙古族藏族自治州': ['格尔木市', '德令哈市', '茫崖市', '乌兰县', '都兰县', '天峻县'],
+                '银川市': ['兴庆区', '金凤区', '西夏区', '永宁县', '贺兰县', '灵武市'],
+                '石嘴山市': ['大武口区', '惠农区', '平罗县'],
+                '吴忠市': ['利通区', '红寺堡区', '盐池县', '同心县', '青铜峡市'],
+                '固原市': ['原州区', '西吉县', '隆德县', '泾源县', '彭阳县'],
+                '中卫市': ['沙坡头区', '中宁县', '海原县'],
+                '乌鲁木齐市': ['天山区', '沙依巴克区', '新市区', '水磨沟区', '头屯河区', '达坂城区', '米东区', '乌鲁木齐县'],
+                '克拉玛依市': ['独山子区', '克拉玛依区', '白碱滩区', '乌尔禾区'],
+                '吐鲁番市': ['高昌区', '鄯善县', '托克逊县'],
+                '哈密市': ['伊州区', '巴里坤哈萨克自治县', '伊吾县'],
+                '昌吉回族自治州': ['昌吉市', '阜康市', '呼图壁县', '玛纳斯县', '奇台县', '吉木萨尔县', '木垒哈萨克自治县'],
+                '博尔塔拉蒙古自治州': ['博乐市', '阿拉山口市', '精河县', '温泉县'],
+                '巴音郭楞蒙古自治州': ['库尔勒市', '轮台县', '尉犁县', '若羌县', '且末县', '焉耆回族自治县', '和静县', '和硕县', '博湖县'],
+                '阿克苏地区': ['阿克苏市', '温宿县', '库车县', '沙雅县', '新和县', '拜城县', '乌什县', '阿瓦提县', '柯坪县'],
+                '克孜勒苏柯尔克孜自治州': ['阿图什市', '阿克陶县', '阿合奇县', '乌恰县'],
+                '喀什地区': ['喀什市', '疏附县', '疏勒县', '英吉沙县', '泽普县', '莎车县', '叶城县', '麦盖提县', '岳普湖县', '伽师县', '巴楚县', '塔什库尔干塔吉克自治县'],
+                '和田地区': ['和田市', '和田县', '墨玉县', '皮山县', '洛浦县', '策勒县', '于田县', '民丰县'],
+                '伊犁哈萨克自治州': ['伊宁市', '奎屯市', '霍尔果斯市', '伊宁县', '察布查尔锡伯自治县', '霍城县', '巩留县', '新源县', '昭苏县', '特克斯县', '尼勒克县'],
+                '塔城地区': ['塔城市', '乌苏市', '额敏县', '沙湾县', '托里县', '裕民县', '和布克赛尔蒙古自治县'],
+                '阿勒泰地区': ['阿勒泰市', '布尔津县', '富蕴县', '福海县', '哈巴河县', '青河县', '吉木乃县'],
+                '拉萨市': ['城关区', '堆龙德庆区', '达孜区', '林周县', '当雄县', '尼木县', '曲水县', '墨竹工卡县'],
+                '日喀则市': ['桑珠孜区', '南木林县', '江孜县', '定日县', '萨迦县', '拉孜县', '昂仁县', '谢通门县', '白朗县', '仁布县', '康马县', '定结县', '仲巴县', '亚东县', '吉隆县', '聂拉木县', '萨嘎县', '岗巴县'],
+                '昌都市': ['卡若区', '江达县', '贡觉县', '类乌齐县', '丁青县', '察雅县', '八宿县', '左贡县', '芒康县', '洛隆县', '边坝县'],
+                '林芝市': ['巴宜区', '工布江达县', '米林县', '墨脱县', '波密县', '察隅县', '朗县'],
+                '山南市': ['乃东区', '扎囊县', '贡嘎县', '桑日县', '琼结县', '曲松县', '措美县', '洛扎县', '加查县', '隆子县', '错那县', '浪卡子县'],
+                '那曲市': ['色尼区', '嘉黎县', '比如县', '聂荣县', '安多县', '申扎县', '索县', '班戈县', '巴青县', '尼玛县', '双湖县'],
+                '阿里地区': ['普兰县', '札达县', '噶尔县', '日土县', '革吉县', '改则县', '措勤县'],
+                '呼和浩特市': ['新城区', '回民区', '玉泉区', '赛罕区', '土默特左旗', '托克托县', '和林格尔县', '清水河县', '武川县'],
+                '包头市': ['东河区', '昆都仑区', '青山区', '石拐区', '九原区', '白云鄂博矿区', '土默特右旗', '固阳县', '达尔罕茂明安联合旗'],
+                '乌海市': ['海勃湾区', '海南区', '乌达区'],
+                '赤峰市': ['红山区', '元宝山区', '松山区', '阿鲁科尔沁旗', '巴林左旗', '巴林右旗', '林西县', '克什克腾旗', '翁牛特旗', '喀喇沁旗', '宁城县', '敖汉旗'],
+                '通辽市': ['科尔沁区', '科尔沁左翼中旗', '科尔沁左翼后旗', '开鲁县', '库伦旗', '奈曼旗', '扎鲁特旗', '霍林郭勒市'],
+                '鄂尔多斯市': ['东胜区', '康巴什区', '达拉特旗', '准格尔旗', '鄂托克前旗', '鄂托克旗', '杭锦旗', '乌审旗', '伊金霍洛旗'],
+                '呼伦贝尔市': ['海拉尔区', '扎赉诺尔区', '阿荣旗', '莫力达瓦达斡尔族自治旗', '鄂伦春自治旗', '鄂温克族自治旗', '陈巴尔虎旗', '新巴尔虎左旗', '新巴尔虎右旗', '满洲里市', '牙克石市', '扎兰屯市', '额尔古纳市', '根河市'],
+                '巴彦淖尔市': ['临河区', '五原县', '磴口县', '乌拉特前旗', '乌拉特中旗', '乌拉特后旗', '杭锦后旗'],
+                '乌兰察布市': ['集宁区', '卓资县', '化德县', '商都县', '兴和县', '凉城县', '察哈尔右翼前旗', '察哈尔右翼中旗', '察哈尔右翼后旗', '四子王旗', '丰镇市'],
+                '兴安盟': ['乌兰浩特市', '阿尔山市', '科尔沁右翼前旗', '科尔沁右翼中旗', '扎赉特旗', '突泉县'],
+                '锡林郭勒盟': ['二连浩特市', '锡林浩特市', '阿巴嘎旗', '苏尼特左旗', '苏尼特右旗', '东乌珠穆沁旗', '西乌珠穆沁旗', '太仆寺旗', '镶黄旗', '正镶白旗', '正蓝旗', '多伦县'],
+                '阿拉善盟': ['阿拉善左旗', '阿拉善右旗', '额济纳旗'],
+                '台北市': ['中正区', '大同区', '中山区', '松山区', '大安区', '万华区', '信义区', '士林区', '北投区', '内湖区', '南港区', '文山区'],
+                '高雄市': ['盐埕区', '鼓山区', '左营区', '楠梓区', '三民区', '新兴区', '前金区', '苓雅区', '前镇区', '旗津区', '小港区', '凤山区', '林园区', '大寮区', '大树区', '大社区', '仁武区', '鸟松区', '冈山区', '桥头区', '燕巢区', '田寮区', '阿莲区', '路竹区', '湖内区', '茄萣区', '永安区', '弥陀区', '梓官区', '旗山区', '美浓区', '六龟区', '甲仙区', '杉林区', '内门区', '茂林区', '桃源区', '那玛夏区'],
+                '台中市': ['中区', '东区', '南区', '西区', '北区', '北屯区', '西屯区', '南屯区', '太平区', '大里区', '雾峰区', '乌日区', '丰原区', '后里区', '石冈区', '东势区', '和平区', '新社区', '潭子区', '大雅区', '神冈区', '大肚区', '沙鹿区', '龙井区', '梧栖区', '清水区', '大甲区', '外埔区', '大安区'],
+                '台南市': ['中西区', '东区', '南区', '北区', '安平区', '安南区', '永康区', '归仁区', '新化区', '左镇区', '玉井区', '楠西区', '南化区', '仁德区', '关庙区', '龙崎区', '官田区', '麻豆区', '佳里区', '西港区', '七股区', '将军区', '学甲区', '北门区', '新营区', '后壁区', '白河区', '东山区', '六甲区', '下营区', '柳营区', '盐水区', '善化区', '大内区', '山上区', '新市区', '安定区'],
+                '基隆市': ['仁爱区', '信义区', '中正区', '中山区', '安乐区', '暖暖区', '七堵区'],
+                '新竹市': ['东区', '北区', '香山区'],
+                '嘉义市': ['东区', '西区']
+            };
+            
+            if (districts[city]) {
+                districtMenu.innerHTML = '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;">' +
+                    '<div class="dropdown-item" onclick="selectDistrict(\'\')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">请选择</div>' +
+                    districts[city].map(district => `<div class="dropdown-item" onclick="selectDistrict('${district}')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${district}</div>`).join('') +
+                    '</div>';
+            } else {
+                districtMenu.innerHTML = '<div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem;"><div class="dropdown-item" onclick="selectDistrict(\'\')" style="padding: 0.4rem 0.2rem; cursor: pointer; font-size: 0.75rem; text-align: center; border: 1px solid var(--gray-200); border-radius: 4px;">该区域暂无可选区县</div></div>';
+            }
+        }
+        
+        // 根据城市获取省份
+        function getProvinceByCity(city) {
+            const cityToProvince = {
+                // 直辖市
+                '北京市': '北京市', '天津市': '天津市', '上海市': '上海市', '重庆市': '重庆市',
+                // 河北
+                '石家庄市': '河北省', '唐山市': '河北省', '秦皇岛市': '河北省', '邯郸市': '河北省', '邢台市': '河北省', '保定市': '河北省', '张家口市': '河北省', '承德市': '河北省', '沧州市': '河北省', '廊坊市': '河北省', '衡水市': '河北省',
+                // 山西
+                '太原市': '山西省', '大同市': '山西省', '阳泉市': '山西省', '长治市': '山西省', '晋城市': '山西省', '朔州市': '山西省', '晋中市': '山西省', '运城市': '山西省', '忻州市': '山西省', '临汾市': '山西省', '吕梁市': '山西省',
+                // 辽宁
+                '沈阳市': '辽宁省', '大连市': '辽宁省', '鞍山市': '辽宁省', '抚顺市': '辽宁省', '本溪市': '辽宁省', '丹东市': '辽宁省', '锦州市': '辽宁省', '营口市': '辽宁省', '阜新市': '辽宁省', '辽阳市': '辽宁省', '盘锦市': '辽宁省', '铁岭市': '辽宁省', '朝阳市': '辽宁省', '葫芦岛市': '辽宁省',
+                // 吉林
+                '长春市': '吉林省', '吉林市': '吉林省', '四平市': '吉林省', '辽源市': '吉林省', '通化市': '吉林省', '白山市': '吉林省', '松原市': '吉林省', '白城市': '吉林省', '延边朝鲜族自治州': '吉林省',
+                // 黑龙江
+                '哈尔滨市': '黑龙江省', '齐齐哈尔市': '黑龙江省', '鸡西市': '黑龙江省', '鹤岗市': '黑龙江省', '双鸭山市': '黑龙江省', '大庆市': '黑龙江省', '伊春市': '黑龙江省', '佳木斯市': '黑龙江省', '七台河市': '黑龙江省', '牡丹江市': '黑龙江省', '黑河市': '黑龙江省', '绥化市': '黑龙江省', '大兴安岭地区': '黑龙江省',
+                // 江苏
+                '南京市': '江苏省', '无锡市': '江苏省', '徐州市': '江苏省', '常州市': '江苏省', '苏州市': '江苏省', '南通市': '江苏省', '连云港市': '江苏省', '淮安市': '江苏省', '盐城市': '江苏省', '扬州市': '江苏省', '镇江市': '江苏省', '泰州市': '江苏省', '宿迁市': '江苏省',
+                // 浙江
+                '杭州市': '浙江省', '宁波市': '浙江省', '温州市': '浙江省', '嘉兴市': '浙江省', '湖州市': '浙江省', '绍兴市': '浙江省', '金华市': '浙江省', '衢州市': '浙江省', '舟山市': '浙江省', '台州市': '浙江省', '丽水市': '浙江省',
+                // 安徽
+                '合肥市': '安徽省', '芜湖市': '安徽省', '蚌埠市': '安徽省', '淮南市': '安徽省', '马鞍山市': '安徽省', '淮北市': '安徽省', '铜陵市': '安徽省', '安庆市': '安徽省', '黄山市': '安徽省', '滁州市': '安徽省', '阜阳市': '安徽省', '宿州市': '安徽省', '六安市': '安徽省', '亳州市': '安徽省', '池州市': '安徽省', '宣城市': '安徽省',
+                // 福建
+                '福州市': '福建省', '厦门市': '福建省', '莆田市': '福建省', '三明市': '福建省', '泉州市': '福建省', '漳州市': '福建省', '南平市': '福建省', '龙岩市': '福建省', '宁德市': '福建省',
+                // 江西
+                '南昌市': '江西省', '景德镇市': '江西省', '萍乡市': '江西省', '九江市': '江西省', '新余市': '江西省', '鹰潭市': '江西省', '赣州市': '江西省', '吉安市': '江西省', '宜春市': '江西省', '抚州市': '江西省', '上饶市': '江西省',
+                // 山东
+                '济南市': '山东省', '青岛市': '山东省', '淄博市': '山东省', '枣庄市': '山东省', '东营市': '山东省', '烟台市': '山东省', '潍坊市': '山东省', '济宁市': '山东省', '泰安市': '山东省', '威海市': '山东省', '日照市': '山东省', '临沂市': '山东省', '德州市': '山东省', '聊城市': '山东省', '滨州市': '山东省', '菏泽市': '山东省',
+                // 河南
+                '郑州市': '河南省', '开封市': '河南省', '洛阳市': '河南省', '平顶山市': '河南省', '安阳市': '河南省', '鹤壁市': '河南省', '新乡市': '河南省', '焦作市': '河南省', '濮阳市': '河南省', '许昌市': '河南省', '漯河市': '河南省', '三门峡市': '河南省', '南阳市': '河南省', '商丘市': '河南省', '信阳市': '河南省', '周口市': '河南省', '驻马店市': '河南省',
+                // 湖北
+                '武汉市': '湖北省', '黄石市': '湖北省', '十堰市': '湖北省', '宜昌市': '湖北省', '襄阳市': '湖北省', '鄂州市': '湖北省', '荆门市': '湖北省', '孝感市': '湖北省', '荆州市': '湖北省', '黄冈市': '湖北省', '咸宁市': '湖北省', '随州市': '湖北省', '恩施土家族苗族自治州': '湖北省',
+                // 湖南
+                '长沙市': '湖南省', '株洲市': '湖南省', '湘潭市': '湖南省', '衡阳市': '湖南省', '邵阳市': '湖南省', '岳阳市': '湖南省', '常德市': '湖南省', '张家界市': '湖南省', '益阳市': '湖南省', '郴州市': '湖南省', '永州市': '湖南省', '怀化市': '湖南省', '娄底市': '湖南省', '湘西土家族苗族自治州': '湖南省',
+                // 广东
+                '广州市': '广东省', '韶关市': '广东省', '深圳市': '广东省', '珠海市': '广东省', '汕头市': '广东省', '佛山市': '广东省', '江门市': '广东省', '湛江市': '广东省', '茂名市': '广东省', '肇庆市': '广东省', '惠州市': '广东省', '梅州市': '广东省', '汕尾市': '广东省', '河源市': '广东省', '阳江市': '广东省', '清远市': '广东省', '东莞市': '广东省', '中山市': '广东省', '潮州市': '广东省', '揭阳市': '广东省', '云浮市': '广东省',
+                // 广西
+                '南宁市': '广西壮族自治区', '柳州市': '广西壮族自治区', '桂林市': '广西壮族自治区', '梧州市': '广西壮族自治区', '北海市': '广西壮族自治区', '防城港市': '广西壮族自治区', '钦州市': '广西壮族自治区', '贵港市': '广西壮族自治区', '玉林市': '广西壮族自治区', '百色市': '广西壮族自治区', '贺州市': '广西壮族自治区', '河池市': '广西壮族自治区', '来宾市': '广西壮族自治区', '崇左市': '广西壮族自治区',
+                // 海南
+                '海口市': '海南省', '三亚市': '海南省', '三沙市': '海南省', '儋州市': '海南省',
+                // 四川
+                '成都市': '四川省', '自贡市': '四川省', '攀枝花市': '四川省', '泸州市': '四川省', '德阳市': '四川省', '绵阳市': '四川省', '广元市': '四川省', '遂宁市': '四川省', '内江市': '四川省', '乐山市': '四川省', '南充市': '四川省', '眉山市': '四川省', '宜宾市': '四川省', '广安市': '四川省', '达州市': '四川省', '雅安市': '四川省', '巴中市': '四川省', '资阳市': '四川省', '阿坝藏族羌族自治州': '四川省', '甘孜藏族自治州': '四川省', '凉山彝族自治州': '四川省',
+                // 贵州
+                '贵阳市': '贵州省', '六盘水市': '贵州省', '遵义市': '贵州省', '安顺市': '贵州省', '毕节市': '贵州省', '铜仁市': '贵州省', '黔西南布依族苗族自治州': '贵州省', '黔东南苗族侗族自治州': '贵州省', '黔南布依族苗族自治州': '贵州省',
+                // 云南
+                '昆明市': '云南省', '曲靖市': '云南省', '玉溪市': '云南省', '保山市': '云南省', '昭通市': '云南省', '丽江市': '云南省', '普洱市': '云南省', '临沧市': '云南省', '楚雄彝族自治州': '云南省', '红河哈尼族彝族自治州': '云南省', '文山壮族苗族自治州': '云南省', '西双版纳傣族自治州': '云南省', '大理白族自治州': '云南省', '德宏傣族景颇族自治州': '云南省', '怒江傈僳族自治州': '云南省', '迪庆藏族自治州': '云南省',
+                // 陕西
+                '西安市': '陕西省', '铜川市': '陕西省', '宝鸡市': '陕西省', '咸阳市': '陕西省', '渭南市': '陕西省', '延安市': '陕西省', '汉中市': '陕西省', '榆林市': '陕西省', '安康市': '陕西省', '商洛市': '陕西省',
+                // 甘肃
+                '兰州市': '甘肃省', '嘉峪关市': '甘肃省', '金昌市': '甘肃省', '白银市': '甘肃省', '天水市': '甘肃省', '武威市': '甘肃省', '张掖市': '甘肃省', '平凉市': '甘肃省', '酒泉市': '甘肃省', '庆阳市': '甘肃省', '定西市': '甘肃省', '陇南市': '甘肃省', '临夏回族自治州': '甘肃省', '甘南藏族自治州': '甘肃省',
+                // 青海
+                '西宁市': '青海省', '海东市': '青海省', '海北藏族自治州': '青海省', '黄南藏族自治州': '青海省', '海南藏族自治州': '青海省', '果洛藏族自治州': '青海省', '玉树藏族自治州': '青海省', '海西蒙古族藏族自治州': '青海省',
+                // 台湾
+                '台北市': '台湾省', '新北市': '台湾省', '桃园市': '台湾省', '台中市': '台湾省', '台南市': '台湾省', '高雄市': '台湾省', '基隆市': '台湾省', '新竹市': '台湾省', '嘉义市': '台湾省',
+                // 内蒙古
+                '呼和浩特市': '内蒙古自治区', '包头市': '内蒙古自治区', '乌海市': '内蒙古自治区', '赤峰市': '内蒙古自治区', '通辽市': '内蒙古自治区', '鄂尔多斯市': '内蒙古自治区', '呼伦贝尔市': '内蒙古自治区', '巴彦淖尔市': '内蒙古自治区', '乌兰察布市': '内蒙古自治区', '兴安盟': '内蒙古自治区', '锡林郭勒盟': '内蒙古自治区', '阿拉善盟': '内蒙古自治区',
+                // 西藏
+                '拉萨市': '西藏自治区', '日喀则市': '西藏自治区', '昌都市': '西藏自治区', '林芝市': '西藏自治区', '山南市': '西藏自治区', '那曲市': '西藏自治区', '阿里地区': '西藏自治区',
+                // 宁夏
+                '银川市': '宁夏回族自治区', '石嘴山市': '宁夏回族自治区', '吴忠市': '宁夏回族自治区', '固原市': '宁夏回族自治区', '中卫市': '宁夏回族自治区',
+                // 新疆
+                '乌鲁木齐市': '新疆维吾尔自治区', '克拉玛依市': '新疆维吾尔自治区', '吐鲁番市': '新疆维吾尔自治区', '哈密市': '新疆维吾尔自治区', '昌吉回族自治州': '新疆维吾尔自治区', '博尔塔拉蒙古自治州': '新疆维吾尔自治区', '巴音郭楞蒙古自治州': '新疆维吾尔自治区', '阿克苏地区': '新疆维吾尔自治区', '克孜勒苏柯尔克孜自治州': '新疆维吾尔自治区', '喀什地区': '新疆维吾尔自治区', '和田地区': '新疆维吾尔自治区', '伊犁哈萨克自治州': '新疆维吾尔自治区', '塔城地区': '新疆维吾尔自治区', '阿勒泰地区': '新疆维吾尔自治区'
+            };
+            return cityToProvince[city] || '';
+        }
+        
+        // 保存位置
+        function saveLocation() {
+            const province = document.getElementById('location-province').value;
+            const city = document.getElementById('location-city').value;
+            const district = document.getElementById('location-district').value;
+            
+            if (!province || !city) {
+                showToast('请选择完整的地理位置', 'error');
+                return;
+            }
+            
+            // 保留原有的经纬度信息（如果有）
+            const existingLat = window.userLocation?.lat;
+            const existingLng = window.userLocation?.lng;
+            
+            window.userLocation = {
+                province: province,
+                city: city,
+                district: district || '',
+                hasPermission: true,
+                lat: existingLat,
+                lng: existingLng
+            };
+            
+            localStorage.setItem('userLocation', JSON.stringify(window.userLocation));
+            updateLocationDisplay();
+            closeLocationSelector();
+            showToast('位置设置成功', 'success');
+        }
+        
+        // 将所有位置相关函数挂载到全局，供 HTML onclick 调用
+        window.requestLocationPermission = requestLocationPermission;
+        window.initUserLocation = initUserLocation;
+        window.reverseGeocode = reverseGeocode;
+        window.updateLocationDisplay = updateLocationDisplay;
+        window.showLocationPermissionTip = showLocationPermissionTip;
+        window.showLocationSelector = showLocationSelector;
+        window.closeLocationSelector = closeLocationSelector;
+        window.getCurrentLocation = getCurrentLocation;
+        window.onProvinceChange = onProvinceChange;
+        window.onCityChange = onCityChange;
+        window.saveLocation = saveLocation;
+        window.initCityList = initCityList;
+        window.getProvinceByCity = getProvinceByCity;
+        window.toggleDropdown = toggleDropdown;
+        window.selectProvince = selectProvince;
+        window.selectCity = selectCity;
+        window.selectDistrict = selectDistrict;
+        
+        // ==================== 轮播图功能 ====================
+        let currentSlide = 0;
+        let carouselInterval;
+        const totalSlides = 4;
+        
+        function initCarousel() {
+            // 自动轮播
+            startCarousel();
+            
+            // 触摸滑动支持
+            const track = document.getElementById('carousel-track');
+            if (track) {
+                let startX = 0;
+                let endX = 0;
+                let isDragging = false;
+                
+                // 触摸事件
+                track.addEventListener('touchstart', function(e) {
+                    startX = e.touches[0].clientX;
+                    stopCarousel();
+                }, { passive: true });
+                
+                track.addEventListener('touchmove', function(e) {
+                    endX = e.touches[0].clientX;
+                }, { passive: true });
+                
+                track.addEventListener('touchend', function() {
+                    const diff = startX - endX;
+                    if (Math.abs(diff) > 50) {
+                        if (diff > 0) {
+                            moveCarousel(1);
+                        } else {
+                            moveCarousel(-1);
+                        }
+                    }
+                    startCarousel();
+                }, { passive: true });
+                
+                // 鼠标拖拽事件（桌面端）
+                track.addEventListener('mousedown', function(e) {
+                    startX = e.clientX;
+                    isDragging = true;
+                    stopCarousel();
+                    e.preventDefault();
+                });
+                
+                track.addEventListener('mousemove', function(e) {
+                    if (!isDragging) return;
+                    endX = e.clientX;
+                });
+                
+                track.addEventListener('mouseup', function(e) {
+                    if (!isDragging) return;
+                    isDragging = false;
+                    const diff = startX - endX;
+                    if (Math.abs(diff) > 50) {
+                        if (diff > 0) {
+                            moveCarousel(1);
+                        } else {
+                            moveCarousel(-1);
+                        }
+                    }
+                    startCarousel();
+                });
+                
+                track.addEventListener('mouseleave', function() {
+                    if (isDragging) {
+                        isDragging = false;
+                        startCarousel();
+                    }
+                });
+            }
+        }
+        
+        function moveCarousel(direction) {
+            currentSlide = (currentSlide + direction + totalSlides) % totalSlides;
+            updateCarousel();
+        }
+        
+        function goToSlide(index) {
+            currentSlide = index;
+            updateCarousel();
+        }
+        
+        function updateCarousel() {
+            const track = document.getElementById('carousel-track');
+            const dots = document.querySelectorAll('.carousel-dot');
+            
+            if (track) {
+                track.style.setProperty('--slide-index', currentSlide);
+                track.style.transform = `translateX(-${currentSlide * 100}%)`;
+            }
+            
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentSlide);
+            });
+        }
+        
+        function startCarousel() {
+            stopCarousel();
+            carouselInterval = setInterval(() => {
+                moveCarousel(1);
+            }, 4000);
+        }
+        
+        function stopCarousel() {
+            if (carouselInterval) {
+                clearInterval(carouselInterval);
+                carouselInterval = null;
+            }
+        }
+        
+        // 注册 Service Worker
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then((registration) => {
+                    console.log('Service Worker 注册成功:', registration);
+                })
+                .catch((error) => {
+                    console.log('Service Worker 注册失败:', error);
+                });
+        }
+        
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initUserLocation();
+            initCarousel();
+        });
+    </script>
+</body>
+</html>

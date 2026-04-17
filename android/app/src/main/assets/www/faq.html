@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>常见问题 - 我来帮</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤝</text></svg>">
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        /* 基础样式 */
+        .faq-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            margin-bottom: 1.25rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border-left: 4px solid #059669;
+        }
+        .faq-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .faq-card summary {
+            list-style: none;
+            cursor: pointer;
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 1.1rem;
+        }
+        .faq-card summary::-webkit-details-marker {
+            display: none;
+        }
+        .faq-card summary::after {
+            content: '▶';
+            float: right;
+            color: #059669;
+            font-size: 0.875rem;
+            transition: transform 0.3s;
+        }
+        .faq-card[open] summary::after {
+            transform: rotate(90deg);
+        }
+        .faq-card .faq-answer {
+            padding-top: 0.75rem;
+            color: #4b5563;
+            line-height: 1.8;
+        }
+        .faq-card .faq-answer p {
+            margin: 0;
+        }
+
+        /* 大标题 */
+        .faq-main-title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 2rem;
+            background: linear-gradient(135deg, #059669, #10b981);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* 搜索框 */
+        .faq-search-container {
+            max-width: 600px;
+            margin: 0 auto 2rem;
+            position: relative;
+        }
+        .faq-search-input {
+            width: 100%;
+            padding: 1rem 1.25rem 1rem 3rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 50px;
+            font-size: 1rem;
+            transition: all 0.3s;
+            background: white;
+        }
+        .faq-search-input:focus {
+            outline: none;
+            border-color: #059669;
+            box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.1);
+        }
+        .faq-search-icon {
+            position: absolute;
+            left: 1.25rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9ca3af;
+            font-size: 1.1rem;
+        }
+
+        /* 分类标签 */
+        .faq-categories {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            justify-content: center;
+            padding: 0.5rem;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 16px;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .faq-category-tag {
+            padding: 0.6rem 1.25rem;
+            background: white;
+            border: none;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            color: #6b7280;
+            cursor: pointer;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .faq-category-tag:hover {
+            background: #f3f4f6;
+            color: #374151;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .faq-category-tag.active {
+            background: linear-gradient(135deg, #059669, #10b981);
+            color: white;
+            box-shadow: 0 4px 14px rgba(5, 150, 105, 0.35);
+            transform: translateY(-1px);
+        }
+
+        /* 分页样式 */
+        .faq-pagination {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            margin-top: 2rem;
+            padding: 1rem 0;
+        }
+        .faq-page-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            border-radius: 50%;
+            background: white;
+            color: #6b7280;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        }
+        .faq-page-btn:hover {
+            background: #f3f4f6;
+            color: #374151;
+        }
+        .faq-page-btn.active {
+            background: linear-gradient(135deg, #059669, #10b981);
+            color: white;
+            box-shadow: 0 4px 14px rgba(5, 150, 105, 0.35);
+        }
+        .faq-page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* 快速联系卡片 */
+        .quick-contact {
+            background: linear-gradient(135deg, #059669, #10b981);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            color: white;
+            text-align: center;
+        }
+        .quick-contact h3 {
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+        .quick-contact p {
+            color: rgba(255,255,255,0.9);
+            margin-bottom: 1rem;
+        }
+        .quick-contact-btn {
+            display: inline-block;
+            padding: 0.75rem 1.5rem;
+            background: white;
+            color: #059669;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .quick-contact-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+
+        /* ==================== 移动端响应式样式 ==================== */
+        @media (max-width: 768px) {
+            /* 大标题 */
+            .faq-main-title {
+                font-size: 1.75rem;
+                margin-bottom: 1.5rem;
+            }
+
+            /* 导航栏调整 */
+            .navbar {
+                display: none;
+            }
+            .page-section {
+                padding-top: 1rem !important;
+            }
+
+            /* 页面内容区 */
+            .page-section {
+                padding-top: 4.5rem !important;
+                padding-bottom: 80px;
+            }
+            .container {
+                padding: 0 1rem;
+            }
+
+            /* FAQ 搜索 */
+            .faq-search-container {
+                margin-bottom: 1.5rem;
+            }
+            .faq-search-input {
+                padding: 0.875rem 1rem 0.875rem 2.75rem;
+                font-size: 0.9375rem;
+            }
+
+            /* 分类标签 */
+            .faq-categories {
+                gap: 0.5rem;
+                margin-bottom: 1.5rem;
+                padding: 0 0.5rem;
+            }
+            .faq-category-tag {
+                padding: 0.4rem 0.875rem;
+                font-size: 0.8125rem;
+            }
+
+            /* FAQ 卡片 */
+            .faq-card {
+                padding: 1.25rem;
+                margin-bottom: 0.75rem;
+                border-radius: 12px;
+                border-left-width: 3px;
+            }
+            .faq-card summary {
+                font-size: 0.9375rem;
+                line-height: 1.5;
+                padding-right: 1.5rem;
+            }
+            .faq-card .faq-answer {
+                font-size: 0.875rem;
+                line-height: 1.7;
+                margin-top: 0.75rem;
+            }
+
+            /* 快速联系 */
+            .quick-contact {
+                padding: 1.25rem;
+                margin-top: 1.5rem;
+            }
+            .quick-contact h3 {
+                font-size: 1.1rem;
+            }
+            .quick-contact p {
+                font-size: 0.875rem;
+            }
+
+            /* 页脚 */
+            .footer {
+                padding: 2rem 0 100px;
+            }
+            .footer-content {
+                flex-direction: column;
+                gap: 1.5rem;
+            }
+            .footer-brand {
+                text-align: center;
+            }
+            .footer-links {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 1rem;
+            }
+        }
+
+        /* 小屏幕手机额外优化 */
+        @media (max-width: 375px) {
+            .faq-main-title {
+                font-size: 1.5rem;
+            }
+            .faq-card {
+                padding: 1rem;
+            }
+            .faq-card summary {
+                font-size: 0.875rem;
+            }
+            .footer-links {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 页面内容 -->
+    <section class="page-section" style="padding-top: 6rem; min-height: 100vh;">
+        <div class="container">
+            <!-- 大标题 -->
+            <h1 class="faq-main-title">常见问题</h1>
+            
+            <!-- 搜索框 -->
+            <div class="faq-search-container">
+                <span class="faq-search-icon">🔍</span>
+                <input type="text" class="faq-search-input" placeholder="搜索问题关键词..." id="faq-search" oninput="filterFAQ()">
+            </div>
+            
+            <!-- 分类标签 -->
+            <div class="faq-categories" id="faq-category-container">
+                <button class="faq-category-tag active" data-category="all" onclick="filterFAQByCategory('all', this)">全部</button>
+                <button class="faq-category-tag" data-category="newbie" onclick="filterFAQByCategory('newbie', this)">新手指引</button>
+                <button class="faq-category-tag" data-category="publish" onclick="filterFAQByCategory('publish', this)">发布需求</button>
+                <button class="faq-category-tag" data-category="help" onclick="filterFAQByCategory('help', this)">帮助他人</button>
+                <button class="faq-category-tag" data-category="account" onclick="filterFAQByCategory('account', this)">账户管理</button>
+                <button class="faq-category-tag" data-category="safety" onclick="filterFAQByCategory('safety', this)">安全隐私</button>
+                <button class="faq-category-tag" data-category="reward" onclick="filterFAQByCategory('reward', this)">积分奖励</button>
+            </div>
+            
+            <div class="faq-content" style="max-width: 800px; margin: 0 auto;">
+                <!-- 新手指引类 (5个) -->
+                <details class="faq-card" data-category="newbie">
+                    <summary>Q: "我来帮"是什么平台？</summary>
+                    <div class="faq-answer">
+                        <p>A: "我来帮"是一个社区互助平台，连接需要帮助的人和愿意提供帮助的人。您可以发布各种生活需求（如搬运、维修、跑腿等），也可以接单帮助他人赚取报酬和积分。</p>
+                    </div>
+                </details>
+                
+                <details class="faq-card" data-category="newbie">
+                    <summary>Q: 如何注册成为用户？</summary>
+                    <div class="faq-answer">
+                        <p>A: 点击页面右上角的"登录/注册"按钮，填写用户名、密码、手机号和邮箱即可完成注册。注册后即可发布需求和接单帮助。</p>
+                    </div>
+                </details>
+                
+                <details class="faq-card" data-category="newbie">
+                    <summary>Q: 平台支持哪些类型的需求？</summary>
+                    <div class="faq-answer">
+                        <p>A: 平台支持多种需求类型：搬运（搬家、送货）、维修（家电、水电）、跑腿（代买、代送）、教育（辅导、培训）、宠物（遛宠、寄养）、技术（电脑、网络）、健康（陪诊、照护）、设计（平面、装修）、摄影（拍照、录像）、借用（工具、物品）等。</p>
+                    </div>
+                </details>
+                
+                <details class="faq-card" data-category="newbie">
+                    <summary>Q: 平台收费吗？</summary>
+                    <div class="faq-answer">
+                        <p>A: 平台基础功能完全免费。发布需求、帮助他人、查看信息都不收取任何费用。只有部分增值服务（如置顶需求）需要使用积分兑换。</p>
+                    </div>
+                </details>
+                
+                <details class="faq-card" data-category="newbie">
+                    <summary>Q: 如何联系客服？</summary>
+                    <div class="faq-answer">
+                        <p>A: 点击页面底部"联系客服"，或发送邮件至 support@wolaibang.com，也可以拨打客服热线 400-xxx-xxxx。工作时间为每天 9:00-21:00。</p>
+                    </div>
+                </details>
+
+                <!-- 发布需求类 (5个) -->
+                <details class="faq-card" data-category="publish">
+                    <summary>Q: 如何发布一个需求？</summary>
+                    <div class="faq-answer">
+                        <p>A: 点击"发布需求"按钮，填写需求标题、选择分类、填写报酬、选择位置、详细描述需求内容后提交即可。发布后会通知附近的用户。</p>
+                    </div>
+                </details>
+                
+                <details class="faq-card" data-category="publish">
+                    <summary>Q: 发布需求需要填写哪些信息？</summary>
+                    <div class="faq-answer">
+                        <p>A: 需要填写：1）需求标题（简洁描述）；2）分类（选择对应类型）；3）报酬（可选，建议填写合理金额）；4）位置（省份、城市、详细地址）；5）需求详情（时间、要求等具体描述）。信息越详细越容易获得帮助。</p>
+                    </div>
+                </details>
+                
+                <details class="faq-card" data-category="publish">
+                    <summary>Q: 什么是紧急需求？如何标记？</summary>
+                    <div class="faq-answer">
+                        <p>A: 紧急需求会优先展示，获得更快的响应。发布时勾选"标记为紧急需求"，并选择紧急类型（安全求助、老人儿童紧急求助、其他紧急事项）。请合理使用，避免滥用。</p>
+                    </div>
+                </details>
+                
+                <details class="faq-card" data-category="publish">
+                    <summary>Q: 发布的需求可以修改或删除吗？</summary>
+                    <div class="faq-answer">
+                        <p>A: 未接单的需求可以随时修改或删除。进入"我的需求"页面，点击对应需求的编辑或删除按钮即可。已被接受的需求无法修改，但可以取消。</p>
+                    </div>
+                </details>
+                
+                <details class="faq-card" data-category="publish">
+                    <summary>Q: 如何设置需求的位置信息？</summary>
+                    <div class="faq-answer">
+                        <p>A: 发布需求时，选择省份和城市，填写详细地址。您也可以点击"自动获取位置"按钮，系统会自动定位您的当前位置。准确的位置有助于帮助者快速找到您。</p>
+                    </div>
+                </details>
+
+                <!-- 帮助他人类 (4个) -->
+                <details class="faq-card" data-category="help">
+                    <summary>Q: 如何接单帮助他人？</summary>
+                    <div class="faq-answer">
+                        <p>A: 进入"需求大厅"浏览附近的需求，点击感兴趣的需求查看详情，然后点击"接受任务"按钮即可接单。接单后可以与需求发布者沟通具体细节。</p>
+                    </div>
+                </details>
+                
+                <details class="faq-card" data-category="help">
+                    <summary>Q: 接单后可以取消吗？</summary>
+                    <div class="faq-answer">
+                        <p>A: 可以取消，但频繁取消会影响您的信誉评分。如遇特殊情况无法完成，请尽早与需求发布者沟通并取消任务。</p>
+                    </div>
+                </details>
+                
+                <details class="faq-card" data-category="help">
+                    <summary>Q: 如何与需求发布者沟通？</summary>
+                    <div class="faq-answer">
+                        <p>A: 接单后，在需求详情页可以看到发布者的联系方式（电话或在线聊天）。建议先通过平台内沟通确认细节，再决定是否见面。</p>
+                    </div>
+                </details>
+                
+                <details class="faq-card" data-category="help">
+                    <summary>Q: 完成任务后如何确认？</summary>
+                    <div class="faq-answer">
+                        <p>A: 服务完成后，需求发布者会在系统中确认完成。双方可以互相评价，好评会提升您的信誉和积分。</p>
+                    </div>
+                </details>
+
+                <!-- 账户管理类 (4个) -->
+                <details class="faq-card" data-category="account">
+                    <summary>Q: 如何修改个人资料？</summary>
+                    <div class="faq-answer">
+                        <p>A: 点击右上角用户头像，选择"个人资料"，可以修改昵称、头像、联系方式等信息。完善资料有助于增加信任度。</p>
+                    </div>
+                </details>
+                
+                <details class="faq-card" data-category="account">
+                    <summary>Q: 忘记密码怎么办？</summary>
+                    <div class="faq-answer">
+                        <p>A: 点击登录页面"忘记密码"，输入注册时的邮箱或手机号，系统会发送重置链接。点击链接即可设置新密码。</p>
+                    </div>
+                </details>
+                
+                <details class="faq-card" data-category="account">
+                    <summary>Q: 如何查看我的需求记录？</summary>
+                    <div class="faq-answer">
+                        <p>A: 在个人中心页面，点击"我的需求"可以查看所有发布过的需求，包括进行中、已完成和已取消的任务。</p>
+                    </div>
+                </details>
+                
+                <details class="faq-card" data-category="account">
+                    <summary>Q: 如何查看我帮助过的记录？</summary>
+                    <div class="faq-answer">
+                        <p>A: 在个人中心页面，点击"我的帮助"可以查看所有接单记录，包括进行中、已完成和已取消的任务。</p>
+                    </div>
+                </details>
+
+                <!-- 安全隐私类 (4个) -->
+                <details class="faq-card" data-category="safety">
+                    <summary>Q: 平台如何保护用户隐私？</summary>
+                    <div class="faq-answer">
+                        <p>A: 我们严格保护用户隐私，手机号等敏感信息仅在接单后向对方展示。您可以在隐私设置中控制信息的可见范围。我们不会将您的信息出售给第三方。</p>
+                    </div>
+                </details>
+                
+                <details class="faq-card" data-category="safety">
+                    <summary>Q: 见面时需要注意什么？</summary>
+                    <div class="faq-answer">
+                        <p>A: 1）首次见面选择公共场所；2）告知家人或朋友您的去向；3）避免在偏僻或私人场所见面；4）注意保管好个人财物；5）如遇可疑情况立即离开并报警。</p>
+                    </div>
+                </details>
+                
+                <details class="faq-card" data-category="safety">
+                    <summary>Q: 遇到纠纷如何处理？</summary>
+                    <div class="faq-answer">
+                        <p>A: 首先尝试与对方友好协商。如无法解决，可以点击"举报中心"提交纠纷详情，或联系客服介入处理。请保留相关聊天记录作为证据。</p>
+                    </div>
+                </details>
+                
+                <details class="faq-card" data-category="safety">
+                    <summary>Q: 如何举报不良用户？</summary>
+                    <div class="faq-answer">
+                        <p>A: 在用户资料页或需求详情页点击"举报"按钮，选择举报原因并填写详细说明。我们会核实处理，对违规用户进行警告、限制功能或封禁账号。</p>
+                    </div>
+                </details>
+
+                <!-- 积分奖励类 (4个) -->
+                <details class="faq-card" data-category="reward">
+                    <summary>Q: 积分如何获得？</summary>
+                    <div class="faq-answer">
+                        <p>A: 1）完成帮助任务获得基础积分；2）获得好评额外奖励积分；3）每日签到获得积分；4）邀请好友注册获得积分；5）参与平台活动获得积分。</p>
+                    </div>
+                </details>
+                
+                <details class="faq-card" data-category="reward">
+                    <summary>Q: 积分有什么用？</summary>
+                    <div class="faq-answer">
+                        <p>A: 积分可以：1）置顶需求，让更多人看到；2）兑换平台特权；3）参与积分抽奖；4）提升用户等级，获得专属标识；5）兑换实物奖品（部分活动）。</p>
+                    </div>
+                </details>
+                
+                <details class="faq-card" data-category="reward">
+                    <summary>Q: 什么是信誉评分？如何提升？</summary>
+                    <div class="faq-answer">
+                        <p>A: 信誉评分反映用户在平台的可信度。完成交易、获得好评会提升评分；取消订单、被投诉、违规操作会降低评分。高信誉用户会获得优先推荐。</p>
+                    </div>
+                </details>
+                
+                <details class="faq-card" data-category="reward">
+                    <summary>Q: 如何获得好评？</summary>
+                    <div class="faq-answer">
+                        <p>A: 1）准时到达约定地点；2）服务态度友好；3）服务质量高；4）沟通及时有效；5）遵守承诺。服务完成后，双方可以互相评价。</p>
+                    </div>
+                </details>
+            </div>
+
+            <!-- 分页 -->
+            <div class="faq-pagination" id="faq-pagination"></div>
+            
+            <!-- 快速联系卡片 -->
+            <div class="quick-contact">
+                <h3>🤔 还有其他问题？</h3>
+                <p>我们的客服团队随时为您解答</p>
+                <a href="contact.html" class="quick-contact-btn">联系客服</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <span class="logo-icon">🤝</span>
+                    <span class="logo-text">我来帮</span>
+                    <p>让人与人互助变得简单</p>
+                </div>
+                <div class="footer-links">
+                    <div class="link-group">
+                        <h4>平台</h4>
+                        <a href="about.html">关于我们</a>
+                        <a href="guide.html">使用指南</a>
+                        <a href="faq.html">常见问题</a>
+                    </div>
+                    <div class="link-group">
+                        <h4>帮助</h4>
+                        <a href="contact.html">联系客服</a>
+                        <a href="feedback.html">意见反馈</a>
+                        <a href="report.html">举报中心</a>
+                    </div>
+                    <div class="link-group">
+                        <h4>法律</h4>
+                        <a href="terms.html">用户协议</a>
+                        <a href="privacy.html">隐私政策</a>
+                        <a href="disclaimer.html">免责声明</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 我来帮 保留所有权利</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/mockData.js?v=6"></script>
+    <script src="js/app.js?v=7"></script>
+    <script>
+        // 分页配置
+        const ITEMS_PER_PAGE = 5;
+        // 使用 window. 避免与 app.js 中的变量冲突
+        window.faqCurrentPage = 1;
+        window.faqCurrentCategory = 'all';
+        
+        // 初始化FAQ
+        function initFAQ() {
+            document.querySelectorAll('.faq-card').forEach(card => {
+                card.dataset.hidden = 'false';
+            });
+            initPagination();
+        }
+        
+        // 初始化分页
+        function initPagination() {
+            window.faqCurrentPage = 1;
+            updatePagination();
+        }
+        
+        // 更新分页
+        function updatePagination() {
+            const allCards = Array.from(document.querySelectorAll('.faq-card'));
+            const visibleCards = allCards.filter(card => card.dataset.hidden !== 'true');
+            
+            const totalItems = visibleCards.length;
+            const totalPages = Math.ceil(totalItems / ITEMS_PER_PAGE);
+            
+            const start = (window.faqCurrentPage - 1) * ITEMS_PER_PAGE;
+            const end = start + ITEMS_PER_PAGE;
+            
+            // 先隐藏所有卡片
+            allCards.forEach(card => {
+                card.style.display = 'none';
+            });
+            
+            // 只显示当前页的可见卡片
+            visibleCards.forEach((card, index) => {
+                if (index >= start && index < end) {
+                    card.style.display = 'block';
+                }
+            });
+            
+            renderPagination(totalPages);
+        }
+        
+        // 渲染分页按钮
+        function renderPagination(totalPages) {
+            const pagination = document.getElementById('faq-pagination');
+            if (totalPages <= 1) {
+                pagination.innerHTML = '';
+                return;
+            }
+            
+            let html = '';
+            
+            // 上一页
+            html += `<button class="faq-page-btn" onclick="changePage(${window.faqCurrentPage - 1})" ${window.faqCurrentPage === 1 ? 'disabled' : ''}>◀</button>`;
+            
+            // 页码
+            for (let i = 1; i <= totalPages; i++) {
+                if (i === 1 || i === totalPages || (i >= window.faqCurrentPage - 1 && i <= window.faqCurrentPage + 1)) {
+                    html += `<button class="faq-page-btn ${i === window.faqCurrentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+                } else if (i === window.faqCurrentPage - 2 || i === window.faqCurrentPage + 2) {
+                    html += `<span style="padding: 0 5px;">...</span>`;
+                }
+            }
+            
+            // 下一页
+            html += `<button class="faq-page-btn" onclick="changePage(${window.faqCurrentPage + 1})" ${window.faqCurrentPage === totalPages ? 'disabled' : ''}>▶</button>`;
+            
+            pagination.innerHTML = html;
+        }
+        
+        // 切换页面
+        function changePage(page) {
+            const visibleCards = Array.from(document.querySelectorAll('.faq-card'))
+                .filter(card => card.dataset.hidden !== 'true');
+            const totalPages = Math.ceil(visibleCards.length / ITEMS_PER_PAGE);
+            
+            if (page < 1 || page > totalPages) return;
+            
+            window.faqCurrentPage = page;
+            updatePagination();
+            
+            // 切换页面后，确保所有显示的卡片都是折叠状态
+            document.querySelectorAll('.faq-card').forEach(card => {
+                if (card.style.display === 'block') {
+                    card.removeAttribute('open');
+                }
+            });
+            
+            // 滚动到页面顶部
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+        
+        // 搜索过滤功能
+        function filterFAQ() {
+            const searchTerm = document.getElementById('faq-search').value.toLowerCase();
+            const cards = document.querySelectorAll('.faq-card');
+            
+            cards.forEach(card => {
+                const question = card.querySelector('summary').textContent.toLowerCase();
+                const answer = card.querySelector('.faq-answer').textContent.toLowerCase();
+                
+                if (question.includes(searchTerm) || answer.includes(searchTerm)) {
+                    card.dataset.hidden = 'false';
+                } else {
+                    card.dataset.hidden = 'true';
+                }
+            });
+            
+            initPagination();
+        }
+        
+        // 分类过滤功能 - 使用 window. 确保全局可用
+        window.filterFAQByCategory = function(category, element) {
+            console.log('filterFAQByCategory called:', category, element);
+            window.faqCurrentCategory = category;
+
+            // 更新标签样式
+            document.querySelectorAll('.faq-category-tag').forEach(tag => {
+                tag.classList.remove('active');
+            });
+            if (element) {
+                element.classList.add('active');
+                console.log('Active class added to:', element.textContent);
+            }
+
+            // 过滤卡片
+            const cards = document.querySelectorAll('.faq-card');
+            console.log('Total cards:', cards.length);
+            let visibleCount = 0;
+            cards.forEach(card => {
+                if (category === 'all' || card.dataset.category === category) {
+                    card.dataset.hidden = 'false';
+                    visibleCount++;
+                } else {
+                    card.dataset.hidden = 'true';
+                }
+            });
+            console.log('Visible cards:', visibleCount);
+
+            initPagination();
+        };
+        
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            try {
+                initFAQ();
+            } catch (e) {
+                console.error('Error in DOMContentLoaded:', e);
+            }
+        });
+    </script>
+</body>
+</html>

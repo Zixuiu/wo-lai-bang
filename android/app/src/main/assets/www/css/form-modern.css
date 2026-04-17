@@ -1,0 +1,719 @@
+/* ==================== 现代化表单样式 ==================== */
+
+/* 表单容器 */
+.form-modern {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    max-height: calc(90vh - 120px);
+    overflow-y: auto;
+}
+
+/* 步骤导航 */
+.form-steps {
+    margin-bottom: 0.5rem;
+}
+
+.steps-list {
+    display: flex;
+    justify-content: space-between;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    position: relative;
+}
+
+.steps-list::before {
+    content: '';
+    position: absolute;
+    top: 1rem;
+    left: 2rem;
+    right: 2rem;
+    height: 2px;
+    background: var(--border-color);
+    z-index: 0;
+}
+
+.step-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    position: relative;
+    z-index: 1;
+    cursor: default;
+}
+
+.step-indicator {
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: var(--bg-primary);
+    border: 2px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.step-number {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.step-check {
+    width: 1rem;
+    height: 1rem;
+    display: none;
+    color: white;
+}
+
+.step-label {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+/* 步骤状态 */
+.step-item.active .step-indicator,
+.step-item.completed .step-indicator {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.step-item.active .step-number,
+.step-item.completed .step-number {
+    color: white;
+}
+
+.step-item.completed .step-number {
+    display: none;
+}
+
+.step-item.completed .step-check {
+    display: block;
+}
+
+.step-item.active .step-label,
+.step-item.completed .step-label {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
+/* 表单面板容器 */
+.form-panels {
+    flex: 0 1 auto;
+    min-height: 0;
+}
+
+/* 表单面板 */
+.form-panel {
+    display: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+}
+
+.form-panel.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 面板头部 */
+.panel-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+    padding: 0;
+}
+
+.panel-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: var(--primary-color);
+    flex-shrink: 0;
+}
+
+.panel-desc {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: 1.5rem;
+}
+
+/* 表单字段 */
+.form-field {
+    margin-bottom: 1.25rem;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.form-row .form-field {
+    margin-bottom: 0;
+}
+
+/* 字段标签 */
+.field-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.label-icon {
+    width: 1rem;
+    height: 1rem;
+    color: var(--primary-color);
+}
+
+.required {
+    color: var(--danger-color);
+    margin-left: 0.25rem;
+}
+
+/* 输入框包装 */
+.input-wrap {
+    position: relative;
+}
+
+.input-focus-effect {
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    width: 0;
+    height: 2px;
+    background: var(--primary-color);
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
+}
+
+/* 表单控件 */
+.form-control {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    font-size: 0.875rem;
+    background: var(--bg-primary);
+    color: var(--text-primary);
+    transition: all 0.2s ease;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+}
+
+.form-control:focus + .input-focus-effect {
+    width: 100%;
+}
+
+.form-control::placeholder {
+    color: var(--text-secondary);
+    opacity: 0.6;
+}
+
+/* 选择框 */
+.select-wrap {
+    position: relative;
+}
+
+.select-arrow {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1rem;
+    height: 1rem;
+    color: var(--text-secondary);
+    pointer-events: none;
+    transition: transform 0.2s ease;
+}
+
+.form-control:focus ~ .select-arrow {
+    transform: translateY(-50%) rotate(180deg);
+    color: var(--primary-color);
+}
+
+/* 字段提示 */
+.field-hint {
+    display: block;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    margin-top: 0.375rem;
+}
+
+/* 报酬输入组 */
+.reward-input-group {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.reward-input-group .input-wrap,
+.reward-input-group .select-wrap {
+    flex: 1;
+}
+
+.reward-input-group .input-wrap {
+    position: relative;
+}
+
+.input-suffix {
+    position: absolute;
+    right: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    pointer-events: none;
+}
+
+.reward-input-group .form-control {
+    padding-right: 2rem;
+}
+
+/* 文本域 */
+.textarea-wrap {
+    position: relative;
+}
+
+.form-control textarea {
+    min-height: 120px;
+    resize: vertical;
+}
+
+.char-counter {
+    position: absolute;
+    bottom: 0.5rem;
+    right: 0.75rem;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+    background: var(--bg-primary);
+    padding: 0.125rem 0.375rem;
+    border-radius: var(--radius-sm);
+}
+
+/* 位置按钮 */
+.location-action {
+    margin-top: 1rem;
+}
+
+.btn-location {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1rem;
+    background: var(--bg-secondary);
+    border: 1px dashed var(--border-color);
+    border-radius: var(--radius);
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-location:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+    background: rgba(34, 197, 94, 0.05);
+}
+
+.location-icon {
+    width: 1rem;
+    height: 1rem;
+}
+
+.location-spinner {
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid var(--border-color);
+    border-top-color: var(--primary-color);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    display: none;
+}
+
+.btn-location.loading .location-spinner {
+    display: inline-block;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.location-status {
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+}
+
+/* 紧急需求区域 */
+.urgent-section {
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.urgent-section .section-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.urgent-section .section-icon {
+    font-size: 1.125rem;
+}
+
+.urgent-section .section-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.urgent-section .section-desc {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+/* 复选框卡片 */
+.checkbox-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.checkbox-card:hover {
+    border-color: var(--primary-color);
+}
+
+.checkbox-input {
+    display: none;
+}
+
+.checkbox-visual {
+    width: 1.25rem;
+    height: 1.25rem;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+.checkbox-check {
+    width: 0.875rem;
+    height: 0.875rem;
+    color: white;
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.2s ease;
+}
+
+.checkbox-input:checked + .checkbox-visual {
+    background: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.checkbox-input:checked + .checkbox-visual .checkbox-check {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.checkbox-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.checkbox-title {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.checkbox-desc {
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+}
+
+/* 确认卡片 */
+.confirm-card {
+    background: var(--bg-secondary);
+    border-radius: var(--radius);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid var(--border-color);
+}
+
+.confirm-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.confirm-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: var(--primary-color);
+}
+
+.confirm-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.confirm-list {
+    margin: 0;
+    display: block;
+}
+
+.confirm-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem 0;
+    font-size: 0.875rem;
+}
+
+.confirm-item:not(:last-child) {
+    border-bottom: 1px dashed var(--border-color);
+}
+
+.confirm-item dt {
+    color: var(--text-secondary);
+    font-weight: 400;
+}
+
+.confirm-item dd {
+    color: var(--text-primary);
+    font-weight: 500;
+    margin: 0;
+    display: block;
+    min-height: 1.2em;
+}
+
+/* 提示列表 */
+.tips-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.tip-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.tip-icon {
+    font-size: 1rem;
+}
+
+/* 表单操作按钮 */
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 0.75rem;
+    padding-top: 1rem;
+    border-top: 1px solid var(--border-color);
+}
+
+.step-nav,
+.submit-nav {
+    display: flex;
+    gap: 0.75rem;
+}
+
+.submit-nav {
+    display: none;
+}
+
+/* 按钮基础样式 */
+.btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    border-radius: var(--radius);
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-icon {
+    width: 1rem;
+    height: 1rem;
+}
+
+.btn-primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.btn-primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+.btn-secondary {
+    background: var(--bg-secondary);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.btn-spinner {
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    display: none;
+}
+
+.btn.loading .btn-spinner {
+    display: inline-block;
+}
+
+/* 响应式设计 */
+@media (max-width: 640px) {
+    .form-modern {
+        padding: 1rem;
+        max-height: calc(100vh - 100px);
+    }
+
+    .steps-list::before {
+        display: none;
+    }
+
+    .step-label {
+        font-size: 0.625rem;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+
+    .reward-input-group {
+        flex-direction: column;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .step-nav,
+    .submit-nav {
+        width: 100%;
+    }
+
+    .btn {
+        flex: 1;
+    }
+
+    /* 移动端确认卡片样式 */
+    .confirm-card {
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: var(--radius);
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .confirm-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 0.75rem 0;
+        font-size: 0.875rem;
+        border-bottom: 1px dashed var(--border-color);
+    }
+
+    .confirm-item:last-child {
+        border-bottom: none;
+    }
+
+    .confirm-item dt {
+        color: var(--text-secondary);
+        font-weight: 400;
+        flex-shrink: 0;
+    }
+
+    .confirm-item dd {
+        color: var(--text-primary);
+        font-weight: 500;
+        margin: 0;
+        text-align: right;
+        word-break: break-word;
+        max-width: 60%;
+    }
+}
+
+/* 滚动条样式 */
+.form-modern::-webkit-scrollbar {
+    width: 6px;
+}
+
+.form-modern::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.form-modern::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+}
+
+.form-modern::-webkit-scrollbar-thumb:hover {
+    background: var(--gray-400);
+}

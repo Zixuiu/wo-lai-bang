@@ -1,0 +1,49 @@
+/* 统一返回按钮样式 */
+.page-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: white;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 6px 12px;
+    margin: -12px -12px 6px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.page-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.page-header h1 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0;
+}
+
+.back-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #6b7280;
+    font-size: 1.25rem;
+    transition: all 0.2s;
+}
+
+.back-btn:hover {
+    background: #f3f4f6;
+}
+
+.back-btn:active {
+    background: #e5e7eb;
+}

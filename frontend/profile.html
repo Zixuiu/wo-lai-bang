@@ -1,0 +1,2011 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个人中心 - 我来帮</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤝</text></svg>">
+    <!-- 提前恢复登录状态，避免页面闪烁 -->
+    <script>
+        (function() {
+            const user = localStorage.getItem('current_user');
+            const token = localStorage.getItem('auth_token');
+            if (user && token) {
+                try {
+                    const userData = JSON.parse(user);
+                    window.__INITIAL_USER__ = userData;
+                    // 提前设置首字母，避免显示默认头像
+                    const seed = userData.nickname || userData.username || '用户';
+                    let initial = '';
+                    if (seed && typeof seed === 'string') {
+                        const name = seed.trim();
+                        if (name.length > 0) {
+                            const firstChar = name.charAt(0);
+                            if (/[\u4e00-\u9fa5]/.test(firstChar)) {
+                                initial = firstChar;
+                            } else {
+                                initial = firstChar.toUpperCase();
+                            }
+                        }
+                    }
+                    window.__USER_INITIAL__ = initial;
+                } catch (e) {}
+            }
+        })();
+    </script>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/form-modern.css">
+    <link rel="stylesheet" href="css/mobile-redesign.css">
+    <link rel="stylesheet" href="css/datetime-picker.css">
+    <link rel="stylesheet" href="css/no-animation.css">
+    <style>
+        body {
+            background: #ffffff;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: 10000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            position: relative;
+            background: white;
+            border-radius: 40px / 30px;
+            width: 100%;
+            max-height: 85vh;
+            overflow: hidden;
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+            animation: modal-slide-up 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        @keyframes modal-slide-up {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.25rem;
+            border-bottom: 1px solid var(--gray-100);
+        }
+
+        .modal-header h3 {
+            margin: 0;
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--gray-800);
+        }
+
+        .modal-close {
+            width: 32px;
+            height: 32px;
+            border-radius: var(--radius);
+            background: var(--gray-100);
+            border: none;
+            font-size: 1.125rem;
+            color: var(--gray-500);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:active {
+            background: var(--gray-200);
+        }
+
+        .modal-body {
+            padding: 1.25rem;
+            overflow-y: auto;
+            max-height: calc(85vh - 60px);
+        }
+
+        .mobile-profile {
+            display: block;
+            min-height: 100vh;
+            background: #ffffff;
+            padding-bottom: 100px;
+        }
+
+        .profile-hero {
+            background: linear-gradient(135deg, var(--primary) 0%, #10b981 100%);
+            padding: 2.75rem 1.25rem 1.25rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .profile-hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 200px;
+            height: 200px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+        }
+
+        .profile-hero::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -10%;
+            width: 150px;
+            height: 150px;
+            background: rgba(255,255,255,0.08);
+            border-radius: 50%;
+        }
+
+        .profile-header-top {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+            z-index: 1;
+        }
+
+        .profile-greeting {
+            color: rgba(255,255,255,0.9);
+        }
+
+        .profile-greeting-label {
+            font-size: 0.875rem;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 0.25rem;
+        }
+
+        .profile-greeting-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: white;
+        }
+
+        .profile-avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: white;
+            border: 3px solid rgba(255,255,255,0.3);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            object-fit: cover;
+        }
+
+        .profile-avatar[src=""],
+        .profile-avatar:not([src]) {
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .profile-avatar[src=""]::after,
+        .profile-avatar:not([src])::after {
+            content: '👤';
+            font-size: 2rem;
+        }
+
+        .profile-stats-wrapper {
+            position: relative;
+            z-index: 10;
+            margin-top: -1rem;
+            padding: 0 1.25rem;
+        }
+
+        .profile-stats {
+            display: flex;
+            gap: 0;
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            padding: 1.25rem 0;
+        }
+
+        .profile-stat-card {
+            flex: 1;
+            text-align: center;
+            position: relative;
+        }
+
+        .profile-stat-card:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 1px;
+            height: 60%;
+            background: var(--gray-100);
+        }
+
+        .profile-stat-value {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            display: block;
+            margin-bottom: 0.25rem;
+            line-height: 1;
+        }
+
+        .profile-stat-label {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+            font-weight: 500;
+        }
+
+        .profile-actions {
+            display: flex;
+            gap: 0.75rem;
+            padding: 1.5rem 1.25rem;
+            margin-top: 1rem;
+        }
+
+        .profile-btn {
+            flex: 1;
+            padding: 0.875rem 1rem;
+            border-radius: var(--radius);
+            font-size: 0.9375rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+            border: none;
+        }
+
+        .profile-btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
+        .profile-btn-primary:active {
+            background: var(--primary-dark);
+            transform: scale(0.98);
+            box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+        }
+
+        .profile-btn-secondary {
+            background: var(--gray-100);
+            color: var(--gray-700);
+        }
+
+        .profile-btn-secondary:active {
+            background: var(--gray-200);
+            transform: scale(0.98);
+        }
+
+        .profile-menu-section {
+            padding: 0 1rem;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .profile-menu-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            margin-bottom: 0.75rem;
+        }
+
+        .profile-menu-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 0.375rem;
+        }
+
+        .profile-menu-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.375rem;
+            padding: 0.75rem 0.25rem;
+            background: var(--gray-50);
+            border: 1px solid var(--gray-100);
+            border-radius: var(--radius);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            min-width: 0;
+        }
+
+        .profile-menu-item:active {
+            background: var(--gray-100);
+            transform: scale(0.95);
+        }
+
+        .profile-menu-icon {
+            font-size: 1.25rem;
+        }
+
+        .profile-menu-label {
+            font-size: 0.7rem;
+            color: var(--gray-600);
+            font-weight: 500;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 100%;
+        }
+
+        .profile-list-section {
+            padding: 0 1rem;
+        }
+
+        .profile-list {
+            background: white;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--gray-100);
+            overflow: hidden;
+        }
+
+        .profile-list-item {
+            display: flex;
+            align-items: center;
+            padding: 0.75rem;
+            min-height: 60px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: inherit;
+            background: none;
+            border: none;
+            border-bottom: 1px solid var(--gray-100);
+            width: 100%;
+            text-align: left;
+            font-family: inherit;
+            font-size: inherit;
+            box-sizing: border-box;
+            margin: 0;
+        }
+
+        .profile-list-item:last-child {
+            border-bottom: none;
+        }
+
+        .profile-list-item.admin-only,
+        .profile-list#logout-item,
+        #logout-item {
+            display: none !important;
+        }
+
+        .profile-list-item.admin-only.visible,
+        .profile-list #logout-item.visible,
+        #logout-item.visible {
+            display: flex !important;
+        }
+
+        .profile-list-item:active {
+            background: var(--gray-50);
+        }
+
+        .profile-list-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: var(--radius);
+            background: var(--gray-100);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.125rem;
+            line-height: 1;
+            margin-right: 0.75rem;
+            flex-shrink: 0;
+        }
+
+        .profile-list-content {
+            flex: 1;
+        }
+
+        .profile-list-title {
+            font-size: 0.875rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 0.125rem;
+        }
+
+        .profile-list-desc {
+            font-size: 0.6875rem;
+            color: var(--gray-500);
+        }
+
+        .profile-list-arrow {
+            font-size: 1rem;
+            color: var(--gray-400);
+        }
+
+        .profile-content {
+            padding: 0 1.25rem;
+        }
+
+        .profile-section-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: var(--gray-800);
+            margin-bottom: 1rem;
+        }
+
+        .profile-request-card {
+            background: white;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--gray-100);
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .profile-request-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.75rem;
+        }
+
+        .profile-request-status {
+            padding: 0.25rem 0.625rem;
+            border-radius: var(--radius-full);
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .profile-request-status.pending {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .profile-request-status.accepted {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+
+        .profile-request-status.completed {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .profile-request-title {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-request-meta {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+        }
+
+        .profile-empty {
+            text-align: center;
+            padding: 3rem 2rem;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .profile-empty-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .profile-empty h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-empty p {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+            margin-bottom: 1.5rem;
+        }
+
+        .profile-login-card {
+            background: var(--gray-50);
+            border: 1px solid var(--gray-100);
+            border-radius: var(--radius-md);
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .profile-login-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .profile-login-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 0.5rem;
+        }
+
+        .profile-login-desc {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+            margin-bottom: 1.5rem;
+        }
+
+        .profile-form-group {
+            margin-bottom: 1rem;
+        }
+
+        .profile-form-label {
+            display: block;
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--gray-700);
+            margin-bottom: 0.375rem;
+        }
+
+        .profile-form-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius);
+            font-size: 0.9375rem;
+            background: white;
+            transition: all 0.2s ease;
+        }
+
+        .profile-form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .mobile-bottom-spacer {
+            height: 100px;
+        }
+
+        @media (max-width: 768px) {
+            .navbar .nav-menu,
+            .navbar .nav-actions,
+            .navbar .nav-actions-placeholder {
+                display: none !important;
+            }
+        }
+
+        /* 顶部导航栏添加阴影，与侧边栏区分 */
+        .navbar {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        @media (min-width: 769px) {
+            .mobile-tab-bar,
+            .mobile-bottom-spacer {
+                display: none !important;
+            }
+
+            .mobile-profile {
+                display: grid;
+                grid-template-columns: 260px 1fr;
+                min-height: calc(100vh - 64px);
+                max-width: none;
+                margin: 64px 0 0 0;
+                padding: 0;
+                background: var(--gray-50);
+            }
+
+            .profile-sidebar {
+                background: white;
+                border-right: 1px solid var(--gray-200);
+                padding: 2rem 1.5rem;
+                display: flex;
+                flex-direction: column;
+                gap: 2rem;
+            }
+
+            .profile-user-card {
+                text-align: center;
+                padding-bottom: 1.5rem;
+                border-bottom: 1px solid var(--gray-100);
+            }
+
+            .profile-user-avatar-wrapper {
+                width: 80px;
+                height: 80px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+                margin: 0 auto 1rem;
+                border: 4px solid white;
+                box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                overflow: hidden;
+            }
+
+            .profile-user-avatar-wrapper:has(img[src]:not([src=""])) {
+                background: transparent;
+            }
+
+            .profile-user-avatar {
+                width: 100%;
+                height: 100%;
+                border-radius: 50%;
+                object-fit: cover;
+                display: none;
+            }
+
+            .profile-user-avatar[src]:not([src=""]) {
+                display: block;
+            }
+
+            .profile-user-avatar-wrapper::before {
+                content: '👤';
+                font-size: 2.5rem;
+            }
+
+            .profile-user-avatar-wrapper:has(img[src]:not([src=""]))::before,
+            .profile-user-avatar-wrapper:has(#pc-profile-initial:not(:empty))::before {
+                display: none;
+            }
+
+            .profile-user-name {
+                font-size: 1.25rem;
+                font-weight: 700;
+                color: var(--gray-900);
+                margin-bottom: 0.25rem;
+            }
+
+            .profile-user-role {
+                font-size: 0.875rem;
+                color: var(--gray-500);
+            }
+
+            .profile-user-stats {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.5rem;
+                padding: 1rem 0;
+            }
+
+            .profile-user-stat {
+                text-align: center;
+            }
+
+            .profile-user-stat-value {
+                font-size: 1.25rem;
+                font-weight: 700;
+                color: var(--primary);
+                display: block;
+            }
+
+            .profile-user-stat-label {
+                font-size: 0.75rem;
+                color: var(--gray-500);
+            }
+
+            .profile-sidebar-menu {
+                display: flex;
+                flex-direction: column;
+                gap: 0.25rem;
+            }
+
+            .profile-sidebar-title {
+                font-size: 0.75rem;
+                font-weight: 600;
+                color: var(--gray-400);
+                text-transform: uppercase;
+                letter-spacing: 0.1em;
+                margin-bottom: 0.75rem;
+                padding-left: 0.75rem;
+            }
+
+            .profile-sidebar-item {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                padding: 0.75rem;
+                border-radius: var(--radius);
+                cursor: pointer;
+                transition: all 0.2s ease;
+                text-decoration: none;
+                color: var(--gray-700);
+                border: none;
+                background: transparent;
+                font-size: 0.9375rem;
+                text-align: left;
+                width: 100%;
+            }
+
+            .profile-sidebar-item:hover {
+                background: var(--gray-100);
+                color: var(--gray-900);
+            }
+
+            .profile-sidebar-item.active {
+                background: var(--primary);
+                color: white;
+            }
+
+            .profile-sidebar-icon {
+                width: 32px;
+                height: 32px;
+                border-radius: var(--radius);
+                background: var(--gray-100);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1rem;
+                flex-shrink: 0;
+            }
+
+            .profile-sidebar-item:hover .profile-sidebar-icon {
+                background: var(--gray-200);
+            }
+
+            .profile-sidebar-item.active .profile-sidebar-icon {
+                background: rgba(255,255,255,0.2);
+            }
+
+            .profile-main {
+                padding: 2rem;
+                overflow-y: auto;
+            }
+
+            .profile-main-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                margin-bottom: 2rem;
+            }
+
+            .profile-main-title {
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: var(--gray-900);
+            }
+
+            .profile-main-actions {
+                display: flex;
+                gap: 0.75rem;
+            }
+
+            .profile-btn {
+                padding: 0.625rem 1.25rem;
+                border-radius: var(--radius);
+                font-size: 0.875rem;
+                font-weight: 500;
+                white-space: nowrap;
+            }
+
+            .profile-card {
+                background: white;
+                border-radius: var(--radius-lg);
+                box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+                border: 1px solid var(--gray-200);
+                overflow: hidden;
+            }
+
+            .profile-card-header {
+                padding: 1.25rem 1.5rem;
+                border-bottom: 1px solid var(--gray-100);
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+            }
+
+            .profile-card-title {
+                font-size: 1rem;
+                font-weight: 600;
+                color: var(--gray-800);
+            }
+
+            .profile-card-body {
+                padding: 0;
+            }
+
+            .profile-card-item {
+                display: flex;
+                align-items: center;
+                padding: 1rem 1.5rem;
+                border-bottom: 1px solid var(--gray-100);
+                cursor: pointer;
+                transition: all 0.2s ease;
+                text-decoration: none;
+                color: inherit;
+                background: none;
+                border-left: none;
+                border-right: none;
+                border-top: none;
+                width: 100%;
+                text-align: left;
+                font-family: inherit;
+                font-size: inherit;
+                margin: 0;
+                box-sizing: border-box;
+                white-space: nowrap;
+            }
+
+            .profile-card-item:last-child {
+                border-bottom: none;
+            }
+
+            .profile-card-item:hover {
+                background: var(--gray-50);
+            }
+
+            .profile-card-item-icon {
+                width: 40px;
+                height: 40px;
+                border-radius: var(--radius);
+                background: var(--gray-100);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 1.25rem;
+                margin-right: 1rem;
+                flex-shrink: 0;
+            }
+
+            .profile-card-item-content {
+                flex: 1;
+                min-width: 0;
+            }
+
+            .profile-card-item-title {
+                font-size: 0.9375rem;
+                font-weight: 500;
+                color: var(--gray-800);
+                margin-bottom: 0.125rem;
+                line-height: 1.4;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .profile-card-item-desc {
+                font-size: 0.8125rem;
+                color: var(--gray-500);
+                line-height: 1.4;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .profile-card-item-arrow {
+                font-size: 1.25rem;
+                color: var(--gray-400);
+                margin-left: 0.5rem;
+                flex-shrink: 0;
+                line-height: 1;
+            }
+
+            .profile-sidebar-item.admin-only,
+            #pc-logout-item {
+                display: none !important;
+            }
+
+            .profile-sidebar-item.admin-only.visible,
+            #pc-logout-item.visible {
+                display: flex !important;
+            }
+
+            .profile-hero,
+            .profile-stats-wrapper,
+            .profile-actions,
+            .profile-menu-section,
+            .profile-list-section,
+            .profile-pc-layout,
+            .profile-right-section {
+                display: none !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .profile-sidebar,
+            .profile-main,
+            .profile-user-card,
+            .profile-sidebar-menu,
+            #profile-avatar {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo"></a>
+            <ul class="nav-menu">
+                <li><a href="index.html">首页</a></li>
+                <li><a href="requests.html">需求大厅</a></li>
+                <li><a href="about.html">关于我们</a></li>
+            </ul>
+            <div class="nav-actions-placeholder"></div>
+        </div>
+    </nav>
+
+    <section class="mobile-profile">
+        <div class="profile-hero">
+            <div class="profile-header-top">
+                <div class="profile-greeting">
+                    <div class="profile-greeting-label">个人中心</div>
+                    <div class="profile-greeting-name" id="profile-name">加载中...</div>
+                </div>
+            </div>
+        </div>
+        <script>
+            (function() {
+                const user = window.__INITIAL_USER__;
+                if (user) {
+                    const nameEl = document.getElementById('profile-name');
+                    const statsDiv = document.getElementById('profile-stats');
+                    if (nameEl) nameEl.textContent = user.nickname || user.username || '用户';
+                    if (statsDiv) statsDiv.style.display = 'flex';
+                    const helpCount = Number(user?.help_count) || 0;
+                    const requestCount = Number(user?.request_count) || 0;
+                    const statHelp = document.getElementById('stat-help');
+                    const statRequest = document.getElementById('stat-request');
+                    if (statHelp) statHelp.textContent = helpCount;
+                    if (statRequest) statRequest.textContent = requestCount;
+                }
+            })();
+        </script>
+
+        <div class="profile-stats-wrapper">
+            <div class="profile-stats" id="profile-stats" style="display: none;">
+                <div class="profile-stat-card">
+                    <span class="profile-stat-value" id="stat-help">0</span>
+                    <span class="profile-stat-label">帮助次数</span>
+                </div>
+                <div class="profile-stat-card">
+                    <span class="profile-stat-value" id="stat-request">0</span>
+                    <span class="profile-stat-label">发布需求</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="profile-pc-layout">
+            <div class="profile-menu-section">
+
+                <div class="profile-menu-grid">
+                    <button class="profile-menu-item" onclick="switchTab('requests')">
+                        <span class="profile-menu-icon">📋</span>
+                        <span class="profile-menu-label">我的需求</span>
+                    </button>
+                    <button class="profile-menu-item" onclick="switchTab('helps')">
+                        <span class="profile-menu-icon">🤝</span>
+                        <span class="profile-menu-label">我的帮助</span>
+                    </button>
+                    <button class="profile-menu-item" onclick="switchTab('messages')">
+                        <span class="profile-menu-icon">💬</span>
+                        <span class="profile-menu-label">我的消息</span>
+                    </button>
+                    <button class="profile-menu-item" onclick="switchTab('wallet')">
+                        <span class="profile-menu-icon">💰</span>
+                        <span class="profile-menu-label">我的钱包</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="profile-right-section">
+                <div class="profile-list-section">
+                    <div class="profile-list">
+                        <button class="profile-list-item" onclick="switchTab('settings')">
+                            <div class="profile-list-icon">⚙️</div>
+                            <div class="profile-list-content">
+                                <div class="profile-list-title">个人设置</div>
+                                <div class="profile-list-desc">修改个人资料</div>
+                            </div>
+                            <span class="profile-list-arrow">›</span>
+                        </button>
+                        <a href="history.html" class="profile-list-item">
+                            <div class="profile-list-icon">📜</div>
+                            <div class="profile-list-content">
+                                <div class="profile-list-title">历史记录</div>
+                                <div class="profile-list-desc">查看过往需求</div>
+                            </div>
+                            <span class="profile-list-arrow">›</span>
+                        </a>
+                        <a href="javascript:;" class="profile-list-item admin-only" onclick="goToAdmin()">
+                            <div class="profile-list-icon">🔧</div>
+                            <div class="profile-list-content">
+                                <div class="profile-list-title">管理中心</div>
+                                <div class="profile-list-desc">管理员入口</div>
+                            </div>
+                            <span class="profile-list-arrow">›</span>
+                        </a>
+                        <a href="javascript:;" class="profile-list-item" id="logout-item" onclick="logout()">
+                            <div class="profile-list-icon">🚪</div>
+                            <div class="profile-list-content">
+                                <div class="profile-list-title">退出登录</div>
+                                <div class="profile-list-desc">安全退出账号</div>
+                            </div>
+                            <span class="profile-list-arrow">›</span>
+                        </a>
+                    </div>
+                </div>
+
+                <div class="profile-content" id="profile-content" style="display: none;">
+                </div>
+            </div>
+        </div>
+
+        <aside class="profile-sidebar">
+            <div class="profile-user-card">
+                <div class="profile-user-avatar-wrapper" id="pc-avatar-wrapper" style="background:transparent;">
+                    <img class="profile-user-avatar" id="pc-profile-avatar" src="" alt="" style="display:none;">
+                    <div id="pc-profile-initial" style="width:72px; height:72px; border-radius:50%; background:linear-gradient(135deg, #22c55e, #4ade80); color:white; font-size:28px; font-weight:bold; text-align:center; line-height:72px;"><script>document.write(window.__USER_INITIAL__ || '')</script></div>
+                </div>
+                <div class="profile-user-name" id="pc-profile-name">加载中...</div>
+                <div class="profile-user-role" id="pc-profile-role">普通用户</div>
+                
+                <div class="profile-user-stats" id="pc-profile-stats" style="display: none;">
+                    <div class="profile-user-stat">
+                        <span class="profile-user-stat-value" id="pc-stat-help">0</span>
+                        <span class="profile-user-stat-label">帮助</span>
+                    </div>
+                    <div class="profile-user-stat">
+                        <span class="profile-user-stat-value" id="pc-stat-request">0</span>
+                        <span class="profile-user-stat-label">需求</span>
+                    </div>
+                </div>
+            </div>
+            <script>
+                (function() {
+                    const user = window.__INITIAL_USER__;
+                    if (user) {
+                        const nameEl = document.getElementById('pc-profile-name');
+                        const avatarImg = document.getElementById('pc-profile-avatar');
+                        const initialDiv = document.getElementById('pc-profile-initial');
+                        const roleEl = document.getElementById('pc-profile-role');
+                        const statsDiv = document.getElementById('pc-profile-stats');
+                        const avatarWrapper = document.getElementById('pc-avatar-wrapper');
+                        if (nameEl) nameEl.textContent = user.nickname || user.username || '用户';
+                        if (roleEl) roleEl.textContent = user.username === 'admin' ? '管理员' : '普通用户';
+                        if (avatarImg && initialDiv) {
+                            const seed = user.nickname || user.username || '用户';
+                            let initial = '';
+                            if (seed && typeof seed === 'string') {
+                                const name = seed.trim();
+                                if (name.length > 0) {
+                                    const firstChar = name.charAt(0);
+                                    if (/[\u4e00-\u9fa5]/.test(firstChar)) {
+                                        initial = firstChar;
+                                    } else {
+                                        initial = firstChar.toUpperCase();
+                                    }
+                                }
+                            }
+                            if (initial) {
+                                avatarImg.style.display = 'none';
+                                initialDiv.style.display = 'block';
+                                initialDiv.textContent = initial;
+                                if (avatarWrapper) avatarWrapper.style.background = 'transparent';
+                            }
+                        }
+                        if (statsDiv) statsDiv.style.display = 'grid';
+                        const helpCount = Number(user?.help_count) || 0;
+                        const requestCount = Number(user?.request_count) || 0;
+                        const statHelp = document.getElementById('pc-stat-help');
+                        const statRequest = document.getElementById('pc-stat-request');
+                        if (statHelp) statHelp.textContent = helpCount;
+                        if (statRequest) statRequest.textContent = requestCount;
+                    }
+                })();
+            </script>
+
+            <nav class="profile-sidebar-menu">
+                <div class="profile-sidebar-title">我的服务</div>
+                <button class="profile-sidebar-item" onclick="switchTab('requests')">
+                    <span class="profile-sidebar-icon">📋</span>
+                    <span>我的需求</span>
+                </button>
+                <button class="profile-sidebar-item" onclick="switchTab('helps')">
+                    <span class="profile-sidebar-icon">🤝</span>
+                    <span>我的帮助</span>
+                </button>
+                <button class="profile-sidebar-item" onclick="switchTab('messages')">
+                    <span class="profile-sidebar-icon">💬</span>
+                    <span>我的消息</span>
+                </button>
+                <button class="profile-sidebar-item" onclick="switchTab('wallet')">
+                    <span class="profile-sidebar-icon">💰</span>
+                    <span>我的钱包</span>
+                </button>
+                
+                <div class="profile-sidebar-title" style="margin-top: 1.5rem;">设置</div>
+                <button class="profile-sidebar-item" onclick="switchTab('settings')">
+                    <span class="profile-sidebar-icon">⚙️</span>
+                    <span>个人设置</span>
+                </button>
+                <a href="history.html" class="profile-sidebar-item">
+                    <span class="profile-sidebar-icon">📜</span>
+                    <span>历史记录</span>
+                </a>
+                <button class="profile-sidebar-item admin-only" onclick="goToAdmin()">
+                    <span class="profile-sidebar-icon">🔧</span>
+                    <span>管理中心</span>
+                </button>
+                <button class="profile-sidebar-item" id="pc-logout-item" onclick="logout()">
+                    <span class="profile-sidebar-icon">🚪</span>
+                    <span>退出登录</span>
+                </button>
+            </nav>
+        </aside>
+
+        <main class="profile-main">
+            <div class="profile-main-header">
+                <h1 class="profile-main-title">个人中心</h1>
+                <div class="profile-main-actions" id="pc-profile-actions">
+                    <button class="profile-btn profile-btn-primary" onclick="showLoginModal()">
+                        <span>🔑</span>
+                        <span>登录</span>
+                    </button>
+                    <button class="profile-btn profile-btn-secondary" onclick="showRegisterModal()">
+                        <span>📝</span>
+                        <span>注册</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="profile-card" id="pc-profile-card">
+                <div class="profile-card-header">
+                    <span class="profile-card-title">快速入口</span>
+                </div>
+                <div class="profile-card-body">
+                    <button class="profile-card-item" onclick="switchTab('settings')">
+                        <span class="profile-card-item-icon">⚙️</span>
+                        <div class="profile-card-item-content">
+                            <div class="profile-card-item-title">个人设置</div>
+                            <div class="profile-card-item-desc">修改个人资料</div>
+                        </div>
+                        <span class="profile-card-item-arrow">›</span>
+                    </button>
+                    <a href="history.html" class="profile-card-item">
+                        <span class="profile-card-item-icon">📜</span>
+                        <div class="profile-card-item-content">
+                            <div class="profile-card-item-title">历史记录</div>
+                            <div class="profile-card-item-desc">查看过往需求</div>
+                        </div>
+                        <span class="profile-card-item-arrow">›</span>
+                    </a>
+                    <button class="profile-card-item admin-only" onclick="goToAdmin()">
+                        <span class="profile-card-item-icon">🔧</span>
+                        <div class="profile-card-item-content">
+                            <div class="profile-card-item-title">管理中心</div>
+                            <div class="profile-card-item-desc">管理员入口</div>
+                        </div>
+                        <span class="profile-card-item-arrow">›</span>
+                    </button>
+                </div>
+            </div>
+
+            <div class="profile-content" id="pc-profile-content" style="display: none; margin-top: 2rem;">
+            </div>
+        </main>
+
+        <div class="mobile-bottom-spacer"></div>
+    </section>
+
+    <div class="modal" id="detail-modal">
+        <div class="modal-overlay" onclick="closeDetailModal()"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="detail-title">详情</h3>
+                <button class="modal-close" onclick="closeDetailModal()">×</button>
+            </div>
+            <div class="modal-body" id="detail-content"></div>
+        </div>
+    </div>
+
+    <!-- 发布需求弹窗 -->
+    <div class="modal" id="publish-modal">
+        <div class="modal-content modal-xl publish-modal-v2">
+            <div class="modal-header-v2">
+                <div class="modal-header-content-v2">
+                    <div class="modal-icon-v2">
+                        <span class="icon-xl">✨</span>
+                    </div>
+                    <h2 class="modal-title-v2">发布需求</h2>
+                    <p class="modal-subtitle-v2">分享你的需求，让热心邻居来帮助你</p>
+                </div>
+                <button class="close-btn-v2" onclick="closePublishModal()">
+                    <span class="close-icon-v2">×</span>
+                </button>
+            </div>
+            <form id="publish-form" onsubmit="handlePublish(event)" class="publish-form-v2">
+                <div class="form-content-area">
+                    <div class="publish-steps-v2">
+                        <div class="step-item-v2 active" data-step="1" onclick="goToStep(1)">
+                            <div class="step-circle-v2">
+                                <div class="step-number-v2">1</div>
+                                <div class="step-check-v2">✓</div>
+                            </div>
+                            <span class="step-text-v2">基本信息</span>
+                        </div>
+                        <div class="step-item-v2" data-step="2" onclick="goToStep(2)">
+                            <div class="step-circle-v2">
+                                <div class="step-number-v2">2</div>
+                                <div class="step-check-v2">✓</div>
+                            </div>
+                            <span class="step-text-v2">时间信息</span>
+                        </div>
+                        <div class="step-item-v2" data-step="3" onclick="goToStep(3)">
+                            <div class="step-circle-v2">
+                                <div class="step-number-v2">3</div>
+                                <div class="step-check-v2">✓</div>
+                            </div>
+                            <span class="step-text-v2">确认发布</span>
+                        </div>
+                    </div>
+                    <div class="publish-step-content-v2">
+                        <div class="form-section-v2 active" data-step="1">
+                            <div class="form-group-v2">
+                                <label class="form-label-v2" for="publish-title">
+                                    <span class="label-icon-v2">📋</span>
+                                    需求标题
+                                    <span class="required-mark-v2">*</span>
+                                </label>
+                                <input type="text" name="title" id="publish-title" placeholder="简单描述你的需求，如：帮忙搬家具" required maxlength="100" style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); font-size: 14px; box-sizing: border-box;" autocomplete="off">
+                            </div>
+                            <div class="form-group-v2">
+                                <label class="form-label-v2" for="province-select">
+                                    <span class="label-icon-v2">📍</span>
+                                    位置
+                                    <span class="required-mark-v2">*</span>
+                                </label>
+                                <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                                    <select name="province" id="province-select" required onchange="updateCities()" style="flex: 1; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); font-size: 14px;" autocomplete="address-level1">
+                                        <option value="">省份</option>
+                                        <option value="北京市">北京</option>
+                                        <option value="天津市">天津</option>
+                                        <option value="上海市">上海</option>
+                                        <option value="重庆市">重庆</option>
+                                        <option value="河北省">河北</option>
+                                        <option value="山西省">山西</option>
+                                        <option value="辽宁省">辽宁</option>
+                                        <option value="吉林省">吉林</option>
+                                        <option value="黑龙江省">黑龙江</option>
+                                        <option value="江苏省">江苏</option>
+                                        <option value="浙江省">浙江</option>
+                                        <option value="安徽省">安徽</option>
+                                        <option value="福建省">福建</option>
+                                        <option value="江西省">江西</option>
+                                        <option value="山东省">山东</option>
+                                        <option value="河南省">河南</option>
+                                        <option value="湖北省">湖北</option>
+                                        <option value="湖南省">湖南</option>
+                                        <option value="广东省">广东</option>
+                                        <option value="海南省">海南</option>
+                                        <option value="四川省">四川</option>
+                                        <option value="贵州省">贵州</option>
+                                        <option value="云南省">云南</option>
+                                        <option value="陕西省">陕西</option>
+                                        <option value="甘肃省">甘肃</option>
+                                        <option value="青海省">青海</option>
+                                        <option value="台湾省">台湾</option>
+                                        <option value="内蒙古自治区">内蒙古</option>
+                                        <option value="广西壮族自治区">广西</option>
+                                        <option value="西藏自治区">西藏</option>
+                                        <option value="宁夏回族自治区">宁夏</option>
+                                        <option value="新疆维吾尔自治区">新疆</option>
+                                    </select>
+                                    <select name="city" id="city-select" required style="flex: 1; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); font-size: 14px;" autocomplete="address-level2">
+                                        <option value="">城市</option>
+                                    </select>
+                                    <button type="button" onclick="getCurrentLocation()" title="自动定位" style="padding: 10px 14px; background: var(--primary-color); border: none; border-radius: 8px; color: white; cursor: pointer; font-size: 14px; white-space: nowrap;">
+                                        📍 定位
+                                    </button>
+                                </div>
+                                <span id="location-status" style="font-size: 12px; color: var(--success-color); margin-left: 4px;"></span>
+                            </div>
+                            <div class="form-group-v2">
+                                <label class="form-label-v2" for="address-input">
+                                    <span class="label-icon-v2">🏠</span>
+                                    详细地址
+                                    <span class="required-mark-v2">*</span>
+                                </label>
+                                <input type="text" name="address" id="address-input" placeholder="详细地址：如xx小区xx号楼xx室" required style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); font-size: 14px; box-sizing: border-box;" autocomplete="street-address">
+                            </div>
+                            <div class="form-group-v2">
+                                <label class="form-label-v2" for="publish-reward">
+                                    <span class="label-icon-v2">💰</span>
+                                    报酬
+                                    <span class="required-mark-v2">*</span>
+                                </label>
+                                <input type="text" name="reward" id="publish-reward" placeholder="如：100元" required style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); font-size: 14px; box-sizing: border-box;" autocomplete="off">
+                            </div>
+                            <input type="hidden" name="lat" id="lat-input">
+                            <input type="hidden" name="lng" id="lng-input">
+                            <div class="form-group-v2">
+                                <label class="checkbox-label-v2" for="is_urgent_checkbox" style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; padding: 1rem; background: rgba(239, 68, 68, 0.05); border-radius: var(--radius-lg); border: 1px solid rgba(239, 68, 68, 0.2);">
+                                    <input type="checkbox" name="is_urgent" id="is_urgent_checkbox" class="checkbox-input-v2" style="width: 20px; height: 20px; cursor: pointer;" autocomplete="off">
+                                    <span style="color: var(--danger-color); font-weight: 500;">🔥 加急服务（优先展示，更快响应）</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-section-v2" data-step="2">
+                            <div class="form-group-v2">
+                                <label class="form-label-v2" for="start_time_select">
+                                    <span class="label-icon-v2">📅</span>
+                                    什么时候需要
+                                    <span class="required-mark-v2">*</span>
+                                </label>
+                                <select name="start_time" id="start_time_select" required onchange="toggleCustomStartTime()" style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); font-size: 14px; box-sizing: border-box;" autocomplete="off">
+                                    <option value="now">现在</option>
+                                    <option value="12h">12小时内</option>
+                                    <option value="week">一周内</option>
+                                    <option value="custom">自定义</option>
+                                </select>
+                                <input type="datetime-local" name="start_time_custom" id="start_time_custom" style="display: none; width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); font-size: 14px; box-sizing: border-box; margin-top: 8px;" autocomplete="off">
+                            </div>
+                            <div class="form-group-v2">
+                                <label class="form-label-v2" for="deadline-input">
+                                    <span class="label-icon-v2">⏰</span>
+                                    最晚什么时候
+                                    <span class="required-mark-v2">*</span>
+                                </label>
+                                <div class="deadline-selector" style="display: flex; align-items: center; gap: 8px;">
+                                    <button type="button" onclick="adjustDeadline(-1)" style="width: 36px; height: 36px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); cursor: pointer; font-size: 18px;">−</button>
+                                    <input type="date" name="deadline" id="deadline-input" required style="flex: 1; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); font-size: 14px; text-align: center;" autocomplete="off">
+                                    <button type="button" onclick="adjustDeadline(1)" style="width: 36px; height: 36px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); cursor: pointer; font-size: 18px;">+</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-section-v2 confirm-section-v2" data-step="3">
+                            <div class="confirm-card-v2">
+                                <div class="confirm-header-v2">
+                                    <span class="confirm-icon-v2">📋</span>
+                                    <h4 class="confirm-title-v2">确认需求信息</h4>
+                                </div>
+                                <div class="confirm-body-v2">
+                                    <div class="confirm-item-v2">
+                                        <span class="confirm-label-v2">需求标题：</span>
+                                        <span class="confirm-value-v2" id="confirm-title">未填写</span>
+                                    </div>
+                                    <div class="confirm-item-v2">
+                                        <span class="confirm-label-v2">位置：</span>
+                                        <span class="confirm-value-v2" id="confirm-location">未填写</span>
+                                    </div>
+                                    <div class="confirm-item-v2">
+                                        <span class="confirm-label-v2">详细地址：</span>
+                                        <span class="confirm-value-v2" id="confirm-address">未填写</span>
+                                    </div>
+                                    <div class="confirm-item-v2">
+                                        <span class="confirm-label-v2">报酬：</span>
+                                        <span class="confirm-value-v2" id="confirm-reward">未填写</span>
+                                    </div>
+                                    <div class="confirm-item-v2">
+                                        <span class="confirm-label-v2">需要时间：</span>
+                                        <span class="confirm-value-v2" id="confirm-start-time">未填写</span>
+                                    </div>
+                                    <div class="confirm-item-v2">
+                                        <span class="confirm-label-v2">最晚时间：</span>
+                                        <span class="confirm-value-v2" id="confirm-deadline">未填写</span>
+                                    </div>
+                                    <div class="confirm-item-v2">
+                                        <span class="confirm-label-v2">加急服务：</span>
+                                        <span class="confirm-value-v2" id="confirm-urgent">否</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="form-actions-v2">
+                    <div class="step-navigation-v2">
+                        <button type="button" class="btn-secondary-v2" onclick="prevStep()" id="prev-step-btn">
+                            <span class="btn-icon-v2">←</span>
+                            <span class="btn-text-v2">上一步</span>
+                        </button>
+                        <button type="button" class="btn-primary-v2" onclick="nextStep()" id="next-step-btn">
+                            <span class="btn-icon-v2">→</span>
+                            <span class="btn-text-v2">下一步</span>
+                        </button>
+                    </div>
+                    <div class="submit-actions-v2">
+                        <button type="button" class="btn-secondary-v2" onclick="closePublishModal()">
+                            <span class="btn-icon-v2">✕</span>
+                            <span class="btn-text-v2">取消</span>
+                        </button>
+                        <button type="submit" class="btn-primary-v2" id="submit-btn">
+                            <span class="btn-icon-v2">📤</span>
+                            <span class="btn-text-v2">发布需求</span>
+                            <span class="btn-loader-v2"></span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <nav class="mobile-bottom-nav">
+        <div class="nav-items">
+            <a href="index.html" class="nav-item" data-page="home">
+                <span class="icon">🏠</span>
+                <span>首页</span>
+            </a>
+            <a href="requests.html" class="nav-item" data-page="requests">
+                <span class="icon">📋</span>
+                <span>需求</span>
+            </a>
+            <button class="nav-item publish-btn" onclick="showPublishModal()">
+                <span class="icon">+</span>
+            </button>
+            <button class="nav-item" onclick="goToNotifications()">
+                <span class="icon">🔔</span>
+                <span>消息</span>
+            </button>
+            <a href="profile.html" class="nav-item active">
+                <span class="icon">👤</span>
+                <span>我的</span>
+            </a>
+        </div>
+    </nav>
+
+    <script src="js/mockData.js"></script>
+    <script src="js/datetime-picker.js" defer></script>
+    <script src="js/app.js"></script>
+    <script>
+        // 注意：不要重新声明 currentUser 和 authToken！
+        // 因为 app.js 已经声明了全局变量，这里重新声明会覆盖登录状态！
+        
+        // 强制清除旧的admin登录状态（只有没有token时才清除）
+        (function() {
+            const user = localStorage.getItem('current_user');
+            const token = localStorage.getItem('auth_token');
+            if (user && !token) {
+                try {
+                    const parsedUser = JSON.parse(user);
+                    if (parsedUser && parsedUser.username === 'admin') {
+                        console.log('🚨 [profile.html] 检测到admin数据无token，强制清除');
+                        localStorage.removeItem('auth_token');
+                        localStorage.removeItem('current_user');
+                    }
+                } catch (e) {}
+            }
+        })();
+        
+        // 检查是否是退出登录后刷新（不自动弹登录框）
+        const isLoggedOut = sessionStorage.getItem('just_logged_out');
+        if (isLoggedOut) {
+            sessionStorage.removeItem('just_logged_out');
+        }
+        
+
+        document.addEventListener('DOMContentLoaded', async function() {
+            // 直接从 localStorage 获取 token，不要依赖全局变量
+            const storedToken = localStorage.getItem('auth_token');
+            const storedUser = localStorage.getItem('current_user');
+            
+            if (storedToken && storedUser) {
+                if (typeof loadAuthState === 'function') {
+                    loadAuthState();
+                }
+                if (typeof loadCurrentUser === 'function') {
+                    await loadCurrentUser();
+                }
+            }
+            // 确保 currentUser 已经加载完成后再调用
+            initProfilePage();
+        });
+
+        function initProfilePage() {
+            // 从 localStorage 读取最新的用户数据
+            const storedUser = localStorage.getItem('current_user');
+            if (storedUser) {
+                try {
+                    currentUser = JSON.parse(storedUser);
+                } catch (e) {
+                    console.error('解析用户数据失败:', e);
+                }
+            }
+            console.log('initProfilePage - currentUser:', currentUser);
+            console.log('help_count:', currentUser?.help_count);
+            console.log('request_count:', currentUser?.request_count);
+            updateProfileUI();
+
+            // 检查 URL 参数，自动切换标签
+            const urlParams = new URLSearchParams(window.location.search);
+            const tab = urlParams.get('tab');
+            if (tab && ['requests', 'helps', 'messages', 'wallet', 'settings'].includes(tab)) {
+                switchTab(tab);
+            }
+        }
+
+        function updateProfileUI() {
+            const avatar = document.getElementById('profile-avatar');
+            const name = document.getElementById('profile-name');
+            const stats = document.getElementById('profile-stats');
+            const actions = document.getElementById('profile-actions');
+            const logoutItem = document.getElementById('logout-item');
+            const adminItems = document.querySelectorAll('.admin-only');
+
+            const pcAvatar = document.getElementById('pc-profile-avatar');
+            const pcName = document.getElementById('pc-profile-name');
+            const pcRole = document.getElementById('pc-profile-role');
+            const pcStats = document.getElementById('pc-profile-stats');
+            const pcActions = document.getElementById('pc-profile-actions');
+            const pcLogoutItem = document.getElementById('pc-logout-item');
+
+            if (currentUser) {
+                if (avatar) avatar.src = getAvatar(currentUser.username || currentUser.nickname);
+                if (name) name.textContent = currentUser.nickname || currentUser.username;
+                if (stats) stats.style.display = 'flex';
+                
+                const helpCount = Number(currentUser?.help_count) || 0;
+                const requestCount = Number(currentUser?.request_count) || 0;
+                const statHelpEl = document.getElementById('stat-help');
+                const statRequestEl = document.getElementById('stat-request');
+                if (statHelpEl) statHelpEl.textContent = helpCount;
+                if (statRequestEl) statRequestEl.textContent = requestCount;
+
+                if (actions) {
+                    actions.innerHTML = `
+                        <button class="profile-btn profile-btn-primary" onclick="switchTab('settings')">
+                            <span>✏️</span>
+                            <span>编辑资料</span>
+                        </button>
+                        <button class="profile-btn profile-btn-secondary" onclick="logout()">
+                            <span>🚪</span>
+                            <span>退出</span>
+                        </button>
+                    `;
+                }
+
+                if (logoutItem) logoutItem.classList.add('visible');
+
+                const isAdmin = currentUser.username === 'admin';
+                adminItems.forEach(item => {
+                    if (isAdmin) {
+                        item.classList.add('visible');
+                    }
+                });
+
+                if (pcAvatar) {
+                    pcAvatar.src = getAvatar(currentUser.username || currentUser.nickname);
+                }
+                if (pcName) pcName.textContent = currentUser.nickname || currentUser.username;
+                if (pcRole) pcRole.textContent = isAdmin ? '管理员' : '普通用户';
+                if (pcStats) {
+                    pcStats.style.display = 'grid';
+                    const pcStatHelpEl = document.getElementById('pc-stat-help');
+                    const pcStatRequestEl = document.getElementById('pc-stat-request');
+                    if (pcStatHelpEl) pcStatHelpEl.textContent = helpCount;
+                    if (pcStatRequestEl) pcStatRequestEl.textContent = requestCount;
+                }
+                if (pcActions) {
+                    pcActions.innerHTML = `
+                        <button class="profile-btn profile-btn-primary" onclick="switchTab('settings')">
+                            <span>✏️</span>
+                            <span>编辑资料</span>
+                        </button>
+                        <button class="profile-btn profile-btn-secondary" onclick="logout()">
+                            <span>🚪</span>
+                            <span>退出</span>
+                        </button>
+                    `;
+                }
+                if (pcLogoutItem) pcLogoutItem.classList.add('visible');
+            } else {
+                if (avatar) avatar.src = '';
+                if (name) name.textContent = '请登录';
+                if (stats) stats.style.display = 'none';
+
+                if (actions) {
+                    actions.innerHTML = `
+                        <button class="profile-btn profile-btn-primary" onclick="showLoginModal()">
+                            <span>🔑</span>
+                            <span>登录</span>
+                        </button>
+                        <button class="profile-btn profile-btn-secondary" onclick="showRegisterModal()">
+                            <span>📝</span>
+                            <span>注册</span>
+                        </button>
+                    `;
+                }
+
+                if (logoutItem) logoutItem.classList.remove('visible');
+                adminItems.forEach(item => {
+                    item.classList.remove('visible');
+                });
+
+                if (pcAvatar) pcAvatar.src = '';
+                if (pcName) pcName.textContent = '请登录';
+                if (pcRole) pcRole.textContent = '游客';
+                if (pcStats) pcStats.style.display = 'none';
+                if (pcActions) {
+                    pcActions.innerHTML = `
+                        <button class="profile-btn profile-btn-primary" onclick="showLoginModal()">
+                            <span>🔑</span>
+                            <span>登录</span>
+                        </button>
+                        <button class="profile-btn profile-btn-secondary" onclick="showRegisterModal()">
+                            <span>📝</span>
+                            <span>注册</span>
+                        </button>
+                    `;
+                }
+                if (pcLogoutItem) pcLogoutItem.classList.remove('visible');
+            }
+        }
+
+        function switchTab(tab) {
+            if (!currentUser && tab !== 'settings') {
+                showLoginModal();
+                return;
+            }
+
+            const content = document.getElementById('profile-content');
+            content.style.display = 'block';
+            
+            document.querySelector('.profile-menu-section').style.display = 'none';
+            document.querySelector('.profile-list-section').style.display = 'none';
+
+            switch(tab) {
+                case 'requests':
+                    content.innerHTML = renderMyRequests();
+                    loadMyRequests();
+                    break;
+                case 'helps':
+                    content.innerHTML = renderMyHelps();
+                    loadMyHelps();
+                    break;
+                case 'messages':
+                    content.innerHTML = renderMyMessages();
+                    break;
+                case 'wallet':
+                    content.innerHTML = renderMyWallet();
+                    break;
+                case 'settings':
+                    content.innerHTML = renderSettings();
+                    break;
+            }
+        }
+
+        function backToMain() {
+            document.getElementById('profile-content').style.display = 'none';
+            document.querySelector('.profile-menu-section').style.display = 'block';
+            document.querySelector('.profile-list-section').style.display = 'block';
+        }
+
+        function renderMyRequests() {
+            return `
+                <div style="padding: 0 1.25rem;">
+                    <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                        <button onclick="backToMain()" style="background: none; border: none; font-size: 1.25rem; margin-right: 0.5rem; cursor: pointer;">←</button>
+                        <h3 class="profile-section-title" style="margin: 0;">我的需求</h3>
+                    </div>
+                    <div id="requests-list">
+                        <div class="profile-empty">
+                            <div class="profile-empty-icon">⏳</div>
+                            <h4>加载中...</h4>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderMyHelps() {
+            return `
+                <div style="padding: 0 1.25rem;">
+                    <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                        <button onclick="backToMain()" style="background: none; border: none; font-size: 1.25rem; margin-right: 0.5rem; cursor: pointer;">←</button>
+                        <h3 class="profile-section-title" style="margin: 0;">我的帮助</h3>
+                    </div>
+                    <div id="helps-list">
+                        <div class="profile-empty">
+                            <div class="profile-empty-icon">⏳</div>
+                            <h4>加载中...</h4>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function loadMyHelps() {
+            const helpsList = document.getElementById('helps-list');
+            if (!helpsList) return;
+
+            try {
+                const token = localStorage.getItem('auth_token');
+                const response = await fetch('/api/requests/my-helps', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                const result = await response.json();
+
+                if (!result.success || !result.data || result.data.length === 0) {
+                    helpsList.innerHTML = `
+                        <div class="profile-empty">
+                            <div class="profile-empty-icon">🤝</div>
+                            <h4>暂无帮助记录</h4>
+                            <p>您还没有帮助过其他用户</p>
+                            <button class="profile-btn profile-btn-primary" onclick="window.location.href='requests.html'" style="width: auto; padding: 0.75rem 1.5rem;">
+                                去帮助别人
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const helpsHtml = result.data.map(req => `
+                    <div class="request-card" style="margin-bottom: 1rem; padding: 1rem; border: 1px solid var(--border-color); border-radius: 8px;">
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem;">
+                            <h4 style="margin: 0; font-size: 1rem;">${req.title}</h4>
+                            <span class="status-badge status-${req.status}">${getStatusText(req.status)}</span>
+                        </div>
+                        <p style="margin: 0.5rem 0; color: var(--text-secondary); font-size: 0.875rem;">${req.description || ''}</p>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 0.75rem;">
+                            <span style="color: var(--primary-color); font-weight: 500;">💰 ${req.reward || '无报酬'}</span>
+                            <span style="color: var(--text-secondary); font-size: 0.75rem;">${req.created_at || ''}</span>
+                        </div>
+                        <div style="margin-top: 0.75rem; display: flex; gap: 0.5rem;">
+                            <button class="profile-btn profile-btn-primary" onclick="showRequestDetail(${req.id})" style="flex: 1; padding: 0.5rem;">查看详情</button>
+                            ${req.status === 'accepted' ? `
+                                <button class="profile-btn profile-btn-secondary" onclick="updateHelperStatus(${req.id}, 'arrived')" style="flex: 1; padding: 0.5rem;">我已到达</button>
+                                <button class="profile-btn profile-btn-success" onclick="markComplete(${req.id})" style="flex: 1; padding: 0.5rem;">标记完成</button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `).join('');
+
+                helpsList.innerHTML = helpsHtml;
+            } catch (error) {
+                console.error('加载我的帮助失败:', error);
+                helpsList.innerHTML = `
+                    <div class="profile-empty">
+                        <div class="profile-empty-icon">❌</div>
+                        <h4>加载失败</h4>
+                        <p>请稍后重试</p>
+                    </div>
+                `;
+            }
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'pending': '待接单',
+                'accepted': '进行中',
+                'completed': '已完成',
+                'cancelled': '已取消'
+            };
+            return statusMap[status] || status;
+        }
+
+        function renderMyMessages() {
+            return `
+                <div style="padding: 0 1.25rem;">
+                    <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                        <button onclick="backToMain()" style="background: none; border: none; font-size: 1.25rem; margin-right: 0.5rem; cursor: pointer;">←</button>
+                        <h3 class="profile-section-title" style="margin: 0;">我的消息</h3>
+                    </div>
+                    <div class="profile-empty">
+                        <div class="profile-empty-icon">📭</div>
+                        <h4>暂无新消息</h4>
+                        <p>当有新的通知时，会显示在这里</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderMyWallet() {
+            return `
+                <div style="padding: 0 1.25rem;">
+                    <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                        <button onclick="backToMain()" style="background: none; border: none; font-size: 1.25rem; margin-right: 0.5rem; cursor: pointer;">←</button>
+                        <h3 class="profile-section-title" style="margin: 0;">我的钱包</h3>
+                    </div>
+                    <div class="profile-empty">
+                        <div class="profile-empty-icon">💳</div>
+                        <h4>钱包功能开发中</h4>
+                        <p>敬请期待...</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function renderSettings() {
+            if (!currentUser) {
+                return `
+                    <div style="padding: 0 1.25rem;">
+                        <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                            <button onclick="backToMain()" style="background: none; border: none; font-size: 1.25rem; margin-right: 0.5rem; cursor: pointer;">←</button>
+                            <h3 class="profile-section-title" style="margin: 0;">个人设置</h3>
+                        </div>
+                        <div class="profile-login-card">
+                            <div class="profile-login-icon">🔒</div>
+                            <div class="profile-login-title">请先登录</div>
+                            <div class="profile-login-desc">登录后即可编辑个人资料</div>
+                            <button class="profile-btn profile-btn-primary" onclick="showLoginModal()" style="width: 100%;">
+                                立即登录
+                            </button>
+                        </div>
+                    </div>
+                `;
+            }
+            return `
+                <div style="padding: 0 1.25rem;">
+                    <div style="display: flex; align-items: center; margin-bottom: 1rem;">
+                        <button onclick="backToMain()" style="background: none; border: none; font-size: 1.25rem; margin-right: 0.5rem; cursor: pointer;">←</button>
+                        <h3 class="profile-section-title" style="margin: 0;">个人设置</h3>
+                    </div>
+                    <div style="background: white; border-radius: var(--radius-md); border: 1px solid var(--gray-100); padding: 1.25rem;">
+                        <div class="profile-form-group">
+                            <label class="profile-form-label" for="setting-nickname">用户名</label>
+                            <input type="text" class="profile-form-input" id="setting-nickname" value="${currentUser.nickname || ''}" placeholder="请输入用户名" autocomplete="nickname">
+                        </div>
+                        <div class="profile-form-group">
+                            <label class="profile-form-label" for="setting-phone">手机号</label>
+                            <input type="tel" class="profile-form-input" id="setting-phone" value="${currentUser.phone || ''}" placeholder="请输入手机号" autocomplete="tel">
+                        </div>
+                        <div class="profile-form-group">
+                            <label class="profile-form-label" for="setting-location">位置</label>
+                            <input type="text" class="profile-form-input" id="setting-location" value="${currentUser.location || ''}" placeholder="请输入您的位置" autocomplete="address-level1">
+                        </div>
+                        <div class="profile-form-group">
+                            <label class="profile-form-label" for="setting-address">详细地址</label>
+                            <input type="text" class="profile-form-input" id="setting-address" value="${currentUser.address || ''}" placeholder="请输入详细地址，如xx小区xx号楼xx室" autocomplete="street-address">
+                        </div>
+                        <div class="profile-form-group">
+                            <label class="profile-form-label" for="setting-email">邮箱</label>
+                            <input type="email" class="profile-form-input" id="setting-email" value="${currentUser.email || ''}" placeholder="请输入邮箱" autocomplete="email">
+                        </div>
+                        <button class="profile-btn profile-btn-primary" onclick="saveSettings()" style="width: 100%; margin-top: 0.5rem;">
+                            保存设置
+                        </button>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function loadMyRequests() {
+            if (!currentUser) return;
+
+            try {
+                const result = await mockAPI.getMyRequests();
+                const list = document.getElementById('requests-list');
+
+                if (!result.success || !result.data || result.data.length === 0) {
+                    list.innerHTML = `
+                        <div class="profile-empty">
+                            <div class="profile-empty-icon">📭</div>
+                            <h4>暂无需求</h4>
+                            <p>您还没有发布过任何需求</p>
+                            <button class="profile-btn profile-btn-primary" onclick="showPublishModal()" style="width: auto; padding: 0.75rem 1.5rem;">
+                                发布需求
+                            </button>
+                        </div>
+                    `;
+                    return;
+                }
+
+                list.innerHTML = result.data.map(request => `
+                    <div class="profile-request-card">
+                        <div class="profile-request-header">
+                            <span class="profile-request-status ${request.status}">${getStatusText(request.status)}</span>
+                        </div>
+                        <div class="profile-request-title">${request.title}</div>
+                        <div class="profile-request-meta">${request.category} · ${formatDate(request.created_at)}</div>
+                    </div>
+                `).join('');
+            } catch (error) {
+                console.error('加载需求失败', error);
+            }
+        }
+
+        async function saveSettings() {
+            if (!currentUser) return;
+
+            const nickname = document.getElementById('setting-nickname').value;
+            const phone = document.getElementById('setting-phone').value;
+            const location = document.getElementById('setting-location').value;
+            const address = document.getElementById('setting-address').value;
+            const email = document.getElementById('setting-email').value;
+
+            try {
+                const response = await fetch('/api/users/profile', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({
+                        nickname,
+                        phone,
+                        location,
+                        address,
+                        email
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    currentUser = { ...currentUser, nickname, phone, location, address, email };
+                    localStorage.setItem('current_user', JSON.stringify(currentUser));
+                    updateProfileUI();
+                    showToast('设置保存成功', 'success');
+                    backToMain();
+                } else {
+                    showToast(result.message || '保存失败', 'error');
+                }
+            } catch (error) {
+                showToast('保存失败，请重试', 'error');
+            }
+        }
+
+        function goToAdmin() {
+            window.location.href = 'index.html?showAdmin=true';
+        }
+
+        function getStatusText(status) {
+            const statusMap = {
+                'pending': '待帮助',
+                'accepted': '进行中',
+                'completed': '已完成',
+                'cancelled': '已取消'
+            };
+            return statusMap[status] || status;
+        }
+
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('zh-CN');
+        }
+
+        // 检查登录状态并跳转到登录页面
+        function checkLoginAndShowModal(targetUrl) {
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                // 未登录，跳转到首页并显示登录弹窗
+                const redirectUrl = targetUrl || 'profile.html';
+                window.location.href = 'index.html?showLogin=1&redirect=' + encodeURIComponent(redirectUrl);
+                return false;
+            }
+            return true;
+        }
+
+        // 覆盖原来的switchTab函数，添加登录检查
+        const originalSwitchTab = switchTab;
+        switchTab = function(tab) {
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                // 未登录，跳转到首页并显示登录弹窗
+                const targetUrl = 'profile.html?tab=' + tab;
+                window.location.href = 'index.html?showLogin=1&redirect=' + encodeURIComponent(targetUrl);
+                return;
+            }
+            // 已登录，执行原来的逻辑
+            originalSwitchTab(tab);
+        };
+    </script>
+</body>
+</html>

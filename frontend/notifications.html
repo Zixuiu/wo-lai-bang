@@ -1,0 +1,1069 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>消息 - 我来帮</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔔</text></svg>">
+    <link rel="stylesheet" href="css/style.css?v=3">
+    <link rel="stylesheet" href="css/no-animation.css">
+    <style>
+        .main-content {
+            padding: 0 !important;
+        }
+        .notifications-page {
+            padding: 0 16px 20px;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .page-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 12px 16px;
+            margin: 0 -16px 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .page-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .page-header h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #111827;
+            margin: 0;
+        }
+        .back-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #6b7280;
+            font-size: 1.25rem;
+            transition: all 0.2s;
+        }
+        .back-btn:active {
+            background: #f3f4f6;
+        }
+        /* 标签切换 */
+        .tab-nav {
+            display: flex;
+            background: white;
+            border-radius: 14px;
+            padding: 5px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .tab-btn {
+            flex: 1;
+            padding: 12px 4px;
+            border: none;
+            background: transparent;
+            color: #6b7280;
+            font-size: 0.85rem;
+            font-weight: 500;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+        .tab-btn:hover {
+            background: #f3f4f6;
+        }
+        .tab-btn.active {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        .tab-badge {
+            background: #ef4444;
+            color: white;
+            font-size: 0.65rem;
+            padding: 2px 6px;
+            border-radius: 10px;
+            min-width: 18px;
+            text-align: center;
+        }
+        .tab-btn.active .tab-badge {
+            background: white;
+            color: #10b981;
+        }
+        /* 内容列表 */
+        .content-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        /* 联系人 */
+        .contact-item {
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .contact-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.15);
+        }
+        .contact-avatar {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, #d1fae5, #a7f3d0);
+            flex-shrink: 0;
+            position: relative;
+        }
+        .contact-avatar img {
+            width: 100%;
+            height: 100%;
+            border-radius: 14px;
+            object-fit: cover;
+        }
+        .online-dot {
+            position: absolute;
+            bottom: 2px;
+            right: 2px;
+            width: 12px;
+            height: 12px;
+            background: #10b981;
+            border-radius: 50%;
+            border: 2px solid white;
+        }
+        .contact-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .contact-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .contact-preview {
+            font-size: 0.85rem;
+            color: var(--gray-500);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .contact-time {
+            font-size: 0.75rem;
+            color: var(--gray-400);
+            flex-shrink: 0;
+        }
+        .contact-badge {
+            background: #10b981;
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 10px;
+        }
+        /* 通知 */
+        .notification-item {
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .notification-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.15);
+        }
+        .notification-item.unread {
+            background: linear-gradient(135deg, #fff 0%, #f0fdf4 100%);
+        }
+        .notification-item.unread::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: linear-gradient(180deg, #10b981, #34d399);
+            border-radius: 16px 0 0 16px;
+        }
+        .notification-item {
+            position: relative;
+        }
+        .notif-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+        .notif-icon.system { background: linear-gradient(135deg, #fef3c7, #fde68a); }
+        .notif-icon.security { background: linear-gradient(135deg, #dbeafe, #bfdbfe); }
+        .notif-icon.alert { background: linear-gradient(135deg, #fee2e2, #fecaca); }
+        .notif-content {
+            flex: 1;
+            min-width: 0;
+        }
+        .notif-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 4px;
+        }
+        .notif-text {
+            font-size: 0.85rem;
+            color: var(--gray-500);
+            line-height: 1.4;
+        }
+        .notif-time {
+            font-size: 0.7rem;
+            color: var(--gray-400);
+            margin-top: 6px;
+        }
+        .unread-dot {
+            width: 8px;
+            height: 8px;
+            background: #10b981;
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-top: 6px;
+        }
+        /* 动态 */
+        .activity-item {
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .activity-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.15);
+        }
+        .activity-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+            background: linear-gradient(135deg, #e0e7ff, #c7d2fe);
+        }
+        .activity-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .activity-title {
+            font-size: 0.95rem;
+            color: var(--gray-900);
+            margin-bottom: 4px;
+        }
+        .activity-title strong {
+            font-weight: 600;
+        }
+        .activity-time {
+            font-size: 0.75rem;
+            color: var(--gray-400);
+        }
+        /* 交易 */
+        .transaction-item {
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+        }
+        .transaction-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.15);
+        }
+        .transaction-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            flex-shrink: 0;
+        }
+        .transaction-icon.income { background: linear-gradient(135deg, #d1fae5, #a7f3d0); }
+        .transaction-icon.expense { background: linear-gradient(135deg, #fee2e2, #fecaca); }
+        .transaction-info {
+            flex: 1;
+            min-width: 0;
+        }
+        .transaction-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--gray-900);
+            margin-bottom: 4px;
+        }
+        .transaction-desc {
+            font-size: 0.85rem;
+            color: var(--gray-500);
+        }
+        .transaction-amount {
+            font-size: 1rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+        .transaction-amount.income { color: #10b981; }
+        .transaction-amount.expense { color: #ef4444; }
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--gray-500);
+        }
+        .empty-state span {
+            font-size: 3rem;
+            display: block;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 主内容区域 -->
+    <section class="main-content">
+        <div class="notifications-page">
+            <!-- 页面头部 -->
+            <div class="page-header">
+                <div class="page-header-left">
+                    <button class="back-btn" onclick="window.location.href='index.html'">←</button>
+                    <h1>消息</h1>
+                </div>
+            </div>
+            
+            <!-- 标签导航 -->
+            <div class="tab-nav">
+                <button class="tab-btn active" data-tab="contacts" onclick="switchTab('contacts')">
+                    👥 联系人
+                    <span class="tab-badge" id="contact-badge" style="display:none"></span>
+                </button>
+                <button class="tab-btn" data-tab="notifications" onclick="switchTab('notifications')">
+                    📢 通知
+                    <span class="tab-badge" id="notif-badge" style="display:none"></span>
+                </button>
+                <button class="tab-btn" data-tab="activity" onclick="switchTab('activity')">
+                    📊 动态
+                    <span class="tab-badge" id="activity-badge" style="display:none"></span>
+                </button>
+                <button class="tab-btn" data-tab="transaction" onclick="switchTab('transaction')">
+                    💰 交易
+                    <span class="tab-badge" id="trans-badge" style="display:none"></span>
+                </button>
+            </div>
+            
+            <!-- 内容区域 -->
+            <div class="content-list" id="content-list">
+                <div class="empty-state" id="loading-state">
+                    <span>⏳</span>
+                    <p>正在初始化...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script src="js/mockData.js"></script>
+    <script src="js/app.js"></script>
+    <script>
+        // 模拟数据
+        const mockData = {
+            contacts: [
+                { id: 1, name: '张三', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=zhangsan', lastMessage: '好的，我这边可以帮忙', lastTime: '10:30', unread: 2, online: true },
+                { id: 2, name: '李四', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=lisi', lastMessage: '谢谢你的帮助！', lastTime: '昨天', unread: 0, online: false },
+                { id: 3, name: '王五', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=wangwu', lastMessage: '明天可以吗？', lastTime: '昨天', unread: 1, online: true },
+                { id: 4, name: '赵六', avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=zhaoliu', lastMessage: '已确认', lastTime: '2天前', unread: 0, online: false }
+            ],
+            notifications: [
+                { id: 1, type: 'system', icon: '📢', title: '系统公告', text: '平台将于今晚22:00进行系统维护，请提前保存数据', time: '2小时前', unread: true },
+                { id: 2, type: 'security', icon: '🔐', title: '账号安全提醒', text: '您的账号在新设备登录，如非本人操作请及时修改密码', time: '昨天', unread: true },
+                { id: 3, type: 'system', icon: '🎉', title: '欢迎加入', text: '感谢您使用我来帮平台，祝您生活愉快！', time: '3天前', unread: false },
+                { id: 4, type: 'alert', icon: '⚠️', text: '您的需求"帮忙搬家"即将过期，请及时处理', time: '5天前', unread: false }
+            ],
+            activity: [
+                { id: 1, type: 'view', icon: '👁️', title: '<strong>李四</strong> 浏览了您的需求"帮忙搬家具"', time: '10分钟前' },
+                { id: 2, type: 'accept', icon: '✅', title: '您的需求"取快递"已被<strong>王五</strong>接受', time: '1小时前' },
+                { id: 3, type: 'complete', icon: '🎊', title: '需求"代购奶茶"已完成，获得收益￥15', time: '昨天' },
+                { id: 4, type: 'favorite', icon: '❤️', title: '<strong>赵六</strong> 收藏了您的需求"辅导作业"', time: '2天前' },
+                { id: 5, type: 'comment', icon: '💬', title: '<strong>张三</strong> 评论了您的需求', time: '3天前' }
+            ],
+            transaction: [
+                { id: 1, type: 'income', icon: '📥', title: '收入', desc: '完成需求"代买咖啡"', amount: '+￥15.00', time: '今天' },
+                { id: 2, type: 'expense', icon: '📤', title: '支出', desc: '发布需求"帮忙搬家"保证金', amount: '-￥50.00', time: '昨天' },
+                { id: 3, type: 'income', icon: '📥', title: '收入', desc: '完成需求"取快递"', amount: '+￥8.00', time: '昨天' },
+                { id: 4, type: 'expense', icon: '📤', title: '支出', desc: '充值余额', amount: '-￥100.00', time: '3天前' },
+                { id: 5, type: 'income', icon: '📥', title: '退款', desc: '保证金退还', amount: '+￥50.00', time: '5天前' }
+            ]
+        };
+
+        let currentTab = 'contacts';
+
+        function getCurrentUser() {
+            const userStr = localStorage.getItem('current_user');
+            if (userStr) {
+                try {
+                    return JSON.parse(userStr);
+                } catch (e) {
+                    console.error('解析用户信息失败:', e);
+                    return null;
+                }
+            }
+            return null;
+        }
+
+        function init() {
+            console.log('init called');
+            const container = document.getElementById('content-list');
+
+            // 强制隐藏所有徽章，等待数据加载后再显示
+            document.querySelectorAll('.tab-badge').forEach(badge => {
+                badge.style.display = 'none';
+                badge.textContent = '';
+            });
+
+            // 检查登录状态
+            const token = localStorage.getItem('auth_token');
+            const userStr = localStorage.getItem('current_user');
+            
+            if (!token || !userStr) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <span>🔒</span>
+                        <p>请先登录</p>
+                        <button onclick="window.location.href='index.html?showLogin=1'" style="margin-top: 16px; padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer;">去登录</button>
+                    </div>
+                `;
+                return;
+            }
+            
+            try {
+                window.currentUser = JSON.parse(userStr);
+            } catch (e) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <span>❌</span>
+                        <p>用户信息错误</p>
+                        <button onclick="window.location.href='index.html?showLogin=1'" style="margin-top: 16px; padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer;">重新登录</button>
+                    </div>
+                `;
+                return;
+            }
+            
+            renderUserMenu();
+            loadContent();
+        }
+
+        function switchTab(tab) {
+            console.log('>>> switchTab called:', tab, 'currentTab was:', currentTab);
+            currentTab = tab;
+            console.log('>>> currentTab changed to:', currentTab);
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.tab === tab);
+            });
+            loadContent();
+        }
+
+        function loadContent() {
+            console.log('>>> loadContent called, currentTab:', currentTab);
+            const container = document.getElementById('content-list');
+            
+            if (currentTab === 'contacts') {
+                console.log('>>> loadContent -> loadContacts');
+                loadContacts();
+            } else if (currentTab === 'notifications') {
+                console.log('>>> loadContent -> loadNotifications');
+                loadNotifications();
+            } else if (currentTab === 'activity') {
+                console.log('>>> loadContent -> loadActivity');
+                loadActivity();
+            } else if (currentTab === 'transaction') {
+                console.log('>>> loadContent -> renderTransaction');
+                renderTransaction(container);
+            } else {
+                console.log('>>> loadContent -> unknown tab:', currentTab);
+            }
+        }
+
+        async function loadContacts() {
+            console.log('>>> loadContacts START, currentTab:', currentTab, 'typeof:', typeof currentTab);
+            
+            // 如果当前不是联系人标签，不加载
+            if (currentTab !== 'contacts') {
+                console.log('>>> 跳过加载联系人，currentTab is:', currentTab);
+                return;
+            }
+            
+            console.log('>>> 继续加载联系人');
+            const container = document.getElementById('content-list');
+            
+            // 检查登录状态
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <span>🔒</span>
+                        <p>请先登录</p>
+                        <button onclick="window.location.href='index.html?showLogin=1'" style="margin-top: 16px; padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer;">去登录</button>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = `
+                <div class="empty-state">
+                    <span>⏳</span>
+                    <p>加载联系人...</p>
+                </div>
+            `;
+            
+            try {
+                const response = await fetch('/api/messages/contacts', {
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+                
+                if (response.status === 401) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <span>🔒</span>
+                            <p>登录已过期，请重新登录</p>
+                            <button onclick="window.location.href='index.html?showLogin=1'" style="margin-top: 16px; padding: 8px 16px; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer;">去登录</button>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                if (!response.ok) {
+                    const text = await response.text();
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <span>❌</span>
+                            <p>服务器错误 (${response.status})</p>
+                            <p style="font-size: 0.75rem; color: #999; margin-top: 8px;">${text.substring(0, 200)}</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const result = await response.json();
+                
+                if (!result.success) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <span>❌</span>
+                            <p>加载失败: ${result.message || '未知错误'}</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const contacts = result.data || [];
+
+                // 计算总未读数并更新徽章
+                const totalUnread = contacts.reduce((sum, c) => sum + (c.unread || 0), 0);
+                const contactBadge = document.getElementById('contact-badge');
+                if (contactBadge) {
+                    if (totalUnread > 0) {
+                        contactBadge.textContent = totalUnread;
+                        contactBadge.style.display = 'inline-block';
+                    } else {
+                        contactBadge.textContent = '';
+                        contactBadge.style.display = 'none';
+                    }
+                }
+
+                if (contacts.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <span>📭</span>
+                            <p>暂无联系人</p>
+                            <p style="font-size: 0.85rem; margin-top: 8px; color: #999;">当您与他人发送消息后，联系人将显示在这里</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                renderContacts(container, contacts);
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <span>❌</span>
+                        <p>加载失败</p>
+                        <p style="font-size: 0.75rem; color: #999; margin-top: 8px;">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderContacts(container, contacts) {
+            container.innerHTML = contacts.map(c => {
+                // 获取用户名的第一个字作为头像
+                const firstChar = c.name ? c.name.charAt(0) : '?';
+                return `
+                <div class="contact-item" onclick="openChat(${c.id})">
+                    <div class="contact-avatar" style="
+                        width: 52px;
+                        height: 52px;
+                        border-radius: 14px;
+                        background: linear-gradient(135deg, #10b981, #059669);
+                        color: white;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 20px;
+                        font-weight: bold;
+                        flex-shrink: 0;
+                        position: relative;
+                    ">${firstChar}
+                        ${c.online ? '<span class="online-dot"></span>' : ''}
+                    </div>
+                    <div class="contact-info">
+                        <div class="contact-name">
+                            ${c.name}
+                            ${c.unread > 0 ? `<span class="contact-badge">${c.unread}</span>` : ''}
+                        </div>
+                        <div class="contact-preview">${c.last_message || ''}</div>
+                    </div>
+                    <span class="contact-time">${c.lastTime || ''}</span>
+                </div>
+            `}).join('');
+        }
+
+        async function loadNotifications() {
+            console.log('>>> loadNotifications START, currentTab:', currentTab, 'typeof:', typeof currentTab);
+            
+            // 如果当前不是通知标签，不加载
+            if (currentTab !== 'notifications') {
+                console.log('>>> 跳过加载通知，currentTab is:', currentTab);
+                return;
+            }
+            
+            console.log('>>> 继续加载通知');
+            const container = document.getElementById('content-list');
+            const token = localStorage.getItem('auth_token');
+            
+            if (!token) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <span>🔒</span>
+                        <p>请先登录</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = `
+                <div class="empty-state">
+                    <span>⏳</span>
+                    <p>加载通知...</p>
+                </div>
+            `;
+            
+            try {
+                const response = await fetch('/api/notifications', {
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+                
+                if (!response.ok) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <span>❌</span>
+                            <p>加载失败 (${response.status})</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const result = await response.json();
+                console.log('通知API响应:', result);
+                
+                if (!result.success) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <span>❌</span>
+                            <p>加载失败: ${result.message}</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                // 后端返回的数据格式: {notifications: [...], unread_count: number}
+                const notifications = result.data?.notifications || result.data || [];
+                const unreadCount = result.data?.unread_count || 0;
+                console.log('通知列表:', notifications, '未读数:', unreadCount);
+
+                // 更新通知徽章 - 只有大于0才显示
+                const notifBadge = document.getElementById('notif-badge');
+                if (notifBadge) {
+                    if (unreadCount > 0) {
+                        notifBadge.textContent = unreadCount;
+                        notifBadge.style.display = 'inline-block';
+                    } else {
+                        notifBadge.textContent = '';
+                        notifBadge.style.display = 'none';
+                    }
+                }
+
+                if (notifications.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <span>📭</span>
+                            <p>暂无通知</p>
+                            <p style="font-size: 0.75rem; color: #999; margin-top: 8px;">当您有接单、消息等动态时，会显示在这里</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                renderNotifications(container, notifications);
+            } catch (error) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <span>❌</span>
+                        <p>加载失败</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderNotifications(container, notifications) {
+            const iconMap = {
+                'message': '💬',
+                'system': '📢',
+                'request_accepted': '✅',
+                'helper_completed': '🎉',
+                'payment': '💰',
+                'security': '🔐'
+            };
+
+            container.innerHTML = notifications.map(n => {
+                const icon = iconMap[n.type] || '📌';
+                const time = formatTime(n.created_at);
+                // 消息类型的通知，点击跳转到聊天页面
+                const clickAction = n.type === 'message' && n.related_id
+                    ? `onclick="handleNotificationClick(${n.id}, ${n.related_id}, '${n.related_type || ''}')"`
+                    : `onclick="markNotificationRead(${n.id})"`;
+                return `
+                    <div class="notification-item ${n.is_read ? '' : 'unread'}" ${clickAction}>
+                        <div class="notif-icon ${n.type}">${icon}</div>
+                        <div class="notif-content">
+                            <div class="notif-title">${n.title}</div>
+                            <div class="notif-text">${n.content}</div>
+                            <div class="notif-time">${time}</div>
+                        </div>
+                        ${n.is_read ? '' : '<span class="unread-dot"></span>'}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // 处理通知点击
+        async function handleNotificationClick(notificationId, relatedId, relatedType) {
+            const token = localStorage.getItem('auth_token');
+            if (!token) return;
+
+            try {
+                // 先标记为已读
+                await fetch(`/api/notifications/${notificationId}/read`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+
+                // 跳转到聊天页面
+                if (relatedType === 'message' || relatedType === 'request') {
+                    window.location.href = `chat.html?requestId=${relatedId}`;
+                }
+            } catch (e) {
+                console.error('处理通知点击失败:', e);
+            }
+        }
+        
+        function formatTime(timeStr) {
+            if (!timeStr) return '';
+            try {
+                const date = new Date(timeStr);
+                const now = new Date();
+                const diff = now - date;
+                const minutes = Math.floor(diff / 60000);
+                const hours = Math.floor(diff / 3600000);
+                const days = Math.floor(diff / 86400000);
+                
+                if (minutes < 1) return '刚刚';
+                if (minutes < 60) return `${minutes}分钟前`;
+                if (hours < 24) return `${hours}小时前`;
+                if (days < 7) return `${days}天前`;
+                return date.toLocaleDateString('zh-CN');
+            } catch (e) {
+                return timeStr;
+            }
+        }
+        
+        async function markNotificationRead(notificationId) {
+            const token = localStorage.getItem('auth_token');
+            if (!token) return;
+            
+            try {
+                await fetch(`/api/notifications/${notificationId}/read`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+            } catch (e) {
+                console.error('标记通知已读失败:', e);
+            }
+        }
+
+        async function loadActivity() {
+            const container = document.getElementById('content-list');
+            console.log('>>> loadActivity START');
+            
+            // 如果当前不是动态标签，不加载
+            if (currentTab !== 'activity') {
+                console.log('>>> 跳过加载动态，currentTab is:', currentTab);
+                return;
+            }
+            
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <span>🔒</span>
+                        <p>请先登录</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = `
+                <div class="empty-state">
+                    <span>⏳</span>
+                    <p>加载动态...</p>
+                </div>
+            `;
+            
+            try {
+                const response = await fetch('/api/activity', {
+                    headers: {
+                        'Authorization': 'Bearer ' + token
+                    }
+                });
+                
+                if (!response.ok) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <span>❌</span>
+                            <p>加载失败 (${response.status})</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const result = await response.json();
+                
+                if (!result.success) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <span>❌</span>
+                            <p>加载失败: ${result.message || '未知错误'}</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const activities = result.data || [];
+                
+                if (activities.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state">
+                            <span>📭</span>
+                            <p>暂无动态</p>
+                            <p style="font-size: 0.85rem; margin-top: 8px; color: #999;">当您有任务进展时，会显示在这里</p>
+                        </div>
+                    `;
+                    return;
+                }
+                
+                renderActivities(container, activities);
+            } catch (error) {
+                console.error('加载动态失败:', error);
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <span>❌</span>
+                        <p>加载失败</p>
+                        <p style="font-size: 0.75rem; color: #999; margin-top: 8px;">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        function renderActivities(container, activities) {
+            container.innerHTML = activities.map(a => `
+                <div class="activity-item" onclick="goToRequest(${a.id.split('_').pop()})">
+                    <div class="activity-icon">${a.icon}</div>
+                    <div class="activity-info">
+                        <div class="activity-title">${a.title}</div>
+                        <div class="activity-desc" style="font-size: 0.8rem; color: #6b7280; margin-top: 2px;">${a.desc}</div>
+                        <div class="activity-time" style="margin-top: 4px;">${a.time}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        function goToRequest(requestId) {
+            window.location.href = `request-detail.html?id=${requestId}`;
+        }
+
+        function renderTransaction(container) {
+            const list = mockData.transaction;
+            container.innerHTML = list.map(t => `
+                <div class="transaction-item">
+                    <div class="transaction-icon ${t.type}">${t.icon}</div>
+                    <div class="transaction-info">
+                        <div class="transaction-title">${t.title}</div>
+                        <div class="transaction-desc">${t.desc}</div>
+                    </div>
+                    <div class="transaction-amount ${t.type}">${t.amount}</div>
+                </div>
+            `).join('');
+        }
+
+        async function openChat(contactId) {
+            // 先将与该联系人的所有消息标记为已读
+            const token = localStorage.getItem('auth_token');
+            if (token) {
+                try {
+                    const response = await fetch(`/api/messages/conversations/${contactId}/read`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + token
+                        }
+                    });
+                    if (response.ok) {
+                        console.log('已将联系人', contactId, '的消息标记为已读');
+                        // 清除本地显示的未读标记
+                        const contactBadge = document.querySelector(`.contact-item[onclick*="${contactId}"] .contact-badge`);
+                        if (contactBadge) {
+                            contactBadge.style.display = 'none';
+                        }
+                    }
+                } catch (e) {
+                    console.error('标记已读失败:', e);
+                }
+            }
+            
+            // 跳转到聊天详情页面
+            window.location.href = `chat.html?userId=${contactId}`;
+        }
+
+        function renderUserMenu() {
+            const container = document.getElementById('user-menu');
+            if (!container) {
+                console.log('user-menu 元素不存在，跳过渲染用户菜单');
+                return;
+            }
+            if (!window.currentUser) {
+                container.innerHTML = `
+                    <button class="btn-login" onclick="showLoginModal()">登录</button>
+                    <button class="btn-register" onclick="showRegisterModal()">注册</button>
+                `;
+                return;
+            }
+            container.innerHTML = `
+                <div class="user-info" onclick="toggleUserDropdown()">
+                    <img src="${getAvatar(window.currentUser.username || window.currentUser.name)}" alt="头像" class="user-avatar">
+                    <span class="user-name">${window.currentUser.name}</span>
+                </div>
+                <div class="user-dropdown" id="user-dropdown">
+                    <a href="profile.html">👤 个人资料</a>
+                    <a href="history.html">📜 我的发布</a>
+                    <a href="notifications.html" class="active">🔔 消息</a>
+                    <hr style="margin: 8px 0; border: none; border-top: 1px solid var(--gray-200);">
+                    <a href="#" onclick="logout()">🚪 退出登录</a>
+                </div>
+            `;
+        }
+
+        // 页面加载完成后执行初始化
+        function startInit() {
+            console.log('开始初始化');
+            const container = document.getElementById('content-list');
+            if (!container) {
+                console.error('找不到 content-list 元素');
+                return;
+            }
+            try {
+                init();
+            } catch (e) {
+                console.error('初始化失败:', e);
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <span>❌</span>
+                        <p>初始化失败</p>
+                        <p style="font-size: 0.75rem; color: #999; margin-top: 8px;">${e.message}</p>
+                    </div>
+                `;
+            }
+        }
+        
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', startInit);
+        } else {
+            startInit();
+        }
+    </script>
+</body>
+</html>

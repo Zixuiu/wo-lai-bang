@@ -1,0 +1,992 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>需求详情 - 我来帮</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤝</text></svg>">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/mobile-redesign.css">
+    <link rel="stylesheet" href="css/no-animation.css">
+    <style>
+        /* 移动端需求详情页面样式 */
+        .request-detail-page {
+            min-height: 100vh;
+            background: #f8fafc;
+            padding-bottom: 80px;
+        }
+        
+        /* 顶部导航栏 */
+        .detail-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 0.75rem 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        
+        .back-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #f1f5f9;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.25rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .back-btn:active {
+            background: #e2e8f0;
+        }
+        
+        .detail-header-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1e293b;
+            flex: 1;
+            text-align: center;
+            margin-right: 36px;
+        }
+        
+        /* 内容区域 */
+        .detail-container {
+            padding: 1rem;
+        }
+        
+        /* 状态卡片 */
+        .status-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .status-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.75rem;
+        }
+        
+        .category-tag {
+            font-size: 0.75rem;
+            color: #22c55e;
+            background: rgba(34, 197, 94, 0.1);
+            padding: 0.25rem 0.625rem;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        
+        .status-tag {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.625rem;
+            border-radius: 20px;
+            font-weight: 500;
+        }
+        
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-accepted { background: #dbeafe; color: #1e40af; }
+        .status-completed { background: #d1fae5; color: #065f46; }
+        .status-cancelled { background: #f3f4f6; color: #6b7280; }
+        
+        .request-title {
+            font-size: 1.125rem;
+            font-weight: 700;
+            color: #1e293b;
+            line-height: 1.4;
+            margin-bottom: 0.75rem;
+        }
+        
+        .urgent-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            background: #fee2e2;
+            color: #dc2626;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            margin-bottom: 0.75rem;
+        }
+        
+        /* 信息网格 */
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+        
+        .info-item {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 0.75rem;
+        }
+        
+        .info-label {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-bottom: 0.25rem;
+        }
+        
+        .info-value {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            color: #1e293b;
+        }
+        
+        .info-value.reward {
+            color: #f59e0b;
+        }
+        
+        /* 描述卡片 */
+        .desc-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .card-title {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+        
+        .desc-text {
+            font-size: 0.9375rem;
+            color: #475569;
+            line-height: 1.6;
+        }
+        
+        /* 用户卡片 */
+        .user-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 0.875rem;
+        }
+        
+        .user-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #22c55e, #14b8a6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 1.25rem;
+            overflow: hidden;
+        }
+        
+        .user-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .user-meta {
+            flex: 1;
+        }
+        
+        .user-name {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 0.25rem;
+        }
+        
+        .user-rating {
+            font-size: 0.875rem;
+            color: #f59e0b;
+        }
+        
+        .user-bio {
+            font-size: 0.8125rem;
+            color: #64748b;
+            margin-top: 0.25rem;
+        }
+        
+        /* 帮助者卡片 */
+        .helper-card {
+            background: white;
+            border-radius: 16px;
+            padding: 1rem;
+            margin-bottom: 0.75rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .helper-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            margin-top: 0.375rem;
+        }
+        
+        .helper-status.departed {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .helper-status.arrived {
+            background: #d1fae5;
+            color: #065f46;
+        }
+        
+        /* 操作按钮 */
+        .action-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+            padding: 0.75rem 1rem;
+            display: flex;
+            gap: 0.75rem;
+            z-index: 100;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 0.875rem 1rem;
+            border-radius: 12px;
+            font-size: 0.9375rem;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.375rem;
+        }
+        
+        .btn:active {
+            transform: scale(0.98);
+        }
+        
+        .btn-primary {
+            background: #22c55e;
+            color: white;
+        }
+        
+        .btn-primary:active {
+            background: #16a34a;
+        }
+        
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #475569;
+        }
+        
+        .btn-secondary:active {
+            background: #e2e8f0;
+        }
+        
+        .btn-outline {
+            background: white;
+            color: #22c55e;
+            border: 1.5px solid #22c55e;
+        }
+        
+        /* 标签 */
+        .tags-row {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.75rem;
+        }
+        
+        .tag {
+            font-size: 0.75rem;
+            padding: 0.25rem 0.5rem;
+            border-radius: 6px;
+            font-weight: 500;
+        }
+        
+        .tag-photo {
+            background: #dbeafe;
+            color: #1e40af;
+        }
+        
+        .tag-deposit {
+            background: #fef3c7;
+            color: #92400e;
+        }
+        
+        /* 加载状态 */
+        .loading-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            gap: 1rem;
+        }
+        
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid #e2e8f0;
+            border-top-color: #22c55e;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+        
+        /* 错误状态 */
+        .error-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 60vh;
+            gap: 1rem;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .error-icon {
+            font-size: 3rem;
+        }
+        
+        .error-text {
+            font-size: 1rem;
+            color: #64748b;
+        }
+        
+        /* 图片区域 */
+        .images-section {
+            display: flex;
+            gap: 0.5rem;
+            overflow-x: auto;
+            margin-top: 0.75rem;
+            padding-bottom: 0.5rem;
+        }
+        
+        .images-section::-webkit-scrollbar {
+            height: 4px;
+        }
+        
+        .images-section::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 2px;
+        }
+        
+        .request-image {
+            width: 120px;
+            height: 120px;
+            border-radius: 12px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+        
+        /* 时间线 */
+        .timeline {
+            margin-top: 0.75rem;
+        }
+        
+        .timeline-item {
+            display: flex;
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+        }
+        
+        .timeline-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #22c55e;
+            margin-top: 0.5rem;
+            flex-shrink: 0;
+        }
+        
+        .timeline-content {
+            flex: 1;
+        }
+        
+        .timeline-title {
+            font-size: 0.875rem;
+            color: #1e293b;
+        }
+        
+        .timeline-time {
+            font-size: 0.75rem;
+            color: #94a3b8;
+            margin-top: 0.125rem;
+        }
+    </style>
+</head>
+<body class="request-detail-page">
+    <!-- 顶部导航 -->
+    <header class="detail-header">
+        <button class="back-btn" onclick="goBack()">←</button>
+        <h1 class="detail-header-title">需求详情</h1>
+    </header>
+    
+    <!-- 内容区域 -->
+    <main class="detail-container" id="detail-container">
+        <!-- 动态加载内容 -->
+    </main>
+    
+    <!-- 底部操作栏 -->
+    <div class="action-bar" id="action-bar" style="display: none;">
+        <!-- 动态加载按钮 -->
+    </div>
+
+    <script src="js/mockData.js"></script>
+    <script>
+        // 配置
+        const CONFIG = {
+            API_BASE_URL: 'http://localhost:5000/api'
+        };
+
+        let currentUser = null;
+        let currentRequest = null;
+        let authToken = null;
+
+        // Toast 提示函数
+        function showToast(message, type = 'info') {
+            const toast = document.createElement('div');
+            toast.className = `toast toast-${type}`;
+            const icons = {
+                success: '✅',
+                error: '❌',
+                warning: '⚠️',
+                info: 'ℹ️'
+            };
+            toast.innerHTML = `${icons[type] || ''} ${message}`;
+            document.body.appendChild(toast);
+            requestAnimationFrame(() => {
+                toast.classList.add('show');
+            });
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // 自定义确认对话框
+        function showConfirmDialog(options) {
+            return new Promise((resolve) => {
+                const { title, message, icon = '⚠️', confirmText = '确定', cancelText = '取消', danger = false } = options;
+                const overlay = document.createElement('div');
+                overlay.className = 'confirm-dialog-overlay';
+                overlay.innerHTML = `
+                    <div class="confirm-dialog">
+                        <div class="confirm-dialog-header">
+                            <div class="confirm-dialog-icon">${icon}</div>
+                            <h3 class="confirm-dialog-title">${title}</h3>
+                            <p class="confirm-dialog-message">${message}</p>
+                        </div>
+                        <div class="confirm-dialog-actions">
+                            <button class="confirm-dialog-btn confirm-dialog-btn-cancel">${cancelText}</button>
+                            <button class="confirm-dialog-btn confirm-dialog-btn-confirm ${danger ? 'danger' : ''}">${confirmText}</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(overlay);
+                requestAnimationFrame(() => {
+                    overlay.classList.add('active');
+                });
+                const cancelBtn = overlay.querySelector('.confirm-dialog-btn-cancel');
+                const confirmBtn = overlay.querySelector('.confirm-dialog-btn-confirm');
+                const closeDialog = (result) => {
+                    overlay.classList.remove('active');
+                    setTimeout(() => {
+                        overlay.remove();
+                        resolve(result);
+                    }, 200);
+                };
+                cancelBtn.addEventListener('click', () => closeDialog(false));
+                confirmBtn.addEventListener('click', () => closeDialog(true));
+                overlay.addEventListener('click', (e) => {
+                    if (e.target === overlay) closeDialog(false);
+                });
+            });
+        }
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 加载用户信息
+            const userStr = localStorage.getItem('current_user');
+            if (userStr) {
+                try {
+                    currentUser = JSON.parse(userStr);
+                } catch (e) {
+                    console.error('解析用户数据失败:', e);
+                }
+            }
+            authToken = localStorage.getItem('auth_token');
+            
+            // 获取需求ID并加载详情
+            const urlParams = new URLSearchParams(window.location.search);
+            const requestId = urlParams.get('id');
+            
+            if (requestId) {
+                loadRequestDetail(parseInt(requestId));
+            } else {
+                showError('需求ID不存在');
+            }
+        });
+        
+        // 加载需求详情
+        async function loadRequestDetail(requestId) {
+            const container = document.getElementById('detail-container');
+            container.innerHTML = `
+                <div class="loading-state">
+                    <div class="loading-spinner"></div>
+                    <span class="loading-text">加载中...</span>
+                </div>
+            `;
+            
+            try {
+                // 先尝试从API获取
+                const response = await fetch(`${CONFIG.API_BASE_URL}/requests/${requestId}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    currentRequest = result.data;
+                } else {
+                    // 尝试从mockAPI获取
+                    const mockResult = window.mockAPI.getRequestDetail(requestId);
+                    if (mockResult.success) {
+                        currentRequest = mockResult.data;
+                    }
+                }
+            } catch (error) {
+                console.error('获取需求详情失败:', error);
+                // 尝试从mockAPI获取
+                const mockResult = window.mockAPI.getRequestDetail(requestId);
+                if (mockResult.success) {
+                    currentRequest = mockResult.data;
+                }
+            }
+            
+            if (currentRequest) {
+                renderRequestDetail(currentRequest);
+            } else {
+                showError('需求不存在或已删除');
+            }
+        }
+        
+        // 渲染需求详情
+        function renderRequestDetail(req) {
+            const container = document.getElementById('detail-container');
+            const actionBar = document.getElementById('action-bar');
+            
+            const isOwner = currentUser && currentUser.id === req.user_id;
+            const isHelper = currentUser && currentUser.id === req.helper_id;
+            
+            // 状态文本
+            const statusMap = {
+                'pending': { text: '待帮助', class: 'status-pending' },
+                'accepted': { text: '进行中', class: 'status-accepted' },
+                'completed': { text: '已完成', class: 'status-completed' },
+                'cancelled': { text: '已取消', class: 'status-cancelled' }
+            };
+            const statusInfo = statusMap[req.status] || statusMap['pending'];
+            
+            // 分类图标
+            const categoryIcons = {
+                '搬运': '📦', '维修': '🔧', '辅导': '📚', '照看': '🐾',
+                '接送': '🚗', '代购': '🛒', '排队': '⏳', '其他': '📋'
+            };
+            const categoryIcon = categoryIcons[req.category] || '📋';
+            
+            container.innerHTML = `
+                <!-- 状态卡片 -->
+                <div class="status-card">
+                    <div class="status-header">
+                        <span class="category-tag">${categoryIcon} ${req.category}</span>
+                        <span class="status-tag ${statusInfo.class}">${statusInfo.text}</span>
+                    </div>
+                    
+                    ${req.is_urgent ? '<div class="urgent-badge">🔥 加急</div>' : ''}
+                    
+                    <h1 class="request-title">${escapeHtml(req.title)}</h1>
+                    
+                    <div class="info-grid">
+                        <div class="info-item">
+                            <div class="info-label">报酬</div>
+                            <div class="info-value reward">${req.reward || '面议'}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">位置</div>
+                            <div class="info-value">${escapeHtml(req.location || '未知')}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">发布时间</div>
+                            <div class="info-value">${formatTime(req.created_at)}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">截止时间</div>
+                            <div class="info-value">${formatDate(req.deadline)}</div>
+                        </div>
+                    </div>
+                    
+                    ${req.need_photo_verify || req.deposit_amount ? `
+                    <div class="tags-row">
+                        ${req.need_photo_verify ? '<span class="tag tag-photo">📷 需拍照验收</span>' : ''}
+                        ${req.deposit_amount ? `<span class="tag tag-deposit">💎 押金${req.deposit_amount}元</span>` : ''}
+                    </div>
+                    ` : ''}
+                </div>
+                
+                <!-- 描述卡片 -->
+                <div class="desc-card">
+                    <h2 class="card-title">📝 需求描述</h2>
+                    <p class="desc-text">${escapeHtml(req.description) || '暂无描述'}</p>
+                    
+                    ${req.images && req.images.length > 0 ? `
+                    <div class="images-section">
+                        ${req.images.map(img => `<img src="${img}" class="request-image" alt="需求图片">`).join('')}
+                    </div>
+                    ` : ''}
+                </div>
+                
+                <!-- 发布者信息 -->
+                <div class="user-card">
+                    <h2 class="card-title">👤 发布者</h2>
+                    <div class="user-info">
+                        <div class="user-avatar">
+                            ${req.user_avatar ? `<img src="${req.user_avatar}" alt="">` : (req.user_nickname ? req.user_nickname.charAt(0) : '👤')}
+                        </div>
+                        <div class="user-meta">
+                            <div class="user-name">${escapeHtml(req.user_nickname || '匿名用户')}</div>
+                            <div class="user-rating">★ ${(req.user_rating || 5).toFixed(1)}</div>
+                            <div class="user-bio">${escapeHtml(req.user_bio || '暂无简介')}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 帮助者信息 -->
+                ${req.helper ? `
+                <div class="helper-card">
+                    <h2 class="card-title">🤝 帮助者</h2>
+                    <div class="user-info">
+                        <div class="user-avatar">
+                            ${req.helper.avatar ? `<img src="${req.helper.avatar}" alt="">` : (req.helper.nickname ? req.helper.nickname.charAt(0) : '👤')}
+                        </div>
+                        <div class="user-meta">
+                            <div class="user-name">${escapeHtml(req.helper.nickname)}</div>
+                            ${req.helper_status ? `<span class="helper-status ${req.helper_status}">${getHelperStatusText(req.helper_status)}</span>` : ''}
+                        </div>
+                    </div>
+                </div>
+                ` : ''}
+            `;
+            
+            // 渲染操作按钮
+            actionBar.style.display = 'flex';
+            actionBar.innerHTML = renderActionButtons(req, isOwner, isHelper);
+        }
+        
+        // 渲染操作按钮
+        function renderActionButtons(req, isOwner, isHelper) {
+            // 未登录
+            if (!currentUser) {
+                return `<button class="btn btn-primary" onclick="goToLogin()">登录后接单</button>`;
+            }
+            
+            // 发布者视角
+            if (isOwner) {
+                if (req.status === 'pending') {
+                    return `
+                        <button class="btn btn-secondary" onclick="editRequest(${req.id})">编辑</button>
+                        <button class="btn btn-secondary" onclick="cancelRequest(${req.id})">取消</button>
+                    `;
+                } else if (req.status === 'accepted') {
+                    return `
+                        <button class="btn btn-secondary" onclick="showChatWindow(${req.helper_id}, '${escapeHtml(req.helper.nickname)}')">联系帮助者</button>
+                        <button class="btn btn-primary" onclick="completeRequest(${req.id})">确认完成</button>
+                    `;
+                } else if (req.status === 'completed') {
+                    return `<button class="btn btn-secondary" onclick="goBack()">返回</button>`;
+                }
+            }
+            
+            // 帮助者视角
+            if (isHelper) {
+                if (req.status === 'accepted') {
+                    return `
+                        <button class="btn btn-secondary" onclick="showChatWindow(${req.user_id}, '${escapeHtml(req.user_nickname)}')">联系发布者</button>
+                        ${!req.helper_status ? `
+                            <button class="btn btn-outline" onclick="updateHelperStatus(${req.id}, 'departed')">我已出发</button>
+                        ` : req.helper_status === 'departed' ? `
+                            <button class="btn btn-outline" onclick="updateHelperStatus(${req.id}, 'arrived')">我已到达</button>
+                        ` : ''}
+                    `;
+                }
+            }
+            
+            // 其他用户 - 可接单
+            if (req.status === 'pending' && !isOwner) {
+                return `<button class="btn btn-primary" onclick="acceptRequest(${req.id}, ${req.user_id})">立即接单</button>`;
+            }
+            
+            // 已接单或已完成
+            if (req.status !== 'pending') {
+                return `<button class="btn btn-secondary" onclick="goBack()">返回</button>`;
+            }
+            
+            return '';
+        }
+        
+        // 获取帮助者状态文本
+        function getHelperStatusText(status) {
+            const statusMap = {
+                'departed': '🚗 已出发',
+                'arrived': '🏠 已到达'
+            };
+            return statusMap[status] || status;
+        }
+        
+        // 接单
+        async function acceptRequest(requestId, publisherId) {
+            if (!currentUser) {
+                showToast('请先登录后再接受帮助', 'warning');
+                goToLogin();
+                return;
+            }
+
+            try {
+                const response = await fetch(`${CONFIG.API_BASE_URL}/requests/${requestId}/accept`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // 发送消息
+                    if (publisherId) {
+                        sendMessage(publisherId, '你好，我来帮你！', requestId);
+                    }
+                    // 跳转到个人中心
+                    window.location.href = 'profile.html?tab=helps';
+                } else {
+                    showToast('操作失败：' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error('接单失败:', error);
+                showToast('操作失败，请检查网络连接', 'error');
+            }
+        }
+        
+        // 更新帮助者状态
+        async function updateHelperStatus(requestId, status) {
+            if (!currentUser) {
+                showToast('请先登录', 'warning');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${CONFIG.API_BASE_URL}/requests/${requestId}/helper_status`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ status: status })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast(status === 'departed' ? '已标记为出发' : '已标记为到达', 'success');
+                    // 刷新页面
+                    loadRequestDetail(requestId);
+                } else {
+                    showToast('操作失败：' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error('更新状态失败:', error);
+                showToast('操作失败，请检查网络连接', 'error');
+            }
+        }
+        
+        // 完成需求
+        async function completeRequest(requestId) {
+            const confirmed = await showConfirmDialog({
+                title: '确认完成',
+                message: '确认该需求已完成吗？',
+                icon: '✅',
+                confirmText: '确认完成',
+                cancelText: '再等等'
+            });
+
+            if (!confirmed) return;
+
+            try {
+                const response = await fetch(`${CONFIG.API_BASE_URL}/requests/${requestId}/complete`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast('需求已完成！', 'success');
+                    loadRequestDetail(requestId);
+                } else {
+                    showToast('操作失败：' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error('完成需求失败:', error);
+                showToast('操作失败，请检查网络连接', 'error');
+            }
+        }
+        
+        // 取消需求
+        async function cancelRequest(requestId) {
+            const confirmed = await showConfirmDialog({
+                title: '取消需求',
+                message: '确定要取消这个需求吗？取消后将无法恢复。',
+                icon: '⚠️',
+                confirmText: '确定取消',
+                cancelText: '保留需求',
+                danger: true
+            });
+
+            if (!confirmed) return;
+
+            try {
+                const response = await fetch(`${CONFIG.API_BASE_URL}/requests/${requestId}/cancel`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showToast('需求已取消', 'success');
+                    goBack();
+                } else {
+                    showToast('操作失败：' + result.message, 'error');
+                }
+            } catch (error) {
+                console.error('取消需求失败:', error);
+                showToast('操作失败，请检查网络连接', 'error');
+            }
+        }
+
+        // 编辑需求
+        function editRequest(requestId) {
+            showToast('编辑功能开发中...', 'info');
+        }
+        
+        // 发送消息
+        function sendMessage(receiverId, content, requestId) {
+            // 这里简化处理，实际应该调用WebSocket或API
+            console.log('发送消息:', { receiverId, content, requestId });
+        }
+        
+        // 显示聊天窗口
+        function showChatWindow(userId, userName) {
+            // 跳转到个人中心的聊天页面
+            window.location.href = `profile.html?tab=chat&userId=${userId}&userName=${encodeURIComponent(userName)}`;
+        }
+        
+        // 返回上一页
+        function goBack() {
+            if (window.history.length > 1) {
+                window.history.back();
+            } else {
+                window.location.href = 'requests.html';
+            }
+        }
+        
+        // 跳转到登录
+        function goToLogin() {
+            window.location.href = 'index.html?showLogin=true';
+        }
+        
+        // 显示错误
+        function showError(message) {
+            const container = document.getElementById('detail-container');
+            container.innerHTML = `
+                <div class="error-state">
+                    <div class="error-icon">😕</div>
+                    <div class="error-text">${message}</div>
+                    <button class="btn btn-primary" onclick="goBack()">返回</button>
+                </div>
+            `;
+        }
+        
+        // 格式化时间
+        function formatTime(timestamp) {
+            if (!timestamp) return '未知';
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
+            
+            if (diff < 60000) return '刚刚';
+            if (diff < 3600000) return Math.floor(diff / 60000) + '分钟前';
+            if (diff < 86400000) return Math.floor(diff / 3600000) + '小时前';
+            if (diff < 604800000) return Math.floor(diff / 86400000) + '天前';
+            
+            return date.toLocaleDateString('zh-CN');
+        }
+        
+        // 格式化日期
+        function formatDate(dateStr) {
+            if (!dateStr) return '未知';
+            const date = new Date(dateStr);
+            return date.toLocaleDateString('zh-CN', { month: 'short', day: 'numeric' });
+        }
+        
+        // HTML转义
+        function escapeHtml(text) {
+            if (!text) return '';
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,1327 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>发布需求 - 我来帮</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤝</text></svg>">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        :root {
+            --primary: #22c55e;
+            --primary-light: #4ade80;
+            --primary-dark: #16a34a;
+            --primary-soft: #dcfce7;
+            --accent: #f59e0b;
+            --danger: #ef4444;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-tertiary: #94a3b8;
+            --border: #e2e8f0;
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+            --shadow: 0 4px 12px rgba(0,0,0,0.05);
+            --shadow-lg: 0 8px 24px rgba(0,0,0,0.08);
+            --radius-sm: 10px;
+            --radius: 16px;
+            --radius-lg: 20px;
+        }
+        
+        body {
+            font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            min-height: 100vh;
+            color: var(--text-primary);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+        
+        /* 顶部导航 */
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: var(--card-bg);
+            border-bottom: 1px solid var(--border);
+            padding: 12px 16px;
+            padding-top: calc(12px + env(safe-area-inset-top));
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .back-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: var(--bg);
+            border-radius: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .back-btn:active {
+            background: var(--border);
+            transform: scale(0.95);
+        }
+        
+        .header-title {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        /* 进度指示器 */
+        .progress-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 16px;
+            background: var(--card-bg);
+        }
+        
+        .progress-step {
+            flex: 1;
+            height: 4px;
+            background: var(--border);
+            border-radius: 2px;
+            transition: all 0.3s;
+        }
+        
+        .progress-step.active {
+            background: var(--primary);
+        }
+        
+        .progress-step.completed {
+            background: var(--primary-light);
+        }
+        
+        /* 主内容区 */
+        .content {
+            padding: 0 16px 100px;
+        }
+        
+        /* 步骤标题 */
+        .step-header {
+            padding: 20px 0 16px;
+        }
+        
+        .step-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: var(--primary);
+            background: var(--primary-soft);
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+        
+        .step-title {
+            font-size: 22px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+        
+        .step-subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        /* 卡片 */
+        .card {
+            background: var(--card-bg);
+            border-radius: var(--radius);
+            padding: 20px;
+            margin-bottom: 12px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border);
+        }
+        
+        .card-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        /* 表单元素 */
+        .form-group {
+            margin-bottom: 16px;
+        }
+        
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-secondary);
+            margin-bottom: 6px;
+        }
+        
+        .form-label .required {
+            color: var(--danger);
+            margin-left: 2px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--bg);
+            font-size: 15px;
+            color: var(--text-primary);
+            transition: all 0.2s;
+            font-family: inherit;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: var(--card-bg);
+        }
+        
+        .form-input::placeholder {
+            color: var(--text-tertiary);
+        }
+        
+        textarea.form-input {
+            resize: none;
+            min-height: 80px;
+        }
+        
+        /* 选择器 */
+        .select-wrapper {
+            position: relative;
+        }
+        
+        .select-wrapper::after {
+            content: '';
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            border-top: 5px solid var(--text-tertiary);
+            pointer-events: none;
+        }
+        
+        select.form-input {
+            appearance: none;
+            padding-right: 36px;
+        }
+        
+        /* 位置选择 */
+        .location-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr auto;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .location-btn {
+            width: 44px;
+            height: 44px;
+            border: none;
+            background: var(--primary-soft);
+            border-radius: var(--radius-sm);
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .location-btn:active {
+            background: var(--primary);
+            transform: scale(0.95);
+        }
+        
+        /* 时间选择 */
+        .time-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+        }
+        
+        .time-option {
+            padding: 12px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--card-bg);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        
+        .time-option:active {
+            transform: scale(0.98);
+        }
+        
+        .time-option.active {
+            border-color: var(--primary);
+            background: var(--primary-soft);
+        }
+        
+        .time-option-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        
+        .time-option-text {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+        
+        .time-option.active .time-option-text {
+            color: var(--primary-dark);
+        }
+        
+        /* 日期选择 */
+        .date-picker {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .date-btn {
+            width: 36px;
+            height: 36px;
+            border: 1.5px solid var(--border);
+            border-radius: var(--radius-sm);
+            background: var(--card-bg);
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        
+        .date-btn:active {
+            background: var(--bg);
+            border-color: var(--primary);
+        }
+        
+        .date-input {
+            flex: 1;
+            text-align: center;
+            font-weight: 500;
+        }
+        
+        /* 自定义时间 */
+        .custom-time {
+            margin-top: 12px;
+            padding: 12px;
+            background: var(--bg);
+            border-radius: var(--radius-sm);
+            display: none;
+        }
+        
+        .custom-time.show {
+            display: block;
+        }
+        
+        /* 开关选项 */
+        .toggle-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        
+        .toggle-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px;
+            background: var(--bg);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1.5px solid transparent;
+        }
+        
+        .toggle-item:active {
+            background: var(--border);
+        }
+        
+        .toggle-item.active {
+            background: var(--primary-soft);
+            border-color: var(--primary-light);
+        }
+        
+        .toggle-icon {
+            width: 36px;
+            height: 36px;
+            background: var(--card-bg);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+        
+        .toggle-item.active .toggle-icon {
+            background: var(--primary);
+        }
+        
+        .toggle-content {
+            flex: 1;
+        }
+        
+        .toggle-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+        
+        .toggle-desc {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+        }
+        
+        .toggle-switch {
+            width: 48px;
+            height: 28px;
+            background: var(--border);
+            border-radius: 14px;
+            position: relative;
+            transition: all 0.3s;
+            flex-shrink: 0;
+        }
+        
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 24px;
+            height: 24px;
+            background: var(--card-bg);
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        
+        .toggle-item.active .toggle-switch {
+            background: var(--primary);
+        }
+        
+        .toggle-item.active .toggle-switch::after {
+            left: 22px;
+        }
+        
+        /* 确认信息 */
+        .confirm-list {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .confirm-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        
+        .confirm-item:last-child {
+            border-bottom: none;
+        }
+        
+        .confirm-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+        
+        .confirm-value {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            text-align: right;
+            max-width: 60%;
+        }
+        
+        .confirm-value.highlight {
+            color: var(--primary);
+        }
+        
+        /* 底部操作栏 */
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--card-bg);
+            border-top: 1px solid var(--border);
+            padding: 12px 16px;
+            padding-bottom: calc(12px + env(safe-area-inset-bottom));
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 14px 20px;
+            border-radius: var(--radius-sm);
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+            font-family: inherit;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        
+        .btn-secondary {
+            background: var(--bg);
+            color: var(--text-primary);
+            border: 1.5px solid var(--border);
+        }
+        
+        .btn-secondary:active {
+            background: var(--border);
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:active {
+            background: var(--primary-dark);
+            transform: scale(0.98);
+        }
+        
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        /* 步骤切换动画 */
+        .step-content {
+            display: none;
+        }
+        
+        .step-content.active {
+            display: block !important;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        /* Toast提示 */
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) scale(0.9);
+            background: rgba(30, 41, 59, 0.95);
+            color: white;
+            padding: 16px 28px;
+            border-radius: var(--radius);
+            font-size: 14px;
+            font-weight: 500;
+            z-index: 1000;
+            opacity: 0;
+            transition: all 0.3s;
+            pointer-events: none;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .toast.show {
+            opacity: 1;
+            transform: translate(-50%, -50%) scale(1);
+        }
+        
+        .toast.success {
+            background: var(--primary);
+        }
+        
+        .toast.error {
+            background: var(--danger);
+        }
+        
+        /* 成功动画 */
+        .success-animation {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 20px;
+            text-align: center;
+        }
+        
+        .success-animation.show {
+            display: flex;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        .success-icon {
+            width: 80px;
+            height: 80px;
+            background: var(--primary-soft);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            margin-bottom: 20px;
+            animation: scaleIn 0.5s ease;
+        }
+        
+        @keyframes scaleIn {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+        
+        .success-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+        }
+        
+        .success-desc {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <header class="header">
+        <button class="back-btn" id="back-btn" onclick="window.location.href='index.html'">←</button>
+        <h1 class="header-title">发布需求</h1>
+    </header>
+    
+    <!-- 进度条 -->
+    <div class="progress-bar">
+        <div class="progress-step active" id="progress-1"></div>
+        <div class="progress-step" id="progress-2"></div>
+        <div class="progress-step" id="progress-3"></div>
+    </div>
+    
+    <!-- 主内容 -->
+    <main class="content">
+        <form id="publish-form">
+            <!-- 第一步：基本信息 -->
+            <div class="step-content active" id="step-1">
+                <div class="step-header">
+                    <div class="step-badge">步骤 1/3</div>
+                    <h2 class="step-title">描述你的需求</h2>
+                    <p class="step-subtitle">简单清晰地说明你需要什么帮助</p>
+                </div>
+                
+                <div class="card">
+                    <div class="form-group">
+                        <label class="form-label" for="publish-title">需求标题 <span class="required">*</span></label>
+                        <input type="text" name="title" id="publish-title" class="form-input" placeholder="例如：帮忙搬家具、取快递" autocomplete="off" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="publish-description">详细描述</label>
+                        <textarea name="description" id="publish-description" class="form-input" placeholder="补充说明需求的具体内容、要求等..."></textarea>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3 class="card-title">📍 位置信息</h3>
+                    <div class="form-group">
+                        <div class="location-row">
+                            <select name="province" id="province-select" class="form-input" required onchange="updateCities()">
+                                <option value="">省份</option>
+                                <option value="北京市">北京</option>
+                                <option value="上海市">上海</option>
+                                <option value="广东省">广东</option>
+                                <option value="浙江省">浙江</option>
+                                <option value="江苏省">江苏</option>
+                                <option value="四川省">四川</option>
+                                <option value="湖北省">湖北</option>
+                                <option value="湖南省">湖南</option>
+                                <option value="河南省">河南</option>
+                                <option value="山东省">山东</option>
+                            </select>
+                            <select name="city" id="city-select" class="form-input" required>
+                                <option value="">城市</option>
+                            </select>
+                            <button type="button" class="location-btn" onclick="getCurrentLocation()">📍</button>
+                        </div>
+                        <input type="text" name="address" class="form-input" placeholder="详细地址：小区、楼号、房间号" autocomplete="street-address" required>
+                        <input type="hidden" name="lat" id="lat-input">
+                        <input type="hidden" name="lng" id="lng-input">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 第二步：时间与报酬 -->
+            <div class="step-content" id="step-2">
+                <div class="step-header">
+                    <div class="step-badge">步骤 2/3</div>
+                    <h2 class="step-title">设置时间和报酬</h2>
+                    <p class="step-subtitle">选择合适的时间和合理的报酬</p>
+                </div>
+                
+                <div class="card">
+                    <h3 class="card-title">⏰ 什么时候需要</h3>
+                    <div class="time-options">
+                        <div class="time-option active" data-value="now" onclick="selectTime(this)">
+                            <div class="time-option-icon">🚀</div>
+                            <div class="time-option-text">立即</div>
+                        </div>
+                        <div class="time-option" data-value="12h" onclick="selectTime(this)">
+                            <div class="time-option-icon">⚡</div>
+                            <div class="time-option-text">12小时内</div>
+                        </div>
+                        <div class="time-option" data-value="24h" onclick="selectTime(this)">
+                            <div class="time-option-icon">📅</div>
+                            <div class="time-option-text">24小时内</div>
+                        </div>
+                        <div class="time-option" data-value="custom" onclick="selectTime(this)">
+                            <div class="time-option-icon">✏️</div>
+                            <div class="time-option-text">自定义</div>
+                        </div>
+                    </div>
+                    <input type="hidden" name="start_time" id="start-time-input" value="now">
+                    <div class="custom-time" id="custom-time-box">
+                        <input type="datetime-local" name="start_time_custom" id="start-time-custom" class="form-input" autocomplete="off">
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3 class="card-title">📅 截止日期</h3>
+                    <div class="date-picker">
+                        <button type="button" class="date-btn" onclick="adjustDeadline(-1)">−</button>
+                        <input type="date" name="deadline" id="deadline-input" class="form-input date-input" required autocomplete="off">
+                        <button type="button" class="date-btn" onclick="adjustDeadline(1)">+</button>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3 class="card-title">💰 报酬</h3>
+                    <div class="form-group">
+                        <input type="text" name="reward" class="form-input" placeholder="例如：50元、请喝奶茶" required autocomplete="off">
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 第三步：确认与选项 -->
+            <div class="step-content" id="step-3">
+                <div class="step-header">
+                    <div class="step-badge">步骤 3/3</div>
+                    <h2 class="step-title">确认并发布</h2>
+                    <p class="step-subtitle">核对信息，选择附加选项</p>
+                </div>
+                
+                <div class="card">
+                    <h3 class="card-title">📝 需求信息</h3>
+                    <div class="confirm-list">
+                        <div class="confirm-item">
+                            <span class="confirm-label">标题</span>
+                            <span class="confirm-value" id="confirm-title">-</span>
+                        </div>
+                        <div class="confirm-item">
+                            <span class="confirm-label">位置</span>
+                            <span class="confirm-value" id="confirm-location">-</span>
+                        </div>
+                        <div class="confirm-item">
+                            <span class="confirm-label">详细地址</span>
+                            <span class="confirm-value" id="confirm-address">-</span>
+                        </div>
+                        <div class="confirm-item">
+                            <span class="confirm-label">需要时间</span>
+                            <span class="confirm-value" id="confirm-time">-</span>
+                        </div>
+                        <div class="confirm-item">
+                            <span class="confirm-label">截止日期</span>
+                            <span class="confirm-value" id="confirm-deadline">-</span>
+                        </div>
+                        <div class="confirm-item">
+                            <span class="confirm-label">报酬</span>
+                            <span class="confirm-value highlight" id="confirm-reward">-</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <h3 class="card-title">⚙️ 附加选项</h3>
+                    <div class="toggle-list">
+                        <div class="toggle-item" onclick="toggleOption(this, 'is_urgent')">
+                            <div class="toggle-icon">🔥</div>
+                            <div class="toggle-content">
+                                <div class="toggle-title">加急服务</div>
+                                <div class="toggle-desc">优先展示，更快获得帮助</div>
+                            </div>
+                            <div class="toggle-switch"></div>
+                            <input type="checkbox" name="is_urgent" hidden>
+                        </div>
+                        <div class="toggle-item" onclick="toggleOption(this, 'need_photo_verify')">
+                            <div class="toggle-icon">📷</div>
+                            <div class="toggle-content">
+                                <div class="toggle-title">拍照验收</div>
+                                <div class="toggle-desc">完成后需要拍照确认</div>
+                            </div>
+                            <div class="toggle-switch"></div>
+                            <input type="checkbox" name="need_photo_verify" hidden>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 成功状态 -->
+            <div class="success-animation" id="success-view">
+                <div class="success-icon">✓</div>
+                <h2 class="success-title">发布成功！</h2>
+                <p class="success-desc">你的需求已发布，等待热心邻居接单</p>
+            </div>
+        </form>
+    </main>
+    
+    <!-- 底部操作栏 -->
+    <footer class="footer">
+        <button type="button" class="btn btn-secondary" id="prev-btn" style="display: none;" onclick="prevStep()">上一步</button>
+        <button type="button" class="btn btn-primary" id="next-btn" onclick="nextStep()">下一步</button>
+        <button type="button" class="btn btn-primary" id="submit-btn" style="display: none;" onclick="submitForm()">🚀 立即发布</button>
+    </footer>
+    
+    <div class="toast" id="toast"></div>
+    
+    <script src="js/app.js?v=2"></script>
+    <script>
+        // 使用唯一的变量名避免与 app.js 冲突
+        let publishCurrentStep = 1;
+        
+        // 确保函数在全局作用域
+        window.goBack = function() {
+            window.location.href = 'index.html';
+        };
+        const publishTotalSteps = 3;
+        
+        // 城市数据
+        const publishCityData = {
+            '北京市': ['北京市'],
+            '上海市': ['上海市'],
+            '广东省': ['广州市', '深圳市', '珠海市', '汕头市', '佛山市', '韶关市', '湛江市', '肇庆市', '江门市', '茂名市', '惠州市', '梅州市', '汕尾市', '河源市', '阳江市', '清远市', '东莞市', '中山市', '潮州市', '揭阳市', '云浮市'],
+            '浙江省': ['杭州市', '宁波市', '温州市', '嘉兴市', '湖州市', '绍兴市', '金华市', '衢州市', '舟山市', '台州市', '丽水市'],
+            '江苏省': ['南京市', '无锡市', '徐州市', '常州市', '苏州市', '南通市', '连云港市', '淮安市', '盐城市', '扬州市', '镇江市', '泰州市', '宿迁市'],
+            '四川省': ['成都市', '自贡市', '攀枝花市', '泸州市', '德阳市', '绵阳市', '广元市', '遂宁市', '内江市', '乐山市', '南充市', '眉山市', '宜宾市', '广安市', '达州市', '雅安市', '巴中市', '资阳市', '阿坝藏族羌族自治州', '甘孜藏族自治州', '凉山彝族自治州'],
+            '湖北省': ['武汉市', '黄石市', '十堰市', '宜昌市', '襄阳市', '鄂州市', '荆门市', '孝感市', '荆州市', '黄冈市', '咸宁市', '随州市', '恩施土家族苗族自治州'],
+            '湖南省': ['长沙市', '株洲市', '湘潭市', '衡阳市', '邵阳市', '岳阳市', '常德市', '张家界市', '益阳市', '郴州市', '永州市', '怀化市', '娄底市', '湘西土家族苗族自治州'],
+            '河南省': ['郑州市', '开封市', '洛阳市', '平顶山市', '安阳市', '鹤壁市', '新乡市', '焦作市', '濮阳市', '许昌市', '漯河市', '三门峡市', '南阳市', '商丘市', '信阳市', '周口市', '驻马店市'],
+            '山东省': ['济南市', '青岛市', '淄博市', '枣庄市', '东营市', '烟台市', '潍坊市', '济宁市', '泰安市', '威海市', '日照市', '莱芜市', '临沂市', '德州市', '聊城市', '滨州市', '菏泽市']
+        };
+        
+        // 更新城市下拉框
+        function updateCities() {
+            const provinceSelect = document.getElementById('province-select');
+            const citySelect = document.getElementById('city-select');
+            const province = provinceSelect.value;
+            
+            citySelect.innerHTML = '<option value="">城市</option>';
+            
+            if (province && publishCityData[province]) {
+                publishCityData[province].forEach(city => {
+                    const option = document.createElement('option');
+                    option.value = city;
+                    option.textContent = city;
+                    citySelect.appendChild(option);
+                });
+            }
+        }
+        
+        // 检测是否在Android APP中
+        function isAndroidApp() {
+            return typeof Android !== 'undefined' && Android !== null;
+        }
+        
+        // 获取当前位置 - 优先使用Android原生定位
+        function getCurrentLocation() {
+            // 如果在Android APP中，使用原生定位
+            if (isAndroidApp()) {
+                showToast('正在获取位置...', 'info');
+                
+                // 设置全局回调函数供Android调用
+                window.onLocationSuccess = function(latitude, longitude) {
+                    document.getElementById('lat-input').value = latitude;
+                    document.getElementById('lng-input').value = longitude;
+                    showToast('位置已获取', 'success');
+                };
+                
+                window.onLocationDenied = function() {
+                    showToast('无法获取位置信息，请手动填写');
+                };
+                
+                // 调用Android原生定位
+                Android.getLocation();
+                return;
+            }
+            
+            // 否则使用浏览器定位
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        document.getElementById('lat-input').value = position.coords.latitude;
+                        document.getElementById('lng-input').value = position.coords.longitude;
+                        showToast('位置已获取', 'success');
+                    },
+                    function() {
+                        showToast('无法获取位置信息');
+                    }
+                );
+            } else {
+                showToast('浏览器不支持地理定位');
+            }
+        }
+        
+        function nextStep() {
+            if (validateStep(publishCurrentStep)) {
+                if (publishCurrentStep < publishTotalSteps) {
+                    publishCurrentStep++;
+                    updateUI();
+                }
+            }
+        }
+        
+        function prevStep() {
+            if (publishCurrentStep > 1) {
+                publishCurrentStep--;
+                updateUI();
+            }
+        }
+        
+        function updateUI() {
+            console.log('updateUI called, publishCurrentStep:', publishCurrentStep);
+            
+            // 更新进度条
+            for (let i = 1; i <= publishTotalSteps; i++) {
+                const step = document.getElementById(`progress-${i}`);
+                if (step) {
+                    step.classList.remove('active', 'completed');
+                    if (i < publishCurrentStep) {
+                        step.classList.add('completed');
+                    } else if (i === publishCurrentStep) {
+                        step.classList.add('active');
+                    }
+                }
+            }
+            
+            // 更新步骤内容 - 先移除所有active，再添加当前步骤的active
+            const stepContents = document.querySelectorAll('.step-content');
+            console.log('stepContents count:', stepContents.length);
+            stepContents.forEach((el, i) => {
+                const shouldBeActive = i + 1 === publishCurrentStep;
+                console.log(`Step ${i + 1} should be active:`, shouldBeActive);
+                if (shouldBeActive) {
+                    el.classList.add('active');
+                } else {
+                    el.classList.remove('active');
+                }
+            });
+            
+            // 更新按钮
+            const prevBtn = document.getElementById('prev-btn');
+            const nextBtn = document.getElementById('next-btn');
+            const submitBtn = document.getElementById('submit-btn');
+            
+            if (prevBtn) prevBtn.style.display = publishCurrentStep > 1 ? 'flex' : 'none';
+            if (nextBtn) nextBtn.style.display = publishCurrentStep < publishTotalSteps ? 'flex' : 'none';
+            if (submitBtn) submitBtn.style.display = publishCurrentStep === publishTotalSteps ? 'flex' : 'none';
+            
+            // 更新确认信息
+            if (publishCurrentStep === publishTotalSteps) {
+                updateConfirmInfo();
+            }
+        }
+        
+        function validateStep(step) {
+            const form = document.getElementById('publish-form');
+            
+            if (step === 1) {
+                const title = form.querySelector('[name="title"]').value.trim();
+                const province = form.querySelector('[name="province"]').value;
+                const city = form.querySelector('[name="city"]').value;
+                const address = form.querySelector('[name="address"]').value.trim();
+                
+                if (!title) { showToast('请输入需求标题'); return false; }
+                if (!province) { showToast('请选择省份'); return false; }
+                if (!city) { showToast('请选择城市'); return false; }
+                if (!address) { showToast('请输入详细地址'); return false; }
+            } else if (step === 2) {
+                const deadline = form.querySelector('[name="deadline"]').value;
+                const reward = form.querySelector('[name="reward"]').value.trim();
+                
+                if (!deadline) { showToast('请选择截止日期'); return false; }
+                if (!reward) { showToast('请输入报酬'); return false; }
+            }
+            
+            return true;
+        }
+        
+        function selectTime(el) {
+            document.querySelectorAll('.time-option').forEach(opt => opt.classList.remove('active'));
+            el.classList.add('active');
+            
+            const value = el.dataset.value;
+            document.getElementById('start-time-input').value = value;
+            
+            const customBox = document.getElementById('custom-time-box');
+            if (value === 'custom') {
+                customBox.classList.add('show');
+                const now = new Date();
+                now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+                document.getElementById('start-time-custom').value = now.toISOString().slice(0, 16);
+            } else {
+                customBox.classList.remove('show');
+            }
+        }
+        
+        function toggleOption(el, name) {
+            el.classList.toggle('active');
+            const checkbox = el.querySelector(`[name="${name}"]`);
+            checkbox.checked = el.classList.contains('active');
+        }
+        
+        function adjustDeadline(delta) {
+            const input = document.getElementById('deadline-input');
+            let currentDate = input.value ? new Date(input.value) : new Date();
+            currentDate.setDate(currentDate.getDate() + delta);
+            
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            if (currentDate < today) currentDate = today;
+            
+            input.value = currentDate.toISOString().split('T')[0];
+        }
+        
+        function updateConfirmInfo() {
+            const form = document.getElementById('publish-form');
+            
+            document.getElementById('confirm-title').textContent = form.querySelector('[name="title"]').value || '-';
+            
+            const province = form.querySelector('[name="province"]').value;
+            const city = form.querySelector('[name="city"]').value;
+            document.getElementById('confirm-location').textContent = province && city ? `${province} ${city}` : '-';
+            
+            document.getElementById('confirm-address').textContent = form.querySelector('[name="address"]').value || '-';
+            document.getElementById('confirm-reward').textContent = form.querySelector('[name="reward"]').value || '-';
+            
+            const timeValue = document.getElementById('start-time-input').value;
+            let timeText = '立即';
+            if (timeValue === '12h') timeText = '12小时内';
+            else if (timeValue === '24h') timeText = '24小时内';
+            else if (timeValue === 'custom') {
+                const custom = document.getElementById('start-time-custom');
+                timeText = custom.value ? new Date(custom.value).toLocaleString('zh-CN', {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) : '自定义';
+            }
+            document.getElementById('confirm-time').textContent = timeText;
+            
+            document.getElementById('confirm-deadline').textContent = form.querySelector('[name="deadline"]').value || '-';
+        }
+        
+        async function submitForm() {
+            if (!currentUser) {
+                showToast('请先登录');
+                setTimeout(() => window.location.href = 'index.html', 1500);
+                return;
+            }
+            
+            const form = document.getElementById('publish-form');
+            const formData = new FormData(form);
+            
+            const startTimeValue = formData.get('start_time') || 'now';
+            const now = new Date();
+            let startTime;
+            if (startTimeValue === 'now') {
+                startTime = now.toISOString();
+            } else if (startTimeValue === '12h') {
+                startTime = new Date(now.getTime() + 12 * 60 * 60 * 1000).toISOString();
+            } else if (startTimeValue === '24h') {
+                startTime = new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
+            } else if (startTimeValue === 'custom') {
+                const customInput = document.getElementById('start-time-custom');
+                startTime = customInput && customInput.value ? new Date(customInput.value).toISOString() : now.toISOString();
+            }
+            
+            const deadlineInput = document.getElementById('deadline-input');
+            const deadline = deadlineInput && deadlineInput.value ? new Date(deadlineInput.value).toISOString() : new Date(now.getTime() + 24 * 60 * 60 * 1000).toISOString();
+            
+            const province = formData.get('province') || '';
+            const city = formData.get('city') || '';
+            const location = `${province}-${city}`;
+            
+            const data = {
+                user_id: currentUser.id,
+                title: formData.get('title').trim(),
+                description: formData.get('description') ? formData.get('description').trim() : formData.get('title').trim(),
+                category: '其他',
+                location: location,
+                address: formData.get('address').trim(),
+                reward: formData.get('reward'),
+                is_urgent: formData.get('is_urgent') === 'on',
+                lat: formData.get('lat') || null,
+                lng: formData.get('lng') || null,
+                need_photo_verify: formData.get('need_photo_verify') === 'on',
+                deposit_amount: 0,
+                start_time: startTime,
+                deadline: deadline
+            };
+            
+            const submitBtn = document.getElementById('submit-btn');
+            submitBtn.disabled = true;
+            submitBtn.textContent = '发布中...';
+            
+            try {
+                const response = await fetch(CONFIG.API_BASE_URL + '/requests', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken || localStorage.getItem('auth_token')}`
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    // 显示成功动画
+                    document.querySelectorAll('.step-content').forEach(el => el.classList.remove('active'));
+                    document.getElementById('success-view').classList.add('show');
+                    document.querySelector('.footer').style.display = 'none';
+                    document.querySelector('.progress-bar').style.display = 'none';
+                    
+                    localStorage.setItem('needsRefresh', 'true');
+                    setTimeout(() => window.location.href = 'requests.html', 2000);
+                } else {
+                    showToast(result.message || '发布失败');
+                }
+            } catch (error) {
+                console.error('发布失败:', error);
+                showToast('发布失败，请重试');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = '🚀 立即发布';
+            }
+        }
+        
+        function showToast(message, type = 'error') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast show ${type}`;
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+        
+        // 页面加载时立即填充表单数据
+        (function() {
+            // 尝试读取 localStorage 数据
+            let pendingData = localStorage.getItem('pendingPublishData');
+            
+            if (!pendingData) {
+                // 尝试从 URL 参数获取（作为后备）
+                const params = new URLSearchParams(window.location.search);
+                const urlTitle = params.get('title');
+                if (urlTitle) {
+                    pendingData = JSON.stringify({
+                        title: decodeURIComponent(urlTitle),
+                        desc: decodeURIComponent(params.get('desc') || ''),
+                        urgent: params.get('urgent') === 'true',
+                        timePreset: params.get('timePreset') || 'now',
+                        deadlineDays: parseInt(params.get('deadlineDays')) || 1,
+                        province: params.get('province') || '',
+                        city: params.get('city') || ''
+                    });
+                }
+            }
+            
+            if (!pendingData) return;
+            
+            let title, desc, urgent, timePreset, deadlineDays, province, city, address, reward, category;
+            try {
+                const data = JSON.parse(pendingData);
+                title = data.title;
+                desc = data.desc;
+                urgent = data.urgent;
+                timePreset = data.timePreset || 'now';
+                deadlineDays = data.deadlineDays || 1;
+                province = data.province || '广东省';
+                city = data.city || '广州市';
+                address = data.address || '';
+                reward = data.reward || '';
+                category = data.category || 'normal';
+            } catch (e) {
+                console.error('解析pendingPublishData失败:', e);
+                return;
+            }
+            
+            // 填充表单
+            function fillForm() {
+                const titleInput = document.querySelector('[name="title"]');
+                const descInput = document.querySelector('[name="description"]');
+                const provinceSelect = document.querySelector('[name="province"]');
+                const citySelect = document.querySelector('[name="city"]');
+                const addressInput = document.querySelector('[name="address"]');
+                const timeOption = timePreset ? document.querySelector(`.time-option[data-value="${timePreset}"]`) : null;
+                const deadlineInput = document.querySelector('[name="deadline"]');
+                const urgentToggle = document.querySelector('[onclick*="is_urgent"]');
+                const categorySelect = document.querySelector('[name="category"]');
+                
+                // 检查第一步的元素是否都已加载
+                if (!titleInput || !descInput || !provinceSelect || !citySelect) {
+                    setTimeout(fillForm, 50);
+                    return;
+                }
+                
+                // 填充标题和描述
+                if (title) titleInput.value = title;
+                if (desc) descInput.value = desc;
+                
+                // 填充分类
+                if (category && categorySelect) {
+                    categorySelect.value = category;
+                }
+                
+                // 填充省份和城市
+                if (province) {
+                    provinceSelect.value = province;
+                    // 触发 onchange 事件加载城市列表
+                    updateCities();
+                }
+                if (province && city) {
+                    // 等待城市数据加载后设置城市
+                    setTimeout(() => {
+                        if (publishCityData[province] && publishCityData[province].includes(city)) {
+                            citySelect.value = city;
+                        }
+                    }, 150);
+                }
+                
+                // 填充详细地址
+                if (address && addressInput) addressInput.value = address;
+                
+                // 填充时间选项（如果存在）- 延迟执行确保DOM已渲染
+                if (timePreset && timeOption) {
+                    setTimeout(() => {
+                        selectTime(timeOption);
+                    }, 100);
+                }
+                
+                // 填充截止日期（如果元素存在）- 使用更精确的日期时间
+                if (deadlineDays) {
+                    setTimeout(() => {
+                        const deadlineInput = document.querySelector('[name="deadline"]');
+                        if (deadlineInput) {
+                            const now = new Date();
+                            now.setDate(now.getDate() + deadlineDays);
+                            now.setHours(23, 59, 0, 0);
+                            const year = now.getFullYear();
+                            const month = String(now.getMonth() + 1).padStart(2, '0');
+                            const day = String(now.getDate()).padStart(2, '0');
+                            const hours = String(now.getHours()).padStart(2, '0');
+                            const minutes = String(now.getMinutes()).padStart(2, '0');
+                            deadlineInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+                        }
+                    }, 200);
+                }
+                
+                // 填充加急选项和加急类型
+                if (urgent) {
+                    // 显示加急选项组
+                    const urgentGroup = document.getElementById('urgent_type_group');
+                    if (urgentGroup) {
+                        urgentGroup.style.display = 'block';
+                    }
+                    
+                    // 设置加急类型
+                    setTimeout(() => {
+                        const urgentTypeSelect = document.querySelector('[name="urgent_type"]');
+                        if (urgentTypeSelect) {
+                            if (title.includes('医院') || title.includes('药')) {
+                                urgentTypeSelect.value = 'medical';
+                            } else if (title.includes('电闸') || title.includes('维修')) {
+                                urgentTypeSelect.value = 'repair';
+                            } else if (title.includes('快递') || title.includes('取')) {
+                                urgentTypeSelect.value = 'pickup';
+                            } else {
+                                urgentTypeSelect.value = 'other';
+                            }
+                        }
+                    }, 100);
+                    
+                    // 触发加急开关
+                    if (urgentToggle) {
+                        toggleOption(urgentToggle, 'is_urgent');
+                    }
+                }
+                
+                // 填充报酬（在第二步，延迟填充）
+                if (reward) {
+                    setTimeout(() => {
+                        const rewardInput = document.querySelector('[name="reward"]');
+                        if (rewardInput) rewardInput.value = reward;
+                    }, 300);
+                }
+                
+                // 填充成功后清除 localStorage
+                localStorage.removeItem('pendingPublishData');
+            }
+            
+            fillForm();
+        })();
+        
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 绑定返回按钮事件
+            const backBtn = document.getElementById('back-btn');
+            if (backBtn) {
+                backBtn.addEventListener('click', function() {
+                    window.location.href = 'index.html';
+                });
+            }
+            
+            // 设置默认截止日期（如果没有通过填充逻辑设置）
+            const deadlineInput = document.getElementById('deadline-input');
+            if (deadlineInput && !deadlineInput.value) {
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                deadlineInput.value = tomorrow.toISOString().split('T')[0];
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,1704 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <title>我来帮 - 人与人互助平台</title>
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤝</text></svg>">
+    <!-- 预加载关键资源 -->
+    <link rel="preload" href="css/style.css" as="style">
+    <link rel="preload" href="js/app.js" as="script">
+    <link rel="prefetch" href="requests.html">
+    <link rel="prefetch" href="profile.html">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/form-modern.css">
+    <link rel="stylesheet" href="css/mobile-redesign.css">
+    <link rel="stylesheet" href="css/datetime-picker.css">
+    <script>
+        // 全局位置功能 - 提前定义确保可用
+        window.userLocation = { province: '', city: '', district: '', hasPermission: false };
+        
+        // 检测是否在Android APP中
+        window.isAndroidApp = function() {
+            return typeof Android !== 'undefined' && Android !== null;
+        };
+        
+        // 获取当前位置（弹窗中的按钮使用）- 优先使用Android原生定位
+        window.getCurrentLocation = function() {
+            // 如果在Android APP中，使用原生定位
+            if (window.isAndroidApp()) {
+                Android.getLocation();
+                return;
+            }
+            
+            // 否则使用浏览器定位
+            if (!navigator.geolocation) {
+                alert('您的浏览器不支持定位功能，请手动选择位置');
+                return;
+            }
+            
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    window.reverseGeocode && window.reverseGeocode(position.coords.latitude, position.coords.longitude);
+                    window.closeLocationSelector && window.closeLocationSelector();
+                },
+                function(error) {
+                    console.error('GPS定位失败:', error);
+                    alert('定位失败，请手动选择位置');
+                },
+                { timeout: 10000, enableHighAccuracy: true }
+            );
+        };
+        
+        // 右上角位置按钮点击 - 优先使用Android原生定位
+        window.requestLocationPermission = function() {
+            var locationText = document.getElementById('location-text');
+            var locationIcon = document.getElementById('location-icon');
+            
+            if (window.userLocation && window.userLocation.city) {
+                window.showLocationSelector && window.showLocationSelector();
+                return;
+            }
+            
+            if (locationText) locationText.textContent = '定位中...';
+            if (locationIcon) locationIcon.textContent = '📡';
+            
+            // 如果在Android APP中，使用原生定位
+            if (window.isAndroidApp()) {
+                Android.getLocation();
+                return;
+            }
+            
+            // 否则使用浏览器定位
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        window.reverseGeocode && window.reverseGeocode(position.coords.latitude, position.coords.longitude);
+                    },
+                    function(error) {
+                        console.error('GPS定位失败:', error);
+                        if (locationIcon) locationIcon.textContent = '📍';
+                        if (locationText) locationText.textContent = '选择位置';
+                        window.showLocationSelector && window.showLocationSelector();
+                    },
+                    { timeout: 10000, enableHighAccuracy: true }
+                );
+            } else {
+                // 浏览器不支持GPS
+                if (locationIcon) locationIcon.textContent = '📍';
+                if (locationText) locationText.textContent = '选择位置';
+                window.showLocationSelector && window.showLocationSelector();
+            }
+        };
+        
+        // Android原生定位成功回调
+        window.onLocationSuccess = function(latitude, longitude) {
+            window.reverseGeocode && window.reverseGeocode(latitude, longitude);
+            window.closeLocationSelector && window.closeLocationSelector();
+            if (typeof showToast === 'function') {
+                showToast('位置获取成功', 'success');
+            }
+        };
+        
+        // Android原生定位失败/拒绝回调
+        window.onLocationDenied = function() {
+            var locationIcon = document.getElementById('location-icon');
+            var locationText = document.getElementById('location-text');
+            if (locationIcon) locationIcon.textContent = '📍';
+            if (locationText) locationText.textContent = '选择位置';
+            window.showLocationSelector && window.showLocationSelector();
+        };
+    </script>
+</head>
+<body>
+    <!-- 导航栏 - 与requests.html保持一致 -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <!-- 品牌标志 -->
+            <a href="javascript:void(0)" onclick="navigateTo('index.html')" class="logo">
+            </a>
+
+            <!-- 导航菜单 -->
+            <ul class="nav-menu">
+                <li><a href="javascript:void(0)" onclick="navigateTo('index.html')" class="active">首页</a></li>
+                <li><a href="javascript:void(0)" onclick="navigateTo('requests.html')">需求大厅</a></li>
+                <li><a href="javascript:void(0)" onclick="navigateTo('about.html')">关于我们</a></li>
+            </ul>
+            
+            <!-- 导航操作区 -->
+            <div class="nav-actions">
+                <!-- 发布需求按钮 -->
+                <button class="btn btn-primary" onclick="showPublishModal()">发布需求</button>
+                
+                <!-- 通知图标 -->
+                <div class="notification-icon" onclick="goToNotifications()">
+                    🔔
+                    <span class="notification-badge" id="notification-badge">0</span>
+                </div>
+                
+                <!-- 用户信息 -->
+                <div class="user-menu">
+                    <div class="user-header">
+                        <div class="user-avatar">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'%3E%3C/path%3E%3Ccircle cx='12' cy='7' r='4'%3E%3C/circle%3E%3C/svg%3E" alt="用户头像">
+                        </div>
+                        <span class="user-name">未登录</span>
+                    </div>
+                    <div class="user-dropdown" id="user-dropdown">
+                        <a href="javascript:void(0)" onclick="navigateTo('profile.html')" class="dropdown-item">个人资料</a>
+                        <button class="dropdown-item admin-only" onclick="showAdminPanel()">管理员中心</button>
+                        <button class="dropdown-item" onclick="logout()">退出登录</button>
+                    </div>
+                </div>
+            </div>
+            
+
+        </div>
+    </nav>
+
+    <!-- 主页横幅 - 桌面端 -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <h1>让人与人互助变得简单</h1>
+            <p>发布你的需求，让热心邻居来帮你；或者帮助他人，收获感谢与友谊</p>
+            <div class="hero-stats">
+                <div class="stat-item">
+                    <span class="stat-number" id="stat-users">0</span>
+                    <span class="stat-label">注册用户</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="stat-requests">0</span>
+                    <span class="stat-label">发布需求</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="stat-completed">0</span>
+                    <span class="stat-label">已完成</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number" id="stat-helps">0</span>
+                    <span class="stat-label">帮助次数</span>
+                </div>
+            </div>
+            <div class="hero-actions">
+                <button class="btn btn-large btn-primary" onclick="showPublishModal()">发布我的需求</button>
+                <button class="btn btn-large btn-secondary" onclick="scrollToRequests()">浏览需求</button>
+            </div>
+        </div>
+        <div class="hero-image">
+            <div class="floating-cards">
+                <div class="float-card card-1">
+                    <span class="card-icon">📦</span>
+                    <span>帮忙搬家</span>
+                </div>
+                <div class="float-card card-2">
+                    <span class="card-icon">📚</span>
+                    <span>作业辅导</span>
+                </div>
+                <div class="float-card card-3">
+                    <span class="card-icon">🔧</span>
+                    <span>家电维修</span>
+                </div>
+                <div class="float-card card-4">
+                    <span class="card-icon">🐾</span>
+                    <span>宠物照看</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 手机端首页 - 全新卡片式瀑布流设计 -->
+    <section class="mobile-home">
+        <!-- 顶部状态栏区域 -->
+        <div class="mobile-header">
+            <div class="header-greeting">
+                <span class="greeting-icon">👋</span>
+                <span class="greeting-text" id="mobile-greeting">你好</span>
+            </div>
+            <!-- 位置显示 -->
+            <div class="header-location" id="header-location" onclick="requestLocationPermission()">
+                <span class="location-icon" id="location-icon">📍</span>
+                <span class="location-text" id="location-text">点击获取位置</span>
+            </div>
+        </div>
+
+        <!-- 轮播图组件 -->
+        <div class="carousel-container">
+            <div class="carousel-wrapper">
+                <div class="carousel-track" id="carousel-track">
+                    <div class="carousel-slide">
+                        <img src="images/banner1.svg?r=123456" alt="发布需求">
+                    </div>
+                    <div class="carousel-slide">
+                        <img src="images/banner2.svg?r=234567" alt="热心帮助">
+                    </div>
+                    <div class="carousel-slide">
+                        <img src="images/banner3.svg?r=345678" alt="加急服务">
+                    </div>
+                    <div class="carousel-slide">
+                        <img src="images/banner4.svg?r=456789" alt="邻里互助">
+                    </div>
+                </div>
+                <!-- 左右箭头 -->
+                <button class="carousel-arrow prev" onclick="moveCarousel(-1)">‹</button>
+                <button class="carousel-arrow next" onclick="moveCarousel(1)">›</button>
+            </div>
+            <!-- 指示器 -->
+            <div class="carousel-indicators" id="carousel-indicators">
+                <button class="carousel-dot active" onclick="goToSlide(0)"></button>
+                <button class="carousel-dot" onclick="goToSlide(1)"></button>
+                <button class="carousel-dot" onclick="goToSlide(2)"></button>
+                <button class="carousel-dot" onclick="goToSlide(3)"></button>
+            </div>
+        </div>
+
+        <!-- 快捷功能网格 -->
+        <div class="quick-grid">
+            <a href="requests.html" class="quick-grid-item">
+                <div class="quick-item-icon" style="background: linear-gradient(135deg, #dcfce7, #bbf7d0);">
+                    <span>🔍</span>
+                </div>
+                <span class="quick-item-text">浏览需求</span>
+            </a>
+            <a href="requests.html" class="quick-grid-item">
+                <div class="quick-item-icon" style="background: linear-gradient(135deg, #dbeafe, #bfdbfe);">
+                    <span>📋</span>
+                </div>
+                <span class="quick-item-text">我的需求</span>
+            </a>
+            <a href="profile.html" class="quick-grid-item">
+                <div class="quick-item-icon" style="background: linear-gradient(135deg, #fef3c7, #fde68a);">
+                    <span>👤</span>
+                </div>
+                <span class="quick-item-text">个人中心</span>
+            </a>
+            <button class="quick-grid-item" onclick="showCommonScenes()">
+                <div class="quick-item-icon" style="background: linear-gradient(135deg, #fce7f3, #fbcfe8);">
+                    <span>📖</span>
+                </div>
+                <span class="quick-item-text">常见场景</span>
+            </button>
+            <a href="guide.html" class="quick-grid-item">
+                <div class="quick-item-icon" style="background: linear-gradient(135deg, #e0e7ff, #c7d2fe);">
+                    <span>📖</span>
+                </div>
+                <span class="quick-item-text">使用指南</span>
+            </a>
+            <a href="faq.html" class="quick-grid-item">
+                <div class="quick-item-icon" style="background: linear-gradient(135deg, #fef3c7, #fde68a);">
+                    <span>❓</span>
+                </div>
+                <span class="quick-item-text">常见问题</span>
+            </a>
+            <a href="feedback.html" class="quick-grid-item">
+                <div class="quick-item-icon" style="background: linear-gradient(135deg, #fce7f3, #fbcfe8);">
+                    <span>💡</span>
+                </div>
+                <span class="quick-item-text">意见反馈</span>
+            </a>
+            <button class="quick-grid-item more-item" onclick="showMoreMenu()">
+                <div class="quick-item-icon more-icon" style="background: linear-gradient(135deg, #f3f4f6, #e5e7eb);">
+                    <span>⋮</span>
+                </div>
+                <span class="quick-item-text">更多</span>
+            </button>
+        </div>
+
+        <!-- 底部留白 -->
+        <div class="mobile-bottom-spacer"></div>
+    </section>
+
+
+
+
+    <!-- 管理员界面 -->
+    <section id="admin" class="admin-section" style="display: none;">
+        <div class="container">
+            <!-- 用户管理 -->
+            <div class="admin-module">
+                <!-- 搜索和筛选 -->
+                <div class="admin-controls">
+                    <div class="search-box">
+                        <input type="text" id="user-search" placeholder="搜索用户名..." autocomplete="off">
+                        <button onclick="searchUsers()">搜索</button>
+                    </div>
+                </div>
+                
+                <!-- 用户列表 -->
+                <div class="user-list">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>头像</th>
+                                <th>用户名</th>
+                                <th>邮箱</th>
+                                <th>位置</th>
+                                <th>注册时间</th>
+                                <th>评分</th>
+                                <th>帮助次数</th>
+                                <th>发布需求数</th>
+                            </tr>
+                        </thead>
+                        <tbody id="user-table-body">
+                            <!-- 用户数据将通过JavaScript动态生成 -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- 分页 -->
+                <div class="pagination" id="user-pagination">
+                    <!-- 分页控件将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <span class="logo-icon">🤝</span>
+                    <span class="logo-text">我来帮</span>
+                    <p>让人与人互助变得简单</p>
+                </div>
+                <div class="footer-links">
+                    <div class="link-group">
+                        <h4>平台</h4>
+                        <a href="about.html">关于我们</a>
+                        <a href="guide.html">使用指南</a>
+                        <a href="faq.html">常见问题</a>
+                    </div>
+                    <div class="link-group">
+                        <h4>帮助</h4>
+                        <a href="contact.html">联系客服</a>
+                        <a href="feedback.html">意见反馈</a>
+                        <a href="report.html">举报中心</a>
+                    </div>
+                    <div class="link-group">
+                        <h4>法律</h4>
+                        <a href="terms.html">用户协议</a>
+                        <a href="privacy.html">隐私政策</a>
+                        <a href="disclaimer.html">免责声明</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 我来帮. 保留所有权利.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 发布需求弹窗 -->
+    <div class="modal" id="publish-modal">
+        <div class="modal-content modal-xl publish-modal-v2">
+            <!-- 模态框头部 -->
+            <div class="modal-header-v2">
+                <div class="modal-header-content-v2">
+                    <div class="modal-icon-v2">
+                        <span class="icon-xl">✨</span>
+                    </div>
+                    <h2 class="modal-title-v2">发布需求</h2>
+                    <p class="modal-subtitle-v2">分享你的需求，让热心邻居来帮助你</p>
+                </div>
+                <button class="close-btn-v2" onclick="closePublishModal()">
+                    <span class="close-icon-v2">×</span>
+                </button>
+            </div>
+            
+            <!-- 表单主体 -->
+            <form id="publish-form" onsubmit="handlePublish(event)" class="publish-form-v2">
+                <!-- 表单内容区域 -->
+                <div class="form-content-area">
+                    <!-- 左侧步骤指示器 -->
+                    <div class="publish-steps-v2">
+                        <div class="step-item-v2 active" data-step="1" onclick="goToStep(1)">
+                            <div class="step-circle-v2">
+                                <div class="step-number-v2">1</div>
+                                <div class="step-check-v2">✓</div>
+                            </div>
+                            <span class="step-text-v2">基本信息</span>
+                        </div>
+                        <div class="step-item-v2" data-step="2" onclick="goToStep(2)">
+                            <div class="step-circle-v2">
+                                <div class="step-number-v2">2</div>
+                                <div class="step-check-v2">✓</div>
+                            </div>
+                            <span class="step-text-v2">时间信息</span>
+                        </div>
+                        <div class="step-item-v2" data-step="3" onclick="goToStep(3)">
+                            <div class="step-circle-v2">
+                                <div class="step-number-v2">3</div>
+                                <div class="step-check-v2">✓</div>
+                            </div>
+                            <span class="step-text-v2">确认发布</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 右侧表单内容 -->
+                    <div class="publish-step-content-v2">
+                        <!-- 第一步：基本信息 -->
+                        <div class="form-section-v2 active" data-step="1">
+                            <div class="form-group-v2">
+                                <label class="form-label-v2" for="publish-title">
+                                    <span class="label-icon-v2">📋</span>
+                                    需求标题
+                                    <span class="required-mark-v2">*</span>
+                                </label>
+                                <input type="text" name="title" id="publish-title" placeholder="简单描述你的需求，如：帮忙搬家具" required maxlength="100" style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); font-size: 14px; box-sizing: border-box;">
+                            </div>
+
+                            <div class="form-group-v2">
+                                <label class="form-label-v2" for="publish-description">
+                                    <span class="label-icon-v2">📝</span>
+                                    需求描述
+                                </label>
+                                <textarea name="description" id="publish-description" placeholder="详细描述你的需求..." rows="3" style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); font-size: 14px; box-sizing: border-box; resize: vertical;"></textarea>
+                            </div>
+
+                            <!-- 位置信息 -->
+                            <div class="form-group-v2">
+                                <label class="form-label-v2" for="province-select">
+                                    <span class="label-icon-v2">📍</span>
+                                    位置
+                                    <span class="required-mark-v2">*</span>
+                                </label>
+                                <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                                    <select name="province" id="province-select" required onchange="updateCities()" style="flex: 1; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); font-size: 14px;" autocomplete="address-level1">
+                                        <option value="">省份</option>
+                                        <option value="北京市">北京</option>
+                                        <option value="天津市">天津</option>
+                                        <option value="上海市">上海</option>
+                                        <option value="重庆市">重庆</option>
+                                        <option value="河北省">河北</option>
+                                        <option value="山西省">山西</option>
+                                        <option value="辽宁省">辽宁</option>
+                                        <option value="吉林省">吉林</option>
+                                        <option value="黑龙江省">黑龙江</option>
+                                        <option value="江苏省">江苏</option>
+                                        <option value="浙江省">浙江</option>
+                                        <option value="安徽省">安徽</option>
+                                        <option value="福建省">福建</option>
+                                        <option value="江西省">江西</option>
+                                        <option value="山东省">山东</option>
+                                        <option value="河南省">河南</option>
+                                        <option value="湖北省">湖北</option>
+                                        <option value="湖南省">湖南</option>
+                                        <option value="广东省">广东</option>
+                                        <option value="海南省">海南</option>
+                                        <option value="四川省">四川</option>
+                                        <option value="贵州省">贵州</option>
+                                        <option value="云南省">云南</option>
+                                        <option value="陕西省">陕西</option>
+                                        <option value="甘肃省">甘肃</option>
+                                        <option value="青海省">青海</option>
+                                        <option value="台湾省">台湾</option>
+                                        <option value="内蒙古自治区">内蒙古</option>
+                                        <option value="广西壮族自治区">广西</option>
+                                        <option value="西藏自治区">西藏</option>
+                                        <option value="宁夏回族自治区">宁夏</option>
+                                        <option value="新疆维吾尔自治区">新疆</option>
+                                    </select>
+                                    <select name="city" id="city-select" required style="flex: 1; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); font-size: 14px;" autocomplete="address-level2">
+                                        <option value="">城市</option>
+                                    </select>
+                                    <button type="button" onclick="getCurrentLocation()" title="自动定位" style="padding: 10px 14px; background: var(--primary-color); border: none; border-radius: 8px; color: white; cursor: pointer; font-size: 14px; white-space: nowrap;">
+                                        📍 定位
+                                    </button>
+                                </div>
+                                <span id="location-status" style="font-size: 12px; color: var(--success-color); margin-left: 4px;"></span>
+                            </div>
+
+                            <div class="form-group-v2">
+                                <input type="text" name="address" id="address-input" placeholder="详细地址：如xx小区xx号楼xx室" required style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); font-size: 14px; box-sizing: border-box;" autocomplete="street-address">
+                            </div>
+
+                            <div class="form-group-v2">
+                                <label class="form-label-v2" for="publish-reward">
+                                    <span class="label-icon-v2">💰</span>
+                                    报酬
+                                    <span class="required-mark-v2">*</span>
+                                </label>
+                                <input type="text" name="reward" id="publish-reward" placeholder="如：100元" required style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); font-size: 14px; box-sizing: border-box;" autocomplete="off">
+                            </div>
+                            
+                            <input type="hidden" name="lat" id="lat-input">
+                            <input type="hidden" name="lng" id="lng-input">
+                            
+                            <div class="form-group-v2">
+                                <label class="checkbox-label-v2" for="is_urgent_checkbox" style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; padding: 1rem; background: rgba(239, 68, 68, 0.05); border-radius: var(--radius-lg); border: 1px solid rgba(239, 68, 68, 0.2);">
+                                    <input
+                                        type="checkbox"
+                                        name="is_urgent"
+                                        id="is_urgent_checkbox"
+                                        class="checkbox-input-v2"
+                                        style="width: 20px; height: 20px; cursor: pointer;"
+                                        autocomplete="off"
+                                    >
+                                    <span style="color: var(--danger-color); font-weight: 500;">🔥 加急服务（优先展示，更快响应）</span>
+                                </label>
+                            </div>
+                            
+                            <div class="form-group-v2">
+                                <label class="checkbox-label-v2" for="need_photo_verify_checkbox" style="display: flex; align-items: center; gap: 0.75rem; cursor: pointer; padding: 1rem; background: rgba(59, 130, 246, 0.05); border-radius: var(--radius-lg); border: 1px solid rgba(59, 130, 246, 0.2);">
+                                    <input
+                                        type="checkbox"
+                                        name="need_photo_verify"
+                                        id="need_photo_verify_checkbox"
+                                        class="checkbox-input-v2"
+                                        style="width: 20px; height: 20px; cursor: pointer;"
+                                        autocomplete="off"
+                                    >
+                                    <span style="color: #3b82f6; font-weight: 500;">📷 需要拍照验收</span>
+                                </label>
+                            </div>
+                            
+                            <div class="form-group-v2">
+                                <label for="deposit_amount_input" style="display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: rgba(245, 158, 11, 0.05); border-radius: var(--radius-lg); border: 1px solid rgba(245, 158, 11, 0.2);">
+                                    <span style="color: #f59e0b; font-weight: 500;">💎 押金（借工具需支付）</span>
+                                </label>
+                                <div style="margin-top: 0.5rem;">
+                                    <input
+                                        type="number"
+                                        name="deposit_amount"
+                                        id="deposit_amount_input"
+                                        class="form-input-v2"
+                                        placeholder="输入押金金额（如：10）"
+                                        min="0"
+                                        step="1"
+                                        style="width: 100%;"
+                                        autocomplete="off"
+                                    >
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 第二步：时间信息 -->
+                        <div class="form-section-v2" data-step="2">
+                            <div class="form-group-v2">
+                                <label class="form-label-v2" for="start_time_select">
+                                    <span class="label-icon-v2">📅</span>
+                                    什么时候需要
+                                    <span class="required-mark-v2">*</span>
+                                </label>
+                                <select name="start_time" id="start_time_select" required onchange="toggleCustomStartTime()" style="width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); font-size: 14px; box-sizing: border-box;" autocomplete="off">
+                                    <option value="now">现在</option>
+                                    <option value="12h">12小时内</option>
+                                    <option value="week">一周内</option>
+                                    <option value="custom">自定义</option>
+                                </select>
+                                <input type="datetime-local" name="start_time_custom" id="start_time_custom" style="display: none; width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); font-size: 14px; box-sizing: border-box; margin-top: 8px;" autocomplete="off">
+                            </div>
+
+                            <div class="form-group-v2">
+                                <label class="form-label-v2" for="deadline-input">
+                                    <span class="label-icon-v2">⏰</span>
+                                    最晚什么时候
+                                    <span class="required-mark-v2">*</span>
+                                </label>
+                                <div class="deadline-selector" style="display: flex; align-items: center; gap: 8px;">
+                                    <button type="button" onclick="adjustDeadline(-1)" style="width: 36px; height: 36px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); cursor: pointer; font-size: 18px;">−</button>
+                                    <input type="date" name="deadline" id="deadline-input" required style="flex: 1; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); font-size: 14px; text-align: center;" autocomplete="off">
+                                    <button type="button" onclick="adjustDeadline(1)" style="width: 36px; height: 36px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-primary); cursor: pointer; font-size: 18px;">+</button>
+                                </div>
+                            </div>
+
+                        </div>
+                        
+                        <!-- 第三步：确认发布 -->
+                        <div class="form-section-v2 confirm-section-v2" data-step="3">
+                            <div class="confirm-card-v2">
+                                <div class="confirm-header-v2">
+                                    <span class="confirm-icon-v2">📋</span>
+                                    <h4 class="confirm-title-v2">确认需求信息</h4>
+                                </div>
+                                <div class="confirm-body-v2">
+                                    <div class="confirm-item-v2">
+                                        <span class="confirm-label-v2">需求标题：</span>
+                                        <span class="confirm-value-v2" id="confirm-title">未填写</span>
+                                    </div>
+                                    <div class="confirm-item-v2">
+                                        <span class="confirm-label-v2">位置：</span>
+                                        <span class="confirm-value-v2" id="confirm-location">未填写</span>
+                                    </div>
+                                    <div class="confirm-item-v2">
+                                        <span class="confirm-label-v2">详细地址：</span>
+                                        <span class="confirm-value-v2" id="confirm-address">未填写</span>
+                                    </div>
+                                    <div class="confirm-item-v2">
+                                        <span class="confirm-label-v2">报酬：</span>
+                                        <span class="confirm-value-v2" id="confirm-reward">未填写</span>
+                                    </div>
+                                    <div class="confirm-item-v2">
+                                        <span class="confirm-label-v2">需要时间：</span>
+                                        <span class="confirm-value-v2" id="confirm-start-time">未填写</span>
+                                    </div>
+                                    <div class="confirm-item-v2">
+                                        <span class="confirm-label-v2">最晚时间：</span>
+                                        <span class="confirm-value-v2" id="confirm-deadline">未填写</span>
+                                    </div>
+                                    <div class="confirm-item-v2">
+                                        <span class="confirm-label-v2">加急服务：</span>
+                                        <span class="confirm-value-v2" id="confirm-urgent">否</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 表单操作（箭头按钮） -->
+                <div class="form-actions-v2">
+                    <div class="step-navigation-v2">
+                        <button type="button" class="btn-secondary-v2" onclick="prevStep()" id="prev-step-btn">
+                            <span class="btn-icon-v2">←</span>
+                            <span class="btn-text-v2">上一步</span>
+                        </button>
+                        <button type="button" class="btn-primary-v2" onclick="nextStep()" id="next-step-btn">
+                            <span class="btn-icon-v2">→</span>
+                            <span class="btn-text-v2">下一步</span>
+                        </button>
+                    </div>
+                    <div class="submit-actions-v2">
+                        <button type="button" class="btn-secondary-v2" onclick="closePublishModal()">
+                            <span class="btn-icon-v2">✕</span>
+                            <span class="btn-text-v2">取消</span>
+                        </button>
+                        <button type="submit" class="btn-primary-v2" id="submit-btn">
+                            <span class="btn-icon-v2">📤</span>
+                            <span class="btn-text-v2">发布需求</span>
+                            <span class="btn-loader-v2"></span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 需求详情弹窗 -->
+    <div class="modal" id="detail-modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3 id="detail-title">需求详情</h3>
+                <button class="close-btn" onclick="closeDetailModal()">&times;</button>
+            </div>
+            <div class="detail-content" id="detail-content">
+                <!-- 动态生成详情内容 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 登录弹窗 -->
+    <div class="modal" id="login-modal">
+        <div class="modal-content login-modal-content">
+            <div class="auth-wrapper">
+                <!-- 左侧品牌展示区 -->
+                <div class="auth-brand-section">
+                    <div class="auth-brand-content">
+                        <div class="auth-logo">
+                            <span class="logo-icon">🤝</span>
+                        </div>
+                        <h2 class="auth-brand-title">我来帮</h2>
+                        <p class="auth-brand-subtitle">人与人互助，温暖社区</p>
+                        <div class="auth-illustration">
+                            <div class="floating-elements">
+                                <div class="float-element element-1">
+                                    <span class="element-icon">📦</span>
+                                    <span class="element-text">帮忙搬运</span>
+                                </div>
+                                <div class="float-element element-2">
+                                    <span class="element-icon">📚</span>
+                                    <span class="element-text">知识分享</span>
+                                </div>
+                                <div class="float-element element-3">
+                                    <span class="element-icon">🔧</span>
+                                    <span class="element-text">维修服务</span>
+                                </div>
+                                <div class="float-element element-4">
+                                    <span class="element-icon">🐾</span>
+                                    <span class="element-text">宠物照看</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                
+                <!-- 右侧登录表单区 -->
+                <div class="auth-form-section">
+                    <button class="close-btn" onclick="closeLoginModal()">&times;</button>
+                    <div class="auth-form-header">
+                        <h1 class="auth-title">欢迎回来</h1>
+                    </div>
+                    <form id="login-form" onsubmit="handleLogin(event)" class="auth-form">
+                        <div class="form-group">
+                            <label class="form-label" for="login-username">
+                                <span class="label-icon">🎭</span>
+                                用户名/邮箱
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="text" name="username" id="login-username" class="form-input" placeholder="请输入用户名或邮箱" required autocomplete="username">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="form-group-header">
+                                <label class="form-label" for="login-password">
+                                    <span class="label-icon">🔒</span>
+                                    密码
+                                </label>
+                                <a href="javascript:void(0)" class="forgot-password" onclick="showForgotModal()">忘记密码？</a>
+                            </div>
+                            <div class="input-wrapper">
+                                <input type="password" name="password" id="login-password" class="form-input" placeholder="请输入密码" required autocomplete="current-password">
+                                <button type="button" class="password-toggle-btn" onclick="togglePassword('login-password')">
+                                    <span class="eye-icon">👁</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-options">
+                            <label class="checkbox-label" for="login-remember">
+                                <input type="checkbox" name="remember" id="login-remember" class="checkbox-input" autocomplete="off">
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-text">记住我</span>
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block btn-large auth-btn">
+                            <span class="btn-text">登录</span>
+                            <span class="btn-icon">→</span>
+                        </button>
+                        <div class="form-footer">
+                            <span class="footer-text">还没有账户？</span>
+                            <button type="button" class="btn-link" onclick="showRegisterModal()">立即注册</button>
+                        </div>
+                    </form>
+                </div>
+        </div>
+    </div>
+
+    <!-- 注册弹窗 -->
+    <div class="modal" id="register-modal">
+        <div class="modal-content register-modal">
+            <div class="auth-wrapper">
+                <!-- 左侧品牌展示区 -->
+                <div class="auth-brand-section">
+                    <div class="auth-brand-content">
+                        <div class="auth-logo">
+                            <span class="logo-icon">🤝</span>
+                        </div>
+                        <h2 class="auth-brand-title">我来帮</h2>
+                        <p class="auth-brand-subtitle">人与人互助，温暖社区</p>
+                        <div class="auth-illustration">
+                            <div class="floating-elements">
+                                <div class="float-element element-1">
+                                    <span class="element-icon">🌟</span>
+                                    <span class="element-text">安全可靠</span>
+                                </div>
+                                <div class="float-element element-2">
+                                    <span class="element-icon">🚀</span>
+                                    <span class="element-text">快速响应</span>
+                                </div>
+                                <div class="float-element element-3">
+                                    <span class="element-icon">🤗</span>
+                                    <span class="element-text">温暖社区</span>
+                                </div>
+                                <div class="float-element element-4">
+                                    <span class="element-icon">💪</span>
+                                    <span class="element-text">互帮互助</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="auth-benefits">
+                            <div class="benefit-item">
+                                <span class="benefit-icon">📢</span>
+                                <span class="benefit-text">发布需求，快速获得帮助</span>
+                            </div>
+                            <div class="benefit-item">
+                                <span class="benefit-icon">❤️</span>
+                                <span class="benefit-text">帮助他人，收获友谊和感谢</span>
+                            </div>
+                            <div class="benefit-item">
+                                <span class="benefit-icon">🏆</span>
+                                <span class="benefit-text">获得徽章和积分奖励</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 右侧注册表单区 -->
+                <div class="auth-form-section">
+                    <button class="close-btn" onclick="closeRegisterModal()">&times;</button>
+                    <div class="auth-form-header">
+                        <h1 class="auth-title">加入我们的社区</h1>
+                        <p class="auth-subtitle">创建账户，开始人与人互助之旅</p>
+                    </div>
+                    <form id="register-form" onsubmit="handleRegister(event)" class="auth-form">
+                        <div class="form-group">
+                            <label class="form-label" for="register-nickname">
+                                <span class="label-icon">🎭</span>
+                                用户名
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="text" name="nickname" id="register-nickname" class="form-input" placeholder="请输入用户名" required>
+                            </div>
+                            <div class="form-hint">3-20个字符，用户名</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="register-password">
+                                <span class="label-icon">🔒</span>
+                                密码
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="password" name="password" id="register-password" class="form-input" placeholder="请输入密码" required>
+                                <button type="button" class="password-toggle-btn" onclick="togglePassword('register-password')">
+                                    <span class="eye-icon">👁</span>
+                                </button>
+                            </div>
+                            <div class="form-hint">至少8个字符，包含字母和数字</div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label" for="register-email">
+                                    <span class="label-icon">📧</span>
+                                    邮箱
+                                </label>
+                                <div class="input-wrapper">
+                                    <input type="email" name="email" id="register-email" class="form-input" placeholder="请输入邮箱" required autocomplete="email">
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 验证码输入 -->
+                        <div class="form-group">
+                            <label class="form-label" for="register-verification-code">
+                                <span class="label-icon">🔢</span>
+                                验证码
+                            </label>
+                            <div class="input-wrapper verification-code-wrapper">
+                                <input type="text" name="verification_code" id="register-verification-code" class="form-input" placeholder="请输入6位验证码" maxlength="6" required autocomplete="one-time-code">
+                                <button type="button" class="btn btn-secondary btn-send-code" id="send-code-btn" onclick="sendVerificationCode()">
+                                    获取验证码
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-options">
+                            <label class="checkbox-label" for="register-agree">
+                                <input type="checkbox" name="agree" id="register-agree" class="checkbox-input" required autocomplete="off">
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-text">我同意<a href="terms.html">用户协议</a>和<a href="privacy.html">隐私政策</a></span>
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block btn-large auth-btn">
+                            <span class="btn-text">立即注册</span>
+                            <span class="btn-icon">→</span>
+                        </button>
+                        <div class="form-footer">
+                            <span class="footer-text">已有账号？</span>
+                            <button type="button" class="btn-link" onclick="showLoginModal()">立即登录</button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 忘记密码弹窗 -->
+    <div class="modal" id="forgot-modal">
+        <div class="modal-content login-modal-content">
+            <div class="auth-wrapper">
+                <!-- 左侧品牌展示区 -->
+                <div class="auth-brand-section">
+                    <div class="auth-brand-content">
+                        <div class="auth-logo">
+                            <span class="logo-icon">🤝</span>
+                        </div>
+                        <h2 class="auth-brand-title">我来帮</h2>
+                        <p class="auth-brand-subtitle">人与人互助，温暖社区</p>
+
+                    </div>
+                </div>
+                
+                <!-- 右侧忘记密码表单区 -->
+                <div class="auth-form-section">
+                    <button class="close-btn" onclick="closeForgotModal()">&times;</button>
+                    <div class="auth-form-header">
+                        <h1 class="auth-title">忘记密码？</h1>
+                        <p class="auth-subtitle" id="forgot-subtitle">请输入邮箱和新密码</p>
+                    </div>
+                    
+                    <!-- 步骤1：输入邮箱+验证码（合并） -->
+                    <div id="forgot-step-1" class="forgot-step">
+                        <form id="forgot-form-step-1" onsubmit="handleForgotStep1(event); return false;" class="auth-form">
+                            <div class="form-group">
+                                <label class="form-label" for="forgot-contact">
+                                    <span class="label-icon">📧</span>
+                                    邮箱
+                                </label>
+                                <div class="input-wrapper">
+                                    <input type="email" id="forgot-contact" name="contact" class="form-input" placeholder="请输入邮箱" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="forgot-code">
+                                    <span class="label-icon">🔢</span>
+                                    验证码
+                                </label>
+                                <div class="input-wrapper verification-code-wrapper">
+                                    <input type="text" id="forgot-code" name="code" class="form-input" placeholder="请输入6位验证码" maxlength="6" required autocomplete="one-time-code">
+                                    <button type="button" class="btn btn-secondary btn-send-code" id="forgot-send-code-btn" onclick="sendForgotCode()">
+                                        获取验证码
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="forgot-new-password">
+                                    <span class="label-icon">🔒</span>
+                                    新密码
+                                </label>
+                                <div class="input-wrapper">
+                                    <input type="password" id="forgot-new-password" name="newPassword" class="form-input password-input" placeholder="请输入新密码" oninput="checkPasswordStrength(this.value, 'forgot-strength')" required autocomplete="new-password">
+                                    <button type="button" class="password-toggle-btn" onclick="togglePassword('forgot-new-password')">
+                                        <span class="eye-icon">👁</span>
+                                    </button>
+                                </div>
+                                <div class="password-strength" id="forgot-strength">
+                                    <div class="strength-bar"><div class="strength-fill" id="forgot-strength-fill"></div></div>
+                                    <span class="strength-text" id="forgot-strength-text"></span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="forgot-confirm-password">
+                                    <span class="label-icon">🔒</span>
+                                    确认新密码
+                                </label>
+                                <div class="input-wrapper">
+                                    <input type="password" id="forgot-confirm-password" name="confirmPassword" class="form-input" placeholder="请再次输入新密码" required autocomplete="new-password">
+                                    <button type="button" class="password-toggle-btn" onclick="togglePassword('forgot-confirm-password')">
+                                        <span class="eye-icon">👁</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-block btn-large auth-btn">
+                                <span class="btn-text">重置密码</span>
+                                <span class="btn-icon">→</span>
+                            </button>
+                        </form>
+                    </div>
+                    </div>
+                    
+                    <div class="form-footer">
+                        <span class="footer-text">想起密码了？</span>
+                        <button type="button" class="btn-link" onclick="closeForgotModal(); showLoginModal()">立即登录</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 移动端底部导航栏 -->
+    <nav class="mobile-bottom-nav">
+        <div class="nav-items">
+            <a href="javascript:void(0)" onclick="navigateTo('index.html')" class="nav-item active" data-page="home">
+                <span class="icon">🏠</span>
+                <span>首页</span>
+            </a>
+            <a href="javascript:void(0)" onclick="navigateTo('requests.html')" class="nav-item" data-page="requests">
+                <span class="icon">📋</span>
+                <span>需求</span>
+            </a>
+            <button class="nav-item publish-btn" onclick="showPublishModal()">
+                <span class="icon">+</span>
+            </button>
+            <button class="nav-item" onclick="goToNotifications()" style="position: relative;">
+                <span class="icon">🔔</span>
+                <span>消息</span>
+                <span class="nav-badge" id="message-badge" style="display: none;">0</span>
+            </button>
+            <a href="javascript:void(0)" onclick="navigateTo('profile.html')" class="nav-item">
+                <span class="icon">👤</span>
+                <span>我的</span>
+            </a>
+        </div>
+    </nav>
+
+    <script src="js/mockData.js"></script>
+    <script src="js/datetime-picker.js" defer></script>
+    <script src="https://cdn.socket.io/4.7.4/socket.io.min.js"></script>
+    <script src="js/app.js" defer></script>
+    <script>
+        // 常见场景功能（提前定义，避免onclick找不到函数）
+        window.showCommonScenes = function() {
+            const scenes = [
+                { icon: '⚡', title: '帮我推下电闸', desc: '家里跳闸了，需要有人帮忙推一下电闸', urgent: true, timePreset: 'now', deadlineDays: 1, category: 'urgent' },
+                { icon: '📦', title: '帮我拿个快递', desc: '快递到了，没时间去取，需要帮忙代取', urgent: false, timePreset: '12h', deadlineDays: 2, category: 'normal' },
+                { icon: '🐕', title: '帮我遛遛狗', desc: '临时有事，需要有人帮忙遛狗', urgent: false, timePreset: '12h', deadlineDays: 1, category: 'normal' },
+                { icon: '📱', title: '教老人用下手机', desc: '家里老人不会使用智能手机，需要耐心教学', urgent: false, timePreset: 'week', deadlineDays: 7, category: 'normal' },
+                { icon: '🗑️', title: '顺手帮我扔个垃圾', desc: '行动不便，需要帮忙扔一下垃圾', urgent: true, timePreset: 'now', deadlineDays: 1, category: 'urgent' },
+                { icon: '💊', title: '帮我带盒药', desc: '身体不舒服，需要帮忙买药送药', urgent: true, timePreset: 'now', deadlineDays: 1, category: 'urgent' },
+                { icon: '🏥', title: '陪我去趟医院', desc: '需要有人陪同去医院看病', urgent: true, timePreset: 'now', deadlineDays: 1, category: 'urgent' }
+            ];
+            
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.id = 'commonScenesModal';
+            modal.innerHTML = `
+                <div class="modal-overlay" onclick="closeCommonScenes()"></div>
+                <div class="modal-content" style="padding: 20px; max-width: 90%; border-radius: 16px; position: relative; margin: auto; z-index: 1;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <h3 style="margin: 0; font-size: 18px;">常见场景</h3>
+                        <button onclick="closeCommonScenes()" style="background: none; border: none; font-size: 24px; cursor: pointer;">&times;</button>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        ${scenes.map(scene => `
+                            <div onclick="selectCommonScene('${scene.title}', '${scene.desc}', ${scene.urgent}, '${scene.timePreset}', ${scene.deadlineDays})" 
+                                 style="display: flex; align-items: center; padding: 14px; background: #f9fafb; border-radius: 10px; cursor: pointer; transition: background 0.2s;"
+                                 onmouseover="this.style.background='#f3f4f6'" 
+                                 onmouseout="this.style.background='#f9fafb'">
+                                <span style="font-size: 28px; margin-right: 14px;">${scene.icon}</span>
+                                <div style="flex: 1;">
+                                    <div style="font-weight: 600; font-size: 15px; color: #1f2937; display: flex; align-items: center; gap: 6px;">
+                                        ${scene.title}
+                                        ${scene.urgent ? '<span style="background: #ef4444; color: white; font-size: 10px; padding: 2px 6px; border-radius: 4px;">加急</span>' : ''}
+                                    </div>
+                                    <div style="font-size: 13px; color: #6b7280; margin-top: 2px;">${scene.desc}</div>
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(modal);
+        };
+        
+        window.closeCommonScenes = function() {
+            const modal = document.getElementById('commonScenesModal');
+            if (modal) {
+                modal.classList.remove('active');
+                setTimeout(() => modal.remove(), 300);
+            }
+        };
+        
+        window.selectCommonScene = function(title, desc, urgent = false, timePreset = 'now', deadlineDays = 1, category = 'normal') {
+            const user = JSON.parse(localStorage.getItem('current_user') || '{}');
+            if (!user || !user.id) {
+                closeCommonScenes();
+                if (typeof showLoginModal === 'function') {
+                    showLoginModal();
+                } else {
+                    window.location.href = 'index.html?showLogin=true';
+                }
+                return;
+            }
+            closeCommonScenes();
+            
+            // 移动端跳转到独立页面（带参数）
+            if (window.innerWidth <= 768 || /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+                // 使用 localStorage 传递数据，避免浏览器自动填充问题
+                localStorage.setItem('pendingPublishData', JSON.stringify({ title, desc, urgent, timePreset, deadlineDays, category }));
+                window.location.href = 'publish.html';
+            } else {
+                // PC端显示发布弹窗
+                if (typeof showPublishModal === 'function') {
+                    showPublishModal();
+                    // 填充数据
+                    setTimeout(() => {
+                        fillPublishForm(title, desc, urgent, timePreset, deadlineDays, category);
+                    }, 100);
+                }
+            }
+        };
+        
+        // 填充发布表单
+        window.fillPublishForm = function(title, desc, urgent, timePreset, deadlineDays, category) {
+            // 填充标题和描述
+            const titleInput = document.querySelector('#publish-form [name="title"]');
+            const descInput = document.querySelector('#publish-form [name="description"]');
+            const urgentCheckbox = document.querySelector('#publish-form [name="is_urgent"]');
+            
+            if (titleInput) titleInput.value = title;
+            if (descInput) descInput.value = desc;
+            if (urgentCheckbox) urgentCheckbox.checked = urgent;
+            
+            // 设置时间预设
+            const timePresetSelect = document.querySelector('#publish-form [name="time_preset"]');
+            if (timePresetSelect) {
+                timePresetSelect.value = timePreset;
+                // 触发自定义事件通知 datetime-picker
+                timePresetSelect.dispatchEvent(new Event('change'));
+            }
+            
+            // 设置截止时间
+            const deadlineInput = document.querySelector('#publish-form [name="deadline"]');
+            if (deadlineInput) {
+                const now = new Date();
+                now.setDate(now.getDate() + deadlineDays);
+                now.setHours(23, 59, 0, 0);
+                const year = now.getFullYear();
+                const month = String(now.getMonth() + 1).padStart(2, '0');
+                const day = String(now.getDate()).padStart(2, '0');
+                const hours = String(now.getHours()).padStart(2, '0');
+                const minutes = String(now.getMinutes()).padStart(2, '0');
+                deadlineInput.value = `${year}-${month}-${day}T${hours}:${minutes}`;
+            }
+            
+            // 设置分类
+            const categorySelect = document.querySelector('#publish-form [name="category"]');
+            if (categorySelect) {
+                categorySelect.value = category;
+            }
+            
+            // 如果是加急，自动选择加急类型
+            if (urgent) {
+                const urgentTypeGroup = document.getElementById('urgent_type_group');
+                if (urgentTypeGroup) {
+                    urgentTypeGroup.style.display = 'block';
+                }
+                // 根据场景自动选择加急类型
+                const urgentTypeSelect = document.querySelector('#publish-form [name="urgent_type"]');
+                if (urgentTypeSelect) {
+                    if (title.includes('医院') || title.includes('药')) {
+                        urgentTypeSelect.value = 'medical';
+                    } else if (title.includes('电闸')) {
+                        urgentTypeSelect.value = 'repair';
+                    } else {
+                        urgentTypeSelect.value = 'other';
+                    }
+                }
+            }
+        };
+
+        // 测试函数
+        function testNotificationClick() {
+            console.log('testNotificationClick called');
+            // 直接显示 detail-modal
+            const modal = document.getElementById('detail-modal');
+            console.log('detail-modal element:', modal);
+            if (modal) {
+                modal.classList.add('active');
+                console.log('active class added');
+                // 设置标题
+                const title = document.getElementById('detail-title');
+                if (title) title.textContent = '消息通知';
+                // 设置内容
+                const content = document.getElementById('detail-content');
+                if (content) {
+                    content.innerHTML = '<div style="padding: 2rem; text-align: center;"><p>测试通知内容</p></div>';
+                }
+            } else {
+                console.error('detail-modal not found');
+                showToast('页面加载失败，请刷新重试', 'error');
+            }
+        }
+        
+        // 位置相关功能
+        window.userLocation = {
+            province: '',
+            city: '',
+            district: '',
+            hasPermission: false
+        };
+        
+        // 获取用户位置
+        function initUserLocation() {
+            // 先尝试从 localStorage 读取保存的位置
+            const savedLocation = localStorage.getItem('userLocation');
+            if (savedLocation) {
+                try {
+                    window.userLocation = JSON.parse(savedLocation);
+                    updateLocationDisplay();
+                    return;
+                } catch (e) {
+                    console.error('解析保存的位置失败:', e);
+                }
+            }
+            
+            // 移动端需要用户点击才能触发定位权限请求
+            // 显示提示用户点击获取位置
+            const locationText = document.getElementById('location-text');
+            if (locationText && !window.userLocation.city) {
+                locationText.textContent = '点击获取位置';
+            }
+        }
+        
+        // 用户点击后请求位置权限
+        function requestLocationPermission() {
+            const locationText = document.getElementById('location-text');
+            const locationIcon = document.getElementById('location-icon');
+            
+            if (window.userLocation && window.userLocation.city) {
+                // 已有位置，显示选择器
+                showLocationSelector();
+                return;
+            }
+            
+            // 显示加载中
+            if (locationText) locationText.textContent = '定位中...';
+            if (locationIcon) locationIcon.textContent = '📡';
+            
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        // 使用经纬度反编码获取城市信息
+                        reverseGeocode(position.coords.latitude, position.coords.longitude);
+                    },
+                    (error) => {
+                        console.error('获取位置失败:', error);
+                        if (locationIcon) locationIcon.textContent = '📍';
+                        showLocationPermissionTip();
+                    },
+                    { timeout: 10000, enableHighAccuracy: true }
+                );
+            } else {
+                if (locationIcon) locationIcon.textContent = '📍';
+                showToast('您的浏览器不支持定位功能', 'error');
+                showLocationSelector();
+            }
+        }
+        
+        // 反编码获取城市名称
+        function reverseGeocode(lat, lng) {
+            // 使用 OpenStreetMap Nominatim API (免费开源)
+            fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=10&addressdetails=1`, {
+                headers: {
+                    'User-Agent': 'HelpEachOther/1.0'
+                }
+            })
+                .then(res => res.json())
+                .then(data => {
+                    if (data && data.address) {
+                        const address = data.address;
+                        window.userLocation = {
+                            province: address.state || address.province || '',
+                            city: address.city || address.town || address.county || address.state || '',
+                            district: address.suburb || address.district || '',
+                            hasPermission: true
+                        };
+                        localStorage.setItem('userLocation', JSON.stringify(window.userLocation));
+                        updateLocationDisplay();
+                    } else {
+                        showLocationPermissionTip();
+                    }
+                })
+                .catch(err => {
+                    console.error('反编码失败:', err);
+                    showLocationPermissionTip();
+                });
+        }
+        
+        // 更新位置显示
+        function updateLocationDisplay() {
+            const locationText = document.getElementById('location-text');
+            if (locationText) {
+                if (window.userLocation.city) {
+                    locationText.textContent = window.userLocation.city;
+                } else {
+                    locationText.textContent = '选择位置';
+                }
+            }
+        }
+        
+        // 显示位置权限提示
+        function showLocationPermissionTip() {
+            const locationText = document.getElementById('location-text');
+            if (locationText) {
+                locationText.textContent = '选择位置';
+            }
+            
+            // 显示提示
+            showToast('请允许获取位置权限，或手动选择您的位置', 'info');
+        }
+        
+        // 显示位置选择器
+        function showLocationSelector() {
+            // 创建位置选择弹窗
+            const modal = document.createElement('div');
+            modal.className = 'modal active';
+            modal.id = 'locationSelectorModal';
+            modal.innerHTML = `
+                <div class="modal-content" style="max-width: 90vw; width: 360px; max-height: 80vh; overflow-y: auto;">
+                    <div class="modal-header">
+                        <h3 style="margin: 0; font-size: 1.125rem; color: var(--gray-800);">选择位置</h3>
+                        <button class="close-btn" onclick="closeLocationSelector()">&times;</button>
+                    </div>
+                    <div class="modal-body" style="padding: 1.25rem;">
+                        <!-- 三级选择器 -->
+                        <div style="margin-bottom: 0.75rem;">
+                            <div style="display: flex; gap: 0.5rem;">
+                                <div style="flex: 1;">
+                                    <label style="display: block; font-size: 0.75rem; color: var(--gray-600); margin-bottom: 0.25rem;">省份</label>
+                                    <select id="location-province" onchange="onProvinceChange()" style="width: 100%; padding: 0.5rem 0.25rem 0.5rem 0.5rem; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 0.8125rem; box-sizing: border-box; background-color: white;">
+                                        <option value="">请选择</option>
+                                        <option value="北京市">北京市</option>
+                                        <option value="天津市">天津市</option>
+                                        <option value="上海市">上海市</option>
+                                        <option value="重庆市">重庆市</option>
+                                        <option value="安徽省">安徽省</option>
+                                        <option value="福建省">福建省</option>
+                                        <option value="甘肃省">甘肃省</option>
+                                        <option value="广东省">广东省</option>
+                                        <option value="广西壮族自治区">广西</option>
+                                        <option value="贵州省">贵州省</option>
+                                        <option value="海南省">海南省</option>
+                                        <option value="河北省">河北省</option>
+                                        <option value="河南省">河南省</option>
+                                        <option value="黑龙江省">黑龙江</option>
+                                        <option value="湖北省">湖北省</option>
+                                        <option value="湖南省">湖南省</option>
+                                        <option value="吉林省">吉林省</option>
+                                        <option value="江苏省">江苏省</option>
+                                        <option value="江西省">江西省</option>
+                                        <option value="辽宁省">辽宁省</option>
+                                        <option value="内蒙古自治区">内蒙古</option>
+                                        <option value="宁夏回族自治区">宁夏</option>
+                                        <option value="青海省">青海省</option>
+                                        <option value="山东省">山东省</option>
+                                        <option value="山西省">山西省</option>
+                                        <option value="陕西省">陕西省</option>
+                                        <option value="四川省">四川省</option>
+                                        <option value="台湾省">台湾省</option>
+                                        <option value="西藏自治区">西藏</option>
+                                        <option value="新疆维吾尔自治区">新疆</option>
+                                        <option value="云南省">云南省</option>
+                                        <option value="浙江省">浙江省</option>
+                                    </select>
+                                </div>
+                                <div style="flex: 1;">
+                                    <label style="display: block; font-size: 0.75rem; color: var(--gray-600); margin-bottom: 0.25rem;">城市</label>
+                                    <select id="location-city" onchange="onCityChange()" style="width: 100%; padding: 0.5rem 0.25rem 0.5rem 0.5rem; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 0.8125rem; box-sizing: border-box; background-color: white;">
+                                        <option value="">请选择</option>
+                                    </select>
+                                </div>
+                                <div style="flex: 1;">
+                                    <label style="display: block; font-size: 0.75rem; color: var(--gray-600); margin-bottom: 0.25rem;">区县</label>
+                                    <select id="location-district" style="width: 100%; padding: 0.5rem 0.25rem 0.5rem 0.5rem; border: 1px solid var(--gray-300); border-radius: 8px; font-size: 0.8125rem; box-sizing: border-box; background-color: white;">
+                                        <option value="">请选择</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 定位按钮 -->
+                        <button onclick="window.getCurrentLocation();" style="width: 100%; padding: 0.625rem; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; border: none; border-radius: 8px; font-size: 0.875rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-bottom: 1rem;" title="获取当前位置">
+                            <span style="font-size: 1rem;">📍</span>
+                            <span>自动定位当前位置</span>
+                        </button>
+                        <button onclick="saveLocation()" style="width: 100%; padding: 0.75rem; background: linear-gradient(135deg, #22c55e, #16a34a); color: white; border: none; border-radius: 8px; font-size: 0.875rem; cursor: pointer;">
+                            确认选择
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            
+            // 如果已有位置信息，填充到选择器
+            if (window.userLocation.province) {
+                document.getElementById('location-province').value = window.userLocation.province;
+                onProvinceChange();
+                setTimeout(() => {
+                    if (window.userLocation.city) {
+                        document.getElementById('location-city').value = window.userLocation.city;
+                    }
+                }, 100);
+            }
+        }
+        
+        // 关闭位置选择器
+        function closeLocationSelector() {
+            const modal = document.getElementById('locationSelectorModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+        
+        // 获取当前位置 - 优先使用Android原生定位
+        function getCurrentLocation() {
+            // 如果在Android APP中，使用原生定位
+            if (typeof Android !== 'undefined' && Android !== null) {
+                showToast('正在获取位置...', 'info');
+                Android.getLocation();
+                return;
+            }
+            
+            // 否则使用浏览器定位
+            if (!navigator.geolocation) {
+                showToast('您的浏览器不支持获取位置', 'error');
+                return;
+            }
+            
+            showToast('正在获取位置...', 'info');
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    reverseGeocode(position.coords.latitude, position.coords.longitude);
+                    closeLocationSelector();
+                    showToast('位置获取成功', 'success');
+                },
+                (error) => {
+                    console.error('获取位置失败:', error);
+                    let message = '获取位置失败';
+                    switch(error.code) {
+                        case error.PERMISSION_DENIED:
+                            message = '请允许获取位置权限';
+                            break;
+                        case error.POSITION_UNAVAILABLE:
+                            message = '位置信息不可用';
+                            break;
+                        case error.TIMEOUT:
+                            message = '获取位置超时';
+                            break;
+                    }
+                    showToast(message, 'error');
+                },
+                { timeout: 10000, enableHighAccuracy: false }
+            );
+        }
+        
+        // 省份变化时更新城市列表
+        function onProvinceChange() {
+            const province = document.getElementById('location-province').value;
+            const citySelect = document.getElementById('location-city');
+            
+            const cities = {
+                '北京市': ['北京市'],
+                '天津市': ['天津市'],
+                '上海市': ['上海市'],
+                '重庆市': ['重庆市'],
+                '安徽省': ['合肥市', '芜湖市', '蚌埠市', '淮南市', '马鞍山市', '淮北市', '铜陵市', '安庆市', '黄山市', '滁州市', '阜阳市', '宿州市', '六安市', '亳州市', '池州市', '宣城市'],
+                '福建省': ['福州市', '厦门市', '莆田市', '三明市', '泉州市', '漳州市', '南平市', '龙岩市', '宁德市'],
+                '甘肃省': ['兰州市', '嘉峪关市', '金昌市', '白银市', '天水市', '武威市', '张掖市', '平凉市', '酒泉市', '庆阳市', '定西市', '陇南市', '临夏回族自治州', '甘南藏族自治州'],
+                '广东省': ['广州市', '深圳市', '珠海市', '汕头市', '佛山市', '韶关市', '湛江市', '肇庆市', '江门市', '茂名市', '惠州市', '梅州市', '汕尾市', '河源市', '阳江市', '清远市', '东莞市', '中山市', '潮州市', '揭阳市', '云浮市'],
+                '广西壮族自治区': ['南宁市', '柳州市', '桂林市', '梧州市', '北海市', '防城港市', '钦州市', '贵港市', '玉林市', '百色市', '贺州市', '河池市', '来宾市', '崇左市'],
+                '贵州省': ['贵阳市', '六盘水市', '遵义市', '安顺市', '毕节市', '铜仁市', '黔西南布依族苗族自治州', '黔东南苗族侗族自治州', '黔南布依族苗族自治州'],
+                '海南省': ['海口市', '三亚市', '三沙市', '儋州市', '五指山市', '琼海市', '文昌市', '万宁市', '东方市', '定安县', '屯昌县', '澄迈县', '临高县', '白沙黎族自治县', '昌江黎族自治县', '乐东黎族自治县', '陵水黎族自治县', '保亭黎族苗族自治县', '琼中黎族苗族自治县'],
+                '河北省': ['石家庄市', '唐山市', '秦皇岛市', '邯郸市', '邢台市', '保定市', '张家口市', '承德市', '沧州市', '廊坊市', '衡水市'],
+                '河南省': ['郑州市', '开封市', '洛阳市', '平顶山市', '安阳市', '鹤壁市', '新乡市', '焦作市', '濮阳市', '许昌市', '漯河市', '三门峡市', '南阳市', '商丘市', '信阳市', '周口市', '驻马店市', '济源市'],
+                '黑龙江省': ['哈尔滨市', '齐齐哈尔市', '鸡西市', '鹤岗市', '双鸭山市', '大庆市', '伊春市', '佳木斯市', '七台河市', '牡丹江市', '黑河市', '绥化市', '大兴安岭地区'],
+                '湖北省': ['武汉市', '黄石市', '十堰市', '宜昌市', '襄阳市', '鄂州市', '荆门市', '孝感市', '荆州市', '黄冈市', '咸宁市', '随州市', '恩施土家族苗族自治州', '仙桃市', '潜江市', '天门市', '神农架林区'],
+                '湖南省': ['长沙市', '株洲市', '湘潭市', '衡阳市', '邵阳市', '岳阳市', '常德市', '张家界市', '益阳市', '郴州市', '永州市', '怀化市', '娄底市', '湘西土家族苗族自治州'],
+                '吉林省': ['长春市', '吉林市', '四平市', '辽源市', '通化市', '白山市', '松原市', '白城市', '延边朝鲜族自治州', '长白山保护开发区'],
+                '江苏省': ['南京市', '无锡市', '徐州市', '常州市', '苏州市', '南通市', '连云港市', '淮安市', '盐城市', '扬州市', '镇江市', '泰州市', '宿迁市'],
+                '江西省': ['南昌市', '景德镇市', '萍乡市', '九江市', '新余市', '鹰潭市', '赣州市', '吉安市', '宜春市', '抚州市', '上饶市'],
+                '辽宁省': ['沈阳市', '大连市', '鞍山市', '抚顺市', '本溪市', '丹东市', '锦州市', '营口市', '阜新市', '辽阳市', '盘锦市', '铁岭市', '朝阳市', '葫芦岛市'],
+                '内蒙古自治区': ['呼和浩特市', '包头市', '乌海市', '赤峰市', '通辽市', '鄂尔多斯市', '呼伦贝尔市', '巴彦淖尔市', '乌兰察布市', '兴安盟', '锡林郭勒盟', '阿拉善盟'],
+                '宁夏回族自治区': ['银川市', '石嘴山市', '吴忠市', '固原市', '中卫市'],
+                '青海省': ['西宁市', '海东市', '海北藏族自治州', '黄南藏族自治州', '海南藏族自治州', '果洛藏族自治州', '玉树藏族自治州', '海西蒙古族藏族自治州'],
+                '山东省': ['济南市', '青岛市', '淄博市', '枣庄市', '东营市', '烟台市', '潍坊市', '济宁市', '泰安市', '威海市', '日照市', '莱芜市', '临沂市', '德州市', '聊城市', '滨州市', '菏泽市'],
+                '山西省': ['太原市', '大同市', '阳泉市', '长治市', '晋城市', '朔州市', '晋中市', '运城市', '忻州市', '临汾市', '吕梁市'],
+                '陕西省': ['西安市', '铜川市', '宝鸡市', '咸阳市', '渭南市', '延安市', '汉中市', '榆林市', '安康市', '商洛市'],
+                '四川省': ['成都市', '自贡市', '攀枝花市', '泸州市', '德阳市', '绵阳市', '广元市', '遂宁市', '内江市', '乐山市', '南充市', '眉山市', '宜宾市', '广安市', '达州市', '雅安市', '巴中市', '资阳市', '阿坝藏族羌族自治州', '甘孜藏族自治州', '凉山彝族自治州'],
+                '台湾省': ['台北市', '高雄市', '基隆市', '台中市', '台南市', '新竹市', '嘉义市', '新北市', '桃园市', '新竹县', '苗栗县', '彰化县', '南投县', '云林县', '嘉义县', '屏东县', '宜兰县', '花莲县', '台东县', '澎湖县', '金门县', '连江县'],
+                '西藏自治区': ['拉萨市', '日喀则市', '昌都市', '林芝市', '山南市', '那曲市', '阿里地区'],
+                '新疆维吾尔自治区': ['乌鲁木齐市', '克拉玛依市', '吐鲁番市', '哈密市', '昌吉回族自治州', '博尔塔拉蒙古自治州', '巴音郭楞蒙古自治州', '阿克苏地区', '克孜勒苏柯尔克孜自治州', '喀什地区', '和田地区', '伊犁哈萨克自治州', '塔城地区', '阿勒泰地区', '石河子市', '阿拉尔市', '图木舒克市', '五家渠市', '北屯市', '铁门关市', '双河市', '可克达拉市', '昆玉市', '胡杨河市', '新星市'],
+                '云南省': ['昆明市', '曲靖市', '玉溪市', '保山市', '昭通市', '丽江市', '普洱市', '临沧市', '楚雄彝族自治州', '红河哈尼族彝族自治州', '文山壮族苗族自治州', '西双版纳傣族自治州', '大理白族自治州', '德宏傣族景颇族自治州', '怒江傈僳族自治州', '迪庆藏族自治州'],
+                '浙江省': ['杭州市', '宁波市', '温州市', '嘉兴市', '湖州市', '绍兴市', '金华市', '衢州市', '舟山市', '台州市', '丽水市']
+            };
+            
+            if (cities[province]) {
+                citySelect.innerHTML = '<option value="">请选择</option>' + cities[province].map(city => `<option value="${city}">${city}</option>`).join('');
+            } else {
+                citySelect.innerHTML = '<option value="">请选择</option>';
+            }
+            
+            // 重置区县选择
+            const districtSelect = document.getElementById('location-district');
+            if (districtSelect) {
+                districtSelect.innerHTML = '<option value="">请选择</option>';
+            }
+        }
+        
+        // 城市改变时更新区县
+        function onCityChange() {
+            const city = document.getElementById('location-city').value;
+            const districtSelect = document.getElementById('location-district');
+            if (!districtSelect) return;
+            
+            const districts = {
+                '北京市': ['东城区', '西城区', '朝阳区', '丰台区', '石景山区', '海淀区', '门头沟区', '房山区', '通州区', '顺义区', '昌平区', '大兴区', '怀柔区', '平谷区', '密云区', '延庆区'],
+                '天津市': ['和平区', '河东区', '河西区', '南开区', '河北区', '红桥区', '东丽区', '西青区', '津南区', '北辰区', '武清区', '宝坻区', '滨海新区', '宁河区', '静海区', '蓟州区'],
+                '上海市': ['黄浦区', '徐汇区', '长宁区', '静安区', '普陀区', '虹口区', '杨浦区', '闵行区', '宝山区', '嘉定区', '浦东新区', '金山区', '松江区', '青浦区', '奉贤区', '崇明区'],
+                '广州市': ['荔湾区', '越秀区', '海珠区', '天河区', '白云区', '黄埔区', '番禺区', '花都区', '南沙区', '从化区', '增城区'],
+                '深圳市': ['罗湖区', '福田区', '南山区', '宝安区', '龙岗区', '盐田区', '龙华区', '坪山区', '光明区'],
+                '杭州市': ['上城区', '下城区', '江干区', '拱墅区', '西湖区', '滨江区', '萧山区', '余杭区', '富阳区', '临安区', '桐庐县', '淳安县', '建德市'],
+                '南京市': ['玄武区', '秦淮区', '建邺区', '鼓楼区', '浦口区', '栖霞区', '雨花台区', '江宁区', '六合区', '溧水区', '高淳区'],
+                '成都市': ['锦江区', '青羊区', '金牛区', '武侯区', '成华区', '龙泉驿区', '青白江区', '新都区', '温江区', '双流区', '郫都区', '新津区', '金堂县', '大邑县', '蒲江县', '都江堰市', '彭州市', '邛崃市', '崇州市', '简阳市'],
+                '武汉市': ['江岸区', '江汉区', '硚口区', '汉阳区', '武昌区', '青山区', '洪山区', '东西湖区', '汉南区', '蔡甸区', '江夏区', '黄陂区', '新洲区'],
+                '西安市': ['新城区', '碑林区', '莲湖区', '灞桥区', '未央区', '雁塔区', '阎良区', '临潼区', '长安区', '高陵区', '鄠邑区', '蓝田县', '周至县'],
+                '重庆市': ['万州区', '涪陵区', '渝中区', '大渡口区', '江北区', '沙坪坝区', '九龙坡区', '南岸区', '北碚区', '綦江区', '大足区', '渝北区', '巴南区', '黔江区', '长寿区', '江津区', '合川区', '永川区', '南川区', '璧山区', '铜梁区', '潼南区', '荣昌区', '开州区', '梁平区', '武隆区']
+            };
+            
+            if (districts[city]) {
+                districtSelect.innerHTML = '<option value="">请选择</option>' + districts[city].map(district => `<option value="${district}">${district}</option>`).join('');
+            } else {
+                districtSelect.innerHTML = '<option value="">请选择</option>';
+            }
+        }
+        
+        // 保存位置
+        function saveLocation() {
+            const province = document.getElementById('location-province').value;
+            const city = document.getElementById('location-city').value;
+            
+            if (!province || !city) {
+                showToast('请选择完整的地理位置', 'error');
+                return;
+            }
+            
+            window.userLocation = {
+                province: province,
+                city: city,
+                district: '',
+                hasPermission: true
+            };
+            
+            localStorage.setItem('userLocation', JSON.stringify(window.userLocation));
+            updateLocationDisplay();
+            closeLocationSelector();
+            showToast('位置设置成功', 'success');
+        }
+        
+        // 将所有位置相关函数挂载到全局，供 HTML onclick 调用
+        window.requestLocationPermission = requestLocationPermission;
+        window.initUserLocation = initUserLocation;
+        window.reverseGeocode = reverseGeocode;
+        window.updateLocationDisplay = updateLocationDisplay;
+        window.showLocationPermissionTip = showLocationPermissionTip;
+        window.showLocationSelector = showLocationSelector;
+        window.closeLocationSelector = closeLocationSelector;
+        window.getCurrentLocation = getCurrentLocation;
+        window.onProvinceChange = onProvinceChange;
+        window.onCityChange = onCityChange;
+        window.saveLocation = saveLocation;
+        
+        // ==================== 轮播图功能 ====================
+        let currentSlide = 0;
+        let carouselInterval;
+        const totalSlides = 4;
+        
+        function initCarousel() {
+            // 自动轮播
+            startCarousel();
+            
+            // 触摸滑动支持
+            const track = document.getElementById('carousel-track');
+            if (track) {
+                let startX = 0;
+                let endX = 0;
+                let isDragging = false;
+                
+                // 触摸事件
+                track.addEventListener('touchstart', function(e) {
+                    startX = e.touches[0].clientX;
+                    stopCarousel();
+                }, { passive: true });
+                
+                track.addEventListener('touchmove', function(e) {
+                    endX = e.touches[0].clientX;
+                }, { passive: true });
+                
+                track.addEventListener('touchend', function() {
+                    const diff = startX - endX;
+                    if (Math.abs(diff) > 50) {
+                        if (diff > 0) {
+                            moveCarousel(1);
+                        } else {
+                            moveCarousel(-1);
+                        }
+                    }
+                    startCarousel();
+                }, { passive: true });
+                
+                // 鼠标拖拽事件（桌面端）
+                track.addEventListener('mousedown', function(e) {
+                    startX = e.clientX;
+                    isDragging = true;
+                    stopCarousel();
+                    e.preventDefault();
+                });
+                
+                track.addEventListener('mousemove', function(e) {
+                    if (!isDragging) return;
+                    endX = e.clientX;
+                });
+                
+                track.addEventListener('mouseup', function(e) {
+                    if (!isDragging) return;
+                    isDragging = false;
+                    const diff = startX - endX;
+                    if (Math.abs(diff) > 50) {
+                        if (diff > 0) {
+                            moveCarousel(1);
+                        } else {
+                            moveCarousel(-1);
+                        }
+                    }
+                    startCarousel();
+                });
+                
+                track.addEventListener('mouseleave', function() {
+                    if (isDragging) {
+                        isDragging = false;
+                        startCarousel();
+                    }
+                });
+            }
+        }
+        
+        function moveCarousel(direction) {
+            currentSlide = (currentSlide + direction + totalSlides) % totalSlides;
+            updateCarousel();
+        }
+        
+        function goToSlide(index) {
+            currentSlide = index;
+            updateCarousel();
+        }
+        
+        function updateCarousel() {
+            const track = document.getElementById('carousel-track');
+            const dots = document.querySelectorAll('.carousel-dot');
+            
+            if (track) {
+                track.style.setProperty('--slide-index', currentSlide);
+                track.style.transform = `translateX(-${currentSlide * 100}%)`;
+            }
+            
+            dots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === currentSlide);
+            });
+        }
+        
+        function startCarousel() {
+            stopCarousel();
+            carouselInterval = setInterval(() => {
+                moveCarousel(1);
+            }, 4000);
+        }
+        
+        function stopCarousel() {
+            if (carouselInterval) {
+                clearInterval(carouselInterval);
+                carouselInterval = null;
+            }
+        }
+        
+        // 注册 Service Worker（仅在HTTP/HTTPS协议下有效，file协议下会失败但不影响功能）
+        if ('serviceWorker' in navigator && window.location.protocol !== 'file:') {
+            navigator.serviceWorker.register('/sw.js')
+                .then((registration) => {
+                    console.log('Service Worker 注册成功:', registration);
+                })
+                .catch((error) => {
+                    console.log('Service Worker 注册失败:', error);
+                });
+        }
+        
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initUserLocation();
+            initCarousel();
+        });
+    </script>
+</body>
+</html>

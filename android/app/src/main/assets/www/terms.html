@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户协议 - 我来帮</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤝</text></svg>">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/form-modern.css">
+    <link rel="stylesheet" href="css/mobile-redesign.css">
+    <link rel="stylesheet" href="css/datetime-picker.css">
+    <style>
+        .terms-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        .terms-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .terms-card h2 {
+            color: #059669;
+            margin-bottom: 1rem;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .terms-card h2::before {
+            content: '';
+            width: 4px;
+            height: 1.3rem;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-radius: 2px;
+        }
+        .terms-card p, .terms-card li {
+            color: #4b5563;
+            line-height: 1.8;
+        }
+        .terms-card ul {
+            padding-left: 1.5rem;
+            margin-top: 0.5rem;
+        }
+        .terms-card li {
+            margin-bottom: 0.5rem;
+        }
+        .update-date {
+            text-align: center;
+            margin-top: 3rem;
+            padding: 1.5rem;
+            background: #f9fafb;
+            border-radius: 12px;
+            color: #6b7280;
+            font-size: 0.9rem;
+        }
+        .page-title {
+            text-align: center;
+            margin-bottom: 3rem;
+            font-size: 2.5rem;
+            color: #1f2937;
+        }
+    </style>
+</head>
+<body>
+    <!-- 导航栏 -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="index.html" class="logo">
+            </a>
+            <ul class="nav-menu">
+                <li><a href="index.html">首页</a></li>
+                <li><a href="requests.html">需求大厅</a></li>
+                <li><a href="about.html">关于我们</a></li>
+            </ul>
+            <div class="nav-actions">
+                <!-- 发布需求按钮 -->
+                <button class="btn btn-primary" onclick="showPublishModal()">发布需求</button>
+                
+                <!-- 通知图标 -->
+                <div class="notification-icon" onclick="goToNotifications()">
+                    🔔
+                    <span class="notification-badge" id="notification-badge">0</span>
+                </div>
+                
+                <!-- 用户信息 -->
+                <div class="user-menu">
+                    <div class="user-header">
+                        <div class="user-avatar">
+                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'%3E%3C/path%3E%3Ccircle cx='12' cy='7' r='4'%3E%3C/circle%3E%3C/svg%3E" alt="用户头像">
+                        </div>
+                        <span class="user-name">未登录</span>
+                    </div>
+                    <div class="user-dropdown" id="user-dropdown">
+                        <a href="profile.html" class="dropdown-item">个人资料</a>
+                        <button class="dropdown-item admin-only" onclick="showAdminPanel()">管理员中心</button>
+                        <button class="dropdown-item" onclick="logout()">退出登录</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- 页面内容 -->
+    <section class="page-section" style="padding-top: 6rem; min-height: 100vh;">
+        <div class="container">
+            <h1 class="page-title">📜 用户协议</h1>
+            
+            <div class="terms-content" style="max-width: 900px; margin: 0 auto;">
+                <div class="terms-card">
+                    <h2>服务条款的确认</h2>
+                    <p>欢迎使用"我来帮"平台！当您使用本平台服务时，即表示您已同意并接受本协议的所有条款。</p>
+                </div>
+
+                <div class="terms-card">
+                    <h2>服务说明</h2>
+                    <p>"我来帮"是一个人与人互助社区平台，为用户提供发布需求、提供帮助的信息交流服务。平台不直接参与用户之间的交易，仅提供信息展示和沟通工具。</p>
+                </div>
+
+                <div class="terms-card">
+                    <h2>用户责任</h2>
+                    <ul>
+                        <li>用户应提供真实、准确的个人信息</li>
+                        <li>用户发布的需求应真实、合法，不得含有虚假或误导性内容</li>
+                        <li>用户应遵守法律法规，不得发布违法违规信息</li>
+                        <li>用户之间的交易应遵循诚实信用原则</li>
+                        <li>用户不得利用平台从事诈骗、骚扰等违法行为</li>
+                    </ul>
+                </div>
+
+                <div class="terms-card">
+                    <h2>禁止行为</h2>
+                    <ul>
+                        <li>发布虚假、欺诈信息</li>
+                        <li>发布涉及黄赌毒等违法内容</li>
+                        <li>恶意骚扰、攻击其他用户</li>
+                        <li>盗用他人账号或信息</li>
+                        <li>破坏平台正常运营的行为</li>
+                    </ul>
+                </div>
+
+                <div class="terms-card">
+                    <h2>知识产权</h2>
+                    <p>平台的所有内容，包括但不限于文字、图片、代码、标识等，均受知识产权保护。未经授权，用户不得复制、修改、传播平台内容。</p>
+                </div>
+
+                <div class="terms-card">
+                    <h2>免责声明</h2>
+                    <p>平台仅提供信息展示服务，不对用户之间的交易行为承担责任。用户应自行判断交易风险，谨慎决策。</p>
+                </div>
+
+                <div class="terms-card">
+                    <h2>协议修改</h2>
+                    <p>平台有权根据需要修改本协议。修改后的协议将在平台上公布，用户继续使用服务即视为接受修改后的协议。</p>
+                </div>
+
+                <div class="terms-card">
+                    <h2>其他</h2>
+                    <p>本协议的解释权归"我来帮"平台所有。如发生争议，双方应友好协商解决；协商不成的，可向平台所在地人民法院提起诉讼。</p>
+                </div>
+
+                <div class="update-date">
+                    <p>📅 最后更新日期：2026年2月</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-brand">
+                    <span class="logo-icon">🤝</span>
+                    <span class="logo-text">我来帮</span>
+                    <p>让人与人互助变得简单</p>
+                </div>
+                <div class="footer-links">
+                    <div class="link-group">
+                        <h4>平台</h4>
+                        <a href="about.html">关于我们</a>
+                        <a href="guide.html">使用指南</a>
+                        <a href="faq.html">常见问题</a>
+                    </div>
+                    <div class="link-group">
+                        <h4>帮助</h4>
+                        <a href="contact.html">联系客服</a>
+                        <a href="feedback.html">意见反馈</a>
+                        <a href="report.html">举报中心</a>
+                    </div>
+                    <div class="link-group">
+                        <h4>法律</h4>
+                        <a href="terms.html">用户协议</a>
+                        <a href="privacy.html">隐私政策</a>
+                        <a href="disclaimer.html">免责声明</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 我来帮. 保留所有权利.</p>
+            </div>
+        </div>
+    </footer>
+    
+    <!-- 登录弹窗 -->
+    <div class="modal" id="login-modal">
+        <div class="modal-content login-modal-content">
+            <div class="auth-wrapper">
+                <!-- 左侧品牌展示区 -->
+                <div class="auth-brand-section">
+                    <div class="auth-brand-content">
+                        <div class="auth-logo">
+                            <span class="logo-icon">🤝</span>
+                        </div>
+                        <h2 class="auth-brand-title">我来帮</h2>
+                        <p class="auth-brand-subtitle">人与人互助，温暖社区</p>
+                        <div class="auth-illustration">
+                            <div class="floating-elements">
+                                <div class="float-element element-1">
+                                    <span class="element-icon">📦</span>
+                                    <span class="element-text">帮忙搬运</span>
+                                </div>
+                                <div class="float-element element-2">
+                                    <span class="element-icon">📚</span>
+                                    <span class="element-text">知识分享</span>
+                                </div>
+                                <div class="float-element element-3">
+                                    <span class="element-icon">🔧</span>
+                                    <span class="element-text">维修服务</span>
+                                </div>
+                                <div class="float-element element-4">
+                                    <span class="element-icon">🐾</span>
+                                    <span class="element-text">宠物照看</span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                
+                <!-- 右侧登录表单区 -->
+                <div class="auth-form-section">
+                    <button class="close-btn" onclick="closeLoginModal()">&times;</button>
+                    <div class="auth-form-header">
+                        <h1 class="auth-title">欢迎回来</h1>
+                        <p class="auth-subtitle">登录您的账户，继续人与人互助之旅</p>
+                    </div>
+                    <form id="login-form" onsubmit="handleLogin(event)" class="auth-form">
+                        <div class="form-group">
+                            <label class="form-label" for="login-username">
+                                <span class="label-icon">🎭</span>
+                                用户名
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="text" name="username" id="login-username" class="form-input" placeholder="请输入用户名" required>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="form-group-header">
+                                <label class="form-label" for="login-password">
+                                    <span class="label-icon">🔒</span>
+                                    密码
+                                </label>
+                                <a href="javascript:void(0)" class="forgot-password" onclick="showForgotModal()">忘记密码？</a>
+                            </div>
+                            <div class="input-wrapper">
+                                <input type="password" name="password" id="login-password" class="form-input" placeholder="请输入密码" required>
+                                <button type="button" class="password-toggle-btn" onclick="togglePassword('login-password')">
+                                    <span class="eye-icon">👁</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-options">
+                            <label class="checkbox-label" for="login-remember">
+                                <input type="checkbox" name="remember" id="login-remember">
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-text">记住我</span>
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block btn-large auth-btn">
+                            <span class="btn-text">登录</span>
+                            <span class="btn-icon">→</span>
+                        </button>
+                        <div class="form-footer">
+                            <span class="footer-text">还没有账户？</span>
+                            <button type="button" class="btn-link" onclick="showRegisterModal()">立即注册</button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 注册弹窗 -->
+    <div class="modal" id="register-modal">
+        <div class="modal-content register-modal">
+            <div class="auth-wrapper">
+                <!-- 左侧品牌展示区 -->
+                <div class="auth-brand-section">
+                    <div class="auth-brand-content">
+                        <div class="auth-logo">
+                            <span class="logo-icon">🤝</span>
+                        </div>
+                        <h2 class="auth-brand-title">我来帮</h2>
+                        <p class="auth-brand-subtitle">人与人互助，温暖社区</p>
+                        <div class="auth-illustration">
+                            <div class="floating-elements">
+                                <div class="float-element element-1">
+                                    <span class="element-icon">🌟</span>
+                                    <span class="element-text">安全可靠</span>
+                                </div>
+                                <div class="float-element element-2">
+                                    <span class="element-icon">🚀</span>
+                                    <span class="element-text">快速响应</span>
+                                </div>
+                                <div class="float-element element-3">
+                                    <span class="element-icon">🤗</span>
+                                    <span class="element-text">温暖社区</span>
+                                </div>
+                                <div class="float-element element-4">
+                                    <span class="element-icon">💪</span>
+                                    <span class="element-text">互帮互助</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="auth-benefits">
+                            <div class="benefit-item">
+                                <span class="benefit-icon">📢</span>
+                                <span class="benefit-text">发布需求，快速获得帮助</span>
+                            </div>
+                            <div class="benefit-item">
+                                <span class="benefit-icon">❤️</span>
+                                <span class="benefit-text">帮助他人，收获友谊和感谢</span>
+                            </div>
+                            <div class="benefit-item">
+                                <span class="benefit-icon">🏆</span>
+                                <span class="benefit-text">获得徽章和积分奖励</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 右侧注册表单区 -->
+                <div class="auth-form-section">
+                    <button class="close-btn" onclick="closeRegisterModal()">&times;</button>
+                    <div class="auth-form-header">
+                        <h1 class="auth-title">加入我们的社区</h1>
+                        <p class="auth-subtitle">创建账户，开始人与人互助之旅</p>
+                    </div>
+                    <form id="register-form" onsubmit="handleRegister(event)" class="auth-form">
+                        <div class="form-group">
+                            <label class="form-label" for="register-nickname">
+                                <span class="label-icon">🎭</span>
+                                用户名
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="text" name="nickname" id="register-nickname" class="form-input" placeholder="请输入用户名" required>
+                            </div>
+                            <div class="form-hint">3-20个字符，用户名</div>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="login-password">
+                                <span class="label-icon">🔒</span>
+                                密码
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="password" name="password" id="register-password" class="form-input" placeholder="请输入密码" required>
+                                <button type="button" class="password-toggle-btn" onclick="togglePassword('register-password')">
+                                    <span class="eye-icon">👁</span>
+                                </button>
+                            </div>
+                            <div class="form-hint">至少8个字符，包含字母和数字</div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label" for="register-phone">
+                                    <span class="label-icon">📱</span>
+                                    手机号码
+                                </label>
+                                <div class="input-wrapper">
+                                    <input type="tel" name="phone" id="register-phone" class="form-input" placeholder="请输入手机号码">
+                                </div>
+                                <div class="form-hint">用于接收重要通知</div>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label" for="register-email">
+                                    <span class="label-icon">📧</span>
+                                    邮箱
+                                </label>
+                                <div class="input-wrapper">
+                                    <input type="email" name="email" id="register-email" class="form-input" placeholder="请输入邮箱" required>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- 验证码输入 -->
+                        <div class="form-group">
+                            <label class="form-label" for="verification-code">
+                                <span class="label-icon">🔢</span>
+                                验证码
+                            </label>
+                            <div class="input-wrapper verification-code-wrapper">
+                                <input type="text" name="verification_code" id="verification-code" class="form-input" placeholder="请输入6位验证码" maxlength="6" required>
+                                <button type="button" class="btn btn-secondary btn-send-code" id="send-code-btn" onclick="sendVerificationCode()">
+                                    获取验证码
+                                </button>
+                            </div>
+                        </div>
+                        <div class="form-options">
+                            <label class="checkbox-label" for="register-agree">
+                                <input type="checkbox" name="agree" id="register-agree"
+                                <span class="checkbox-custom"></span>
+                                <span class="checkbox-text">我同意<a href="terms.html">用户协议</a>和<a href="privacy.html">隐私政策</a></span>
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block btn-large auth-btn">
+                            <span class="btn-text">立即注册</span>
+                            <span class="btn-icon">→</span>
+                        </button>
+                        <div class="form-footer">
+                            <span class="footer-text">已有账号？</span>
+                            <button type="button" class="btn-link" onclick="showLoginModal()">立即登录</button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 发布需求弹窗 -->
+    <div class="modal" id="publish-modal">
+        <div class="modal-content modal-xl publish-modal-v2">
+            <!-- 模态框头部 -->
+            <div class="modal-header-v2">
+                <div class="modal-header-content-v2">
+                    <div class="modal-icon-v2">
+                        <span class="icon-xl">✨</span>
+                    </div>
+                    <h2 class="modal-title-v2">发布需求</h2>
+                    <p class="modal-subtitle-v2">分享你的需求，让热心邻居来帮助你</p>
+                </div>
+                <button class="close-btn-v2" onclick="closePublishModal()">
+                    <span class="close-icon-v2">×</span>
+                </button>
+            </div>
+            
+            <!-- 表单主体 -->
+            <form id="publish-form" onsubmit="handlePublish(event)" class="publish-form-v2">
+                <div class="form-layout-v2">
+                    <!-- 左侧步骤指示器 -->
+                    <div class="publish-steps-v2">
+                        <div class="step-item-v2 active">
+                            <div class="step-circle-v2">
+                                <div class="step-number-v2">1</div>
+                                <div class="step-check-v2">✓</div>
+                            </div>
+                            <span class="step-text-v2">基本信息</span>
+                        </div>
+                        <div class="step-item-v2">
+                            <div class="step-circle-v2">
+                                <div class="step-number-v2">2</div>
+                                <div class="step-check-v2">✓</div>
+                            </div>
+                            <span class="step-text-v2">位置信息</span>
+                        </div>
+                        <div class="step-item-v2">
+                            <div class="step-circle-v2">
+                                <div class="step-number-v2">3</div>
+                                <div class="step-check-v2">✓</div>
+                            </div>
+                            <span class="step-text-v2">详细描述</span>
+                        </div>
+                        <div class="step-item-v2">
+                            <div class="step-circle-v2">
+                                <div class="step-number-v2">4</div>
+                                <div class="step-check-v2">✓</div>
+                            </div>
+                            <span class="step-text-v2">确认发布</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 右侧步骤内容 -->
+                    <div class="publish-step-content-v2">
+                    <!-- 基本信息 -->
+                    <div class="form-section-v2">
+                        <div class="section-header-v2">
+                            <span class="section-icon-v2">📝</span>
+                            <h3 class="section-title-v2">基本信息</h3>
+                            <p class="section-subtitle-v2">填写需求的基本信息，让邻居快速了解</p>
+                        </div>
+                        
+                        <div class="form-group-v2">
+                            <label class="form-label-v2" for="publish-title"><span class="label-icon-v2">📋</span>需求标题
+                                <span class="required-mark-v2">*</span>
+                            </label>
+                            <div class="input-container-v2">
+                                <div class="input-wrapper-v2">
+                                    <input 
+                                        type="text" 
+                                        name="title" 
+                                        placeholder="简单描述你的需求，如：帮忙搬家具" 
+                                        required 
+                                        class="form-input-v2"
+                                        maxlength="100"
+                                    >
+                                    <div class="input-focus-v2"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-grid-v2">
+                            <div class="form-group-v2">
+                                <label class="form-label-v2" for="category-select">
+                                    <span class="label-icon-v2">🏷️</span>
+                                    分类
+                                    <span class="required-mark-v2">*</span>
+                                </label>
+                                <div class="input-container-v2">
+                                    <div class="select-wrapper-v2">
+                                        <select 
+                                            name="category" 
+                                            required 
+                                            class="form-select-v2"
+                                         id="category-select">
+                                            <option value="">选择分类</option>
+                                            <option value="搬运">📦 搬运</option>
+                                            <option value="教育">📚 教育</option>
+                                            <option value="技术">💻 技术</option>
+                                            <option value="宠物">🐾 宠物</option>
+                                            <option value="维修">🔧 维修</option>
+                                            <option value="跑腿">🏃 跑腿</option>
+                                            <option value="健康">🏥 健康</option>
+                                            <option value="设计">🎨 设计</option>
+                                            <option value="借用">🤝 借用</option>
+                                            <option value="摄影">📷 摄影</option>
+                                            <option value="其他">📌 其他</option>
+                                        </select>
+                                        <div class="select-arrow-v2">▼</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group-v2">
+                                <label class="form-label-v2" for="publish-reward"><span class="label-icon-v2">💰</span>报酬
+                                </label>
+                                <div class="input-container-v2">
+                                    <div class="input-wrapper-v2">
+                                        <input 
+                                            type="text" 
+                                            name="reward" 
+                                            placeholder="如：100元" 
+                                            class="form-input-v2"
+                                        >
+                                        <div class="input-focus-v2"></div>
+                                    </div>
+                                    <div class="input-hint-v2">填写合理的报酬更容易获得响应</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 位置信息 -->
+                    <div class="form-section-v2">
+                        <div class="section-header-v2">
+                            <span class="section-icon-v2">📍</span>
+                            <h3 class="section-title-v2">位置信息</h3>
+                            <p class="section-subtitle-v2">准确的位置信息有助于邻居快速找到你</p>
+                        </div>
+                        
+                        <div class="form-grid-v2">
+                            <div class="form-group-v2">
+                                <label class="form-label-v2" for="province-select">
+                                    <span class="label-icon-v2">🏙️</span>
+                                    省份
+                                    <span class="required-mark-v2">*</span>
+                                </label>
+                                <div class="input-container-v2">
+                                    <div class="select-wrapper-v2">
+                                        <select 
+                                            name="province" 
+                                            id="province-select" 
+                                            required 
+                                            onchange="updateCities()" 
+                                            class="form-select-v2"
+                                        >
+                                            <option value="">请选择省份</option>
+                                            <option value="北京市">北京市</option>
+                                            <option value="天津市">天津市</option>
+                                            <option value="上海市">上海市</option>
+                                            <option value="重庆市">重庆市</option>
+                                            <option value="河北省">河北省</option>
+                                            <option value="山西省">山西省</option>
+                                            <option value="辽宁省">辽宁省</option>
+                                            <option value="吉林省">吉林省</option>
+                                            <option value="黑龙江省">黑龙江省</option>
+                                            <option value="江苏省">江苏省</option>
+                                            <option value="浙江省">浙江省</option>
+                                            <option value="安徽省">安徽省</option>
+                                            <option value="福建省">福建省</option>
+                                            <option value="江西省">江西省</option>
+                                            <option value="山东省">山东省</option>
+                                            <option value="河南省">河南省</option>
+                                            <option value="湖北省">湖北省</option>
+                                            <option value="湖南省">湖南省</option>
+                                            <option value="广东省">广东省</option>
+                                            <option value="海南省">海南省</option>
+                                            <option value="四川省">四川省</option>
+                                            <option value="贵州省">贵州省</option>
+                                            <option value="云南省">云南省</option>
+                                            <option value="陕西省">陕西省</option>
+                                            <option value="甘肃省">甘肃省</option>
+                                            <option value="青海省">青海省</option>
+                                            <option value="台湾省">台湾省</option>
+                                            <option value="内蒙古自治区">内蒙古自治区</option>
+                                            <option value="广西壮族自治区">广西壮族自治区</option>
+                                            <option value="西藏自治区">西藏自治区</option>
+                                            <option value="宁夏回族自治区">宁夏回族自治区</option>
+                                            <option value="新疆维吾尔自治区">新疆维吾尔自治区</option>
+                                        </select>
+                                        <div class="select-arrow-v2">▼</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group-v2">
+                                <label class="form-label-v2" for="city-select">
+                                    <span class="label-icon-v2">🏘️</span>
+                                    城市
+                                    <span class="required-mark-v2">*</span>
+                                </label>
+                                <div class="input-container-v2">
+                                    <div class="select-wrapper-v2">
+                                        <select 
+                                            name="city" 
+                                            id="city-select" 
+                                            required 
+                                            class="form-select-v2"
+                                         id="city-select">
+                                            <option value="">请先选择省份</option>
+                                        </select>
+                                        <div class="select-arrow-v2">▼</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group-v2">
+                            <label class="form-label-v2" for="address-input">
+                                <span class="label-icon-v2">🚪</span>
+                                详细地址
+                            </label>
+                            <div class="input-container-v2">
+                                <div class="input-wrapper-v2">
+                                    <input 
+                                        type="text" 
+                                        name="address" 
+                                        id="address-input" 
+                                        placeholder="如：xx街道xx号xx小区" 
+                                        class="form-input-v2"
+                                     id="address-input">
+                                    <div class="input-focus-v2"></div>
+                                </div>
+                                <div class="input-hint-v2">详细的地址有助于邻居快速找到你</div>
+                            </div>
+                        </div>
+                        
+                        <!-- 位置获取按钮 -->
+                        <div class="location-actions-v2">
+                            <button type="button" class="btn-location-v2" onclick="getCurrentLocation()">
+                                <span class="location-icon-v2">📍</span>
+                                <span class="location-text-v2">自动获取位置</span>
+                                <span class="location-loader-v2"></span>
+                            </button>
+                            <div id="location-status" class="location-status-v2"></div>
+                        </div>
+                        
+                        <input type="hidden" name="lat" id="lat-input">
+                        <input type="hidden" name="lng" id="lng-input">
+                    </div>
+                    
+                    <!-- 详细描述 -->
+                    <div class="form-section-v2">
+                        <div class="section-header-v2">
+                            <span class="section-icon-v2">📄</span>
+                            <h3 class="section-title-v2">详细描述</h3>
+                            <p class="section-subtitle-v2">详细描述你的需求，让邻居更好地了解</p>
+                        </div>
+                        
+                        <div class="form-group-v2">
+                            <label class="form-label-v2" for="description-textarea">
+                                <span class="label-icon-v2">📝</span>
+                                需求详情
+                                <span class="required-mark-v2">*</span>
+                            </label>
+                            <div class="input-container-v2">
+                                <div class="textarea-wrapper-v2">
+                                    <textarea 
+                                        name="description" 
+                                        rows="6" 
+                                        placeholder="详细描述你的需求，包括时间、地点、具体要求等..." 
+                                        required 
+                                        class="form-textarea-v2"
+                                        maxlength="1000"
+                                     id="description-textarea"></textarea>
+                                    <div class="textarea-counter-v2" id="description-counter">0/1000</div>
+                                    <div class="textarea-focus-v2"></div>
+                                </div>
+                                <div class="input-hint-v2">越详细的描述越容易获得准确的帮助</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 紧急需求 -->
+                    <div class="form-section-v2 urgent-section-v2">
+                        <div class="section-header-v2">
+                            <span class="section-icon-v2">🚨</span>
+                            <h3 class="section-title-v2">紧急需求</h3>
+                            <p class="section-subtitle-v2">紧急需求将优先展示，获得更快的响应</p>
+                        </div>
+                        
+                        <div class="urgent-card-v2">
+                            <label class="checkbox-label-v2" for="is_urgent_checkbox">
+                                <input 
+                                    type="checkbox" 
+                                    name="is_urgent" 
+                                    id="is_urgent_checkbox" 
+                                    onchange="toggleUrgentType(this)" 
+                                    class="checkbox-input-v2"
+                                >
+                                <div class="checkbox-custom-v2">
+                                    <div class="checkbox-check-v2">✓</div>
+                                </div>
+                                <div class="checkbox-content-v2">
+                                    <span class="checkbox-title-v2">标记为紧急需求</span>
+                                    <span class="checkbox-description-v2">紧急需求将优先展示，获得更快的响应</span>
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <div class="form-group-v2" id="urgent_type_group" style="display: none;">
+                            <label class="form-label-v2" for="urgent-type-select">
+                                <span class="label-icon-v2">📋</span>
+                                紧急类型
+                            </label>
+                            <div class="input-container-v2">
+                                <div class="select-wrapper-v2">
+                                    <select name="urgent_type" class="form-select-v2" id="urgent-type-select">
+
+                                        <option value="safety">🛡️ 安全求助</option>
+                                        <option value="elderly">👴 老人儿童紧急求助</option>
+                                        <option value="other">📢 其他紧急事项</option>
+                                    </select>
+                                    <div class="select-arrow-v2">▼</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 确认发布 -->
+                    <div class="form-section-v2 confirm-section-v2">
+                        <div class="section-header-v2">
+                            <span class="section-icon-v2">✅</span>
+                            <h3 class="section-title-v2">确认发布</h3>
+                            <p class="section-subtitle-v2">请仔细检查您的需求信息</p>
+                        </div>
+                        
+                        <div class="confirm-card-v2">
+                            <div class="confirm-header-v2">
+                                <span class="confirm-icon-v2">📋</span>
+                                <h4 class="confirm-title-v2">需求信息</h4>
+                            </div>
+                            <div class="confirm-body-v2">
+                                <div class="confirm-item-v2">
+                                    <span class="confirm-label-v2">需求标题：</span>
+                                    <span class="confirm-value-v2" id="confirm-title">未填写</span>
+                                </div>
+                                <div class="confirm-item-v2">
+                                    <span class="confirm-label-v2">分类：</span>
+                                    <span class="confirm-value-v2" id="confirm-category">未选择</span>
+                                </div>
+                                <div class="confirm-item-v2">
+                                    <span class="confirm-label-v2">报酬：</span>
+                                    <span class="confirm-value-v2" id="confirm-reward">未填写</span>
+                                </div>
+                                <div class="confirm-item-v2">
+                                    <span class="confirm-label-v2">位置：</span>
+                                    <span class="confirm-value-v2" id="confirm-location">未填写</span>
+                                </div>
+                                <div class="confirm-item-v2">
+                                    <span class="confirm-label-v2">紧急需求：</span>
+                                    <span class="confirm-value-v2" id="confirm-urgent">否</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="publish-tips-v2">
+                            <div class="tip-item-v2">
+                                <span class="tip-icon-v2">💡</span>
+                                <span class="tip-text-v2">请确保你的需求描述真实、准确</span>
+                            </div>
+                            <div class="tip-item-v2">
+                                <span class="tip-icon-v2">🔒</span>
+                                <span class="tip-text-v2">保护个人隐私，不要透露敏感信息</span>
+                            </div>
+                            <div class="tip-item-v2">
+                                <span class="tip-icon-v2">⏰</span>
+                                <span class="tip-text-v2">及时响应邻居的帮助请求</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                    <!-- 表单操作 -->
+                    <div class="form-actions-v2">
+                        <div class="step-navigation-v2">
+                            <button type="button" class="btn-secondary-v2" onclick="prevStep()" id="prev-step-btn">
+                                <span class="btn-icon-v2">←</span>
+                                <span class="btn-text-v2">上一步</span>
+                            </button>
+                            <button type="button" class="btn-primary-v2" onclick="nextStep()" id="next-step-btn">
+                                <span class="btn-icon-v2">→</span>
+                                <span class="btn-text-v2">下一步</span>
+                            </button>
+                        </div>
+                        <div class="submit-actions-v2">
+                            <button type="button" class="btn-secondary-v2" onclick="closePublishModal()">
+                                <span class="btn-icon-v2">✕</span>
+                                <span class="btn-text-v2">取消</span>
+                            </button>
+                            <button type="submit" class="btn-primary-v2" id="submit-btn">
+                                <span class="btn-icon-v2">📤</span>
+                                <span class="btn-text-v2">发布需求</span>
+                                <span class="btn-loader-v2"></span>
+                            </button>
+                        </div>
+                    </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 忘记密码弹窗 -->
+    <div class="modal" id="forgot-modal">
+        <div class="modal-content login-modal-content">
+            <div class="auth-wrapper">
+                <!-- 左侧品牌展示区 -->
+                <div class="auth-brand-section">
+                    <div class="auth-brand-content">
+                        <div class="auth-logo">
+                            <span class="logo-icon">🤝</span>
+                        </div>
+                        <h2 class="auth-brand-title">我来帮</h2>
+                        <p class="auth-brand-subtitle">人与人互助，温暖社区</p>
+
+                    </div>
+                </div>
+                
+                <!-- 右侧忘记密码表单区 -->
+                <div class="auth-form-section">
+                    <button class="close-btn" onclick="closeForgotModal()">&times;</button>
+                    <div class="auth-form-header">
+                        <h1 class="auth-title">忘记密码？</h1>
+                        <p class="auth-subtitle">请输入您的邮箱或手机号码，我们将发送重置链接</p>
+                    </div>
+                    <form id="forgot-form" onsubmit="handleForgotPassword(event)" class="auth-form">
+                        <div class="form-group">
+                            <label class="form-label" for="forgot-contact">
+                                <span class="label-icon">📧</span>
+                                邮箱或手机号码
+                            </label>
+                            <div class="input-wrapper">
+                                <input type="text" name="contact" id="forgot-contact" class="form-input" placeholder="请输入邮箱或手机号码" required>
+                            </div>
+                            <div class="form-hint">用于接收密码重置链接</div>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-block btn-large auth-btn">
+                            <span class="btn-text">发送重置链接</span>
+                            <span class="btn-icon">→</span>
+                        </button>
+                        <div class="form-footer">
+                            <span class="footer-text">想起密码了？</span>
+                            <button type="button" class="btn-link" onclick="closeForgotModal(); showLoginModal()">立即登录</button>
+                        </div>
+                    </form>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/mockData.js?v=6"></script>
+    <!-- 发布需求弹窗 -->
+    <div class="modal" id="publish-modal">
+        <div class="modal-content modal-xl publish-modal-v2">
+            <!-- 模态框头部 -->
+            <div class="modal-header-v2">
+                <div class="modal-header-content-v2">
+                    <div class="modal-icon-v2">
+                        <span class="icon-xl">✨</span>
+                    </div>
+                    <h2 class="modal-title-v2">发布需求</h2>
+                    <p class="modal-subtitle-v2">分享你的需求，让热心邻居来帮助你</p>
+                </div>
+                <button class="close-btn-v2" onclick="closePublishModal()">
+                    <span class="close-icon-v2">×</span>
+                </button>
+            </div>
+            
+            <!-- 表单主体 -->
+            <form id="publish-form" onsubmit="handlePublish(event)" class="publish-form-v2">
+                <div class="form-layout-v2">
+                    <!-- 左侧步骤指示器 -->
+                    <div class="publish-steps-v2">
+                        <div class="step-item-v2 active">
+                            <div class="step-circle-v2">
+                                <div class="step-number-v2">1</div>
+                                <div class="step-check-v2">✓</div>
+                            </div>
+                            <span class="step-text-v2">基本信息</span>
+                        </div>
+                        <div class="step-item-v2">
+                            <div class="step-circle-v2">
+                                <div class="step-number-v2">2</div>
+                                <div class="step-check-v2">✓</div>
+                            </div>
+                            <span class="step-text-v2">位置信息</span>
+                        </div>
+                        <div class="step-item-v2">
+                            <div class="step-circle-v2">
+                                <div class="step-number-v2">3</div>
+                                <div class="step-check-v2">✓</div>
+                            </div>
+                            <span class="step-text-v2">详细描述</span>
+                        </div>
+                        <div class="step-item-v2">
+                            <div class="step-circle-v2">
+                                <div class="step-number-v2">4</div>
+                                <div class="step-check-v2">✓</div>
+                            </div>
+                            <span class="step-text-v2">确认发布</span>
+                        </div>
+                    </div>
+                    
+                    <!-- 右侧步骤内容 -->
+                    <div class="publish-step-content-v2">
+                    <!-- 基本信息 -->
+                    <div class="form-section-v2">
+                        <div class="section-header-v2">
+                            <span class="section-icon-v2">📝</span>
+                            <h3 class="section-title-v2">基本信息</h3>
+                            <p class="section-subtitle-v2">填写需求的基本信息，让邻居快速了解</p>
+                        </div>
+                        
+                        <div class="form-group-v2">
+                            <label class="form-label-v2" for="publish-title"><span class="label-icon-v2">📋</span>需求标题
+                                <span class="required-mark-v2">*</span>
+                            </label>
+                            <div class="input-container-v2">
+                                <div class="input-wrapper-v2">
+                                    <input 
+                                        type="text" 
+                                        name="title" 
+                                        placeholder="简单描述你的需求，如：帮忙搬家具" 
+                                        required 
+                                        class="form-input-v2"
+                                        maxlength="100"
+                                    >
+                                    <div class="input-focus-v2"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-grid-v2">
+                            <div class="form-group-v2">
+                                <label class="form-label-v2" for="category-select">
+                                    <span class="label-icon-v2">🏷️</span>
+                                    分类
+                                    <span class="required-mark-v2">*</span>
+                                </label>
+                                <div class="input-container-v2">
+                                    <div class="select-wrapper-v2">
+                                        <select 
+                                            name="category" 
+                                            required 
+                                            class="form-select-v2"
+                                         id="category-select">
+                                            <option value="">选择分类</option>
+                                            <option value="搬运">📦 搬运</option>
+                                            <option value="教育">📚 教育</option>
+                                            <option value="技术">💻 技术</option>
+                                            <option value="宠物">🐾 宠物</option>
+                                            <option value="维修">🔧 维修</option>
+                                            <option value="跑腿">🏃 跑腿</option>
+                                            <option value="健康">🏥 健康</option>
+                                            <option value="设计">🎨 设计</option>
+                                            <option value="借用">🤝 借用</option>
+                                            <option value="摄影">📷 摄影</option>
+                                            <option value="其他">📌 其他</option>
+                                        </select>
+                                        <div class="select-arrow-v2">▼</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group-v2">
+                                <label class="form-label-v2" for="publish-reward"><span class="label-icon-v2">💰</span>报酬
+                                </label>
+                                <div class="input-container-v2">
+                                    <div class="input-wrapper-v2">
+                                        <input 
+                                            type="text" 
+                                            name="reward" 
+                                            placeholder="如：100元" 
+                                            class="form-input-v2"
+                                        >
+                                        <div class="input-focus-v2"></div>
+                                    </div>
+                                    <div class="input-hint-v2">填写合理的报酬更容易获得响应</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 位置信息 -->
+                    <div class="form-section-v2">
+                        <div class="section-header-v2">
+                            <span class="section-icon-v2">📍</span>
+                            <h3 class="section-title-v2">位置信息</h3>
+                            <p class="section-subtitle-v2">准确的位置信息有助于邻居快速找到你</p>
+                        </div>
+                        
+                        <div class="form-grid-v2">
+                            <div class="form-group-v2">
+                                <label class="form-label-v2" for="province-select">
+                                    <span class="label-icon-v2">🏙️</span>
+                                    省份
+                                    <span class="required-mark-v2">*</span>
+                                </label>
+                                <div class="input-container-v2">
+                                    <div class="select-wrapper-v2">
+                                        <select 
+                                            name="province" 
+                                            id="province-select" 
+                                            required 
+                                            onchange="updateCities()" 
+                                            class="form-select-v2"
+                                        >
+                                            <option value="">请选择省份</option>
+                                            <option value="北京市">北京市</option>
+                                            <option value="天津市">天津市</option>
+                                            <option value="上海市">上海市</option>
+                                            <option value="重庆市">重庆市</option>
+                                            <option value="河北省">河北省</option>
+                                            <option value="山西省">山西省</option>
+                                            <option value="辽宁省">辽宁省</option>
+                                            <option value="吉林省">吉林省</option>
+                                            <option value="黑龙江省">黑龙江省</option>
+                                            <option value="江苏省">江苏省</option>
+                                            <option value="浙江省">浙江省</option>
+                                            <option value="安徽省">安徽省</option>
+                                            <option value="福建省">福建省</option>
+                                            <option value="江西省">江西省</option>
+                                            <option value="山东省">山东省</option>
+                                            <option value="河南省">河南省</option>
+                                            <option value="湖北省">湖北省</option>
+                                            <option value="湖南省">湖南省</option>
+                                            <option value="广东省">广东省</option>
+                                            <option value="海南省">海南省</option>
+                                            <option value="四川省">四川省</option>
+                                            <option value="贵州省">贵州省</option>
+                                            <option value="云南省">云南省</option>
+                                            <option value="陕西省">陕西省</option>
+                                            <option value="甘肃省">甘肃省</option>
+                                            <option value="青海省">青海省</option>
+                                            <option value="台湾省">台湾省</option>
+                                            <option value="内蒙古自治区">内蒙古自治区</option>
+                                            <option value="广西壮族自治区">广西壮族自治区</option>
+                                            <option value="西藏自治区">西藏自治区</option>
+                                            <option value="宁夏回族自治区">宁夏回族自治区</option>
+                                            <option value="新疆维吾尔自治区">新疆维吾尔自治区</option>
+                                        </select>
+                                        <div class="select-arrow-v2">▼</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group-v2">
+                                <label class="form-label-v2" for="city-select">
+                                    <span class="label-icon-v2">🏘️</span>
+                                    城市
+                                    <span class="required-mark-v2">*</span>
+                                </label>
+                                <div class="input-container-v2">
+                                    <div class="select-wrapper-v2">
+                                        <select 
+                                            name="city" 
+                                            id="city-select" 
+                                            required 
+                                            class="form-select-v2"
+                                         id="city-select">
+                                            <option value="">请先选择省份</option>
+                                        </select>
+                                        <div class="select-arrow-v2">▼</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group-v2">
+                            <label class="form-label-v2" for="address-input">
+                                <span class="label-icon-v2">🚪</span>
+                                详细地址
+                            </label>
+                            <div class="input-container-v2">
+                                <div class="input-wrapper-v2">
+                                    <input 
+                                        type="text" 
+                                        name="address" 
+                                        id="address-input" 
+                                        placeholder="如：xx街道xx号xx小区" 
+                                        class="form-input-v2"
+                                     id="address-input">
+                                    <div class="input-focus-v2"></div>
+                                </div>
+                                <div class="input-hint-v2">详细的地址有助于邻居快速找到你</div>
+                            </div>
+                        </div>
+                        
+                        <!-- 位置获取按钮 -->
+                        <div class="location-actions-v2">
+                            <button type="button" class="btn-location-v2" onclick="getCurrentLocation()">
+                                <span class="location-icon-v2">📍</span>
+                                <span class="location-text-v2">自动获取位置</span>
+                                <span class="location-loader-v2"></span>
+                            </button>
+                            <div id="location-status" class="location-status-v2"></div>
+                        </div>
+                        
+                        <input type="hidden" name="lat" id="lat-input">
+                        <input type="hidden" name="lng" id="lng-input">
+                    </div>
+                    
+                    <!-- 详细描述 -->
+                    <div class="form-section-v2">
+                        <div class="section-header-v2">
+                            <span class="section-icon-v2">📄</span>
+                            <h3 class="section-title-v2">详细描述</h3>
+                            <p class="section-subtitle-v2">详细描述你的需求，让邻居更好地了解</p>
+                        </div>
+                        
+                        <div class="form-group-v2">
+                            <label class="form-label-v2" for="description-textarea">
+                                <span class="label-icon-v2">📝</span>
+                                需求详情
+                                <span class="required-mark-v2">*</span>
+                            </label>
+                            <div class="input-container-v2">
+                                <div class="textarea-wrapper-v2">
+                                    <textarea 
+                                        name="description" 
+                                        rows="6" 
+                                        placeholder="详细描述你的需求，包括时间、地点、具体要求等..." 
+                                        required 
+                                        class="form-textarea-v2"
+                                        maxlength="1000"
+                                     id="description-textarea"></textarea>
+                                    <div class="textarea-counter-v2" id="description-counter">0/1000</div>
+                                    <div class="textarea-focus-v2"></div>
+                                </div>
+                                <div class="input-hint-v2">越详细的描述越容易获得准确的帮助</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 紧急需求 -->
+                    <div class="form-section-v2 urgent-section-v2">
+                        <div class="section-header-v2">
+                            <span class="section-icon-v2">🚨</span>
+                            <h3 class="section-title-v2">紧急需求</h3>
+                            <p class="section-subtitle-v2">紧急需求将优先展示，获得更快的响应</p>
+                        </div>
+                        
+                        <div class="urgent-card-v2">
+                            <label class="checkbox-label-v2" for="is_urgent_checkbox">
+                                <input 
+                                    type="checkbox" 
+                                    name="is_urgent" 
+                                    id="is_urgent_checkbox" 
+                                    onchange="toggleUrgentType(this)" 
+                                    class="checkbox-input-v2"
+                                >
+                                <div class="checkbox-custom-v2">
+                                    <div class="checkbox-check-v2">✓</div>
+                                </div>
+                                <div class="checkbox-content-v2">
+                                    <span class="checkbox-title-v2">标记为紧急需求</span>
+                                    <span class="checkbox-description-v2">紧急需求将优先展示，获得更快的响应</span>
+                                </div>
+                            </label>
+                        </div>
+                        
+                        <div class="form-group-v2" id="urgent_type_group" style="display: none;">
+                            <label class="form-label-v2" for="urgent-type-select">
+                                <span class="label-icon-v2">📋</span>
+                                紧急类型
+                            </label>
+                            <div class="input-container-v2">
+                                <div class="select-wrapper-v2">
+                                    <select name="urgent_type" class="form-select-v2" id="urgent-type-select">
+
+                                        <option value="safety">🛡️ 安全求助</option>
+                                        <option value="elderly">👴 老人儿童紧急求助</option>
+                                        <option value="other">📢 其他紧急事项</option>
+                                    </select>
+                                    <div class="select-arrow-v2">▼</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 确认发布 -->
+                    <div class="form-section-v2 confirm-section-v2">
+                        <div class="section-header-v2">
+                            <span class="section-icon-v2">✅</span>
+                            <h3 class="section-title-v2">确认发布</h3>
+                            <p class="section-subtitle-v2">请仔细检查您的需求信息</p>
+                        </div>
+                        
+                        <div class="confirm-card-v2">
+                            <div class="confirm-header-v2">
+                                <span class="confirm-icon-v2">📋</span>
+                                <h4 class="confirm-title-v2">需求信息</h4>
+                            </div>
+                            <div class="confirm-body-v2">
+                                <div class="confirm-item-v2">
+                                    <span class="confirm-label-v2">需求标题：</span>
+                                    <span class="confirm-value-v2" id="confirm-title">未填写</span>
+                                </div>
+                                <div class="confirm-item-v2">
+                                    <span class="confirm-label-v2">分类：</span>
+                                    <span class="confirm-value-v2" id="confirm-category">未选择</span>
+                                </div>
+                                <div class="confirm-item-v2">
+                                    <span class="confirm-label-v2">报酬：</span>
+                                    <span class="confirm-value-v2" id="confirm-reward">未填写</span>
+                                </div>
+                                <div class="confirm-item-v2">
+                                    <span class="confirm-label-v2">位置：</span>
+                                    <span class="confirm-value-v2" id="confirm-location">未填写</span>
+                                </div>
+                                <div class="confirm-item-v2">
+                                    <span class="confirm-label-v2">紧急需求：</span>
+                                    <span class="confirm-value-v2" id="confirm-urgent">否</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="publish-tips-v2">
+                            <div class="tip-item-v2">
+                                <span class="tip-icon-v2">💡</span>
+                                <span class="tip-text-v2">请确保你的需求描述真实、准确</span>
+                            </div>
+                            <div class="tip-item-v2">
+                                <span class="tip-icon-v2">🔒</span>
+                                <span class="tip-text-v2">保护个人隐私，不要透露敏感信息</span>
+                            </div>
+                            <div class="tip-item-v2">
+                                <span class="tip-icon-v2">⏰</span>
+                                <span class="tip-text-v2">及时响应邻居的帮助请求</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 表单操作 -->
+                <div class="form-actions-v2">
+                    <div class="step-navigation-v2">
+                        <button type="button" class="btn-secondary-v2" onclick="prevStep()" id="prev-step-btn">
+                            <span class="btn-icon-v2">←</span>
+                            <span class="btn-text-v2">上一步</span>
+                        </button>
+                        <button type="button" class="btn-primary-v2" onclick="nextStep()" id="next-step-btn">
+                            <span class="btn-icon-v2">→</span>
+                            <span class="btn-text-v2">下一步</span>
+                        </button>
+                    </div>
+                    <div class="submit-actions-v2">
+                        <button type="button" class="btn-secondary-v2" onclick="closePublishModal()">
+                            <span class="btn-icon-v2">✕</span>
+                            <span class="btn-text-v2">取消</span>
+                        </button>
+                        <button type="submit" class="btn-primary-v2" id="submit-btn">
+                            <span class="btn-icon-v2">📤</span>
+                            <span class="btn-text-v2">发布需求</span>
+                            <span class="btn-loader-v2"></span>
+                        </button>
+                    </div>
+                </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/app.js?v=7"></script>
+</body>
+</html>

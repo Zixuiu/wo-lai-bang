@@ -1,0 +1,207 @@
+/* ==================== 禁用所有动画效果 ==================== */
+
+/* 禁用所有元素的过渡效果（保留浮动卡片） */
+*:not(.float-card):not(.float-card *),
+*::before,
+*::after {
+    transition: none !important;
+    animation: none !important;
+}
+
+/* 禁用特定动画 */
+@keyframes none {
+    from { }
+    to { }
+}
+
+/* 覆盖所有可能的关键帧动画 */
+@keyframes wave { from { } to { } }
+@keyframes blob-float { from { } to { } }
+@keyframes sparkle { from { } to { } }
+@keyframes modal-fade-in { from { } to { } }
+@keyframes skeleton-loading { from { } to { } }
+@keyframes slideIn { from { } to { } }
+@keyframes slideInUp { from { } to { } }
+@keyframes slideInRight { from { } to { } }
+@keyframes slideInLeft { from { } to { } }
+@keyframes modalSlideIn { from { } to { } }
+/* 保留 float 动画用于浮动卡片呼吸效果 */
+
+/* 禁用页面切换动画 - 针对 iOS Safari 和 Chrome */
+html,
+body {
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: auto !important;
+    scroll-behavior: auto !important;
+}
+
+/* 禁用视图过渡 API */
+::view-transition-old(root),
+::view-transition-new(root) {
+    animation: none !important;
+}
+
+/* 禁用所有变换效果（保留浮动卡片、密码框小眼睛和toast提示） */
+*:not(.float-card):not(.float-card *):not(.password-toggle-btn):not(.password-toggle-btn *):not(.eye-icon):not(.toast) {
+    transform: none !important;
+}
+
+/* 禁用悬停效果（保留浮动卡片、密码框小眼睛和toast提示） */
+*:not(.float-card):not(.float-card *):not(.password-toggle-btn):not(.password-toggle-btn *):not(.eye-icon):not(.toast):hover {
+    transform: none !important;
+}
+
+/* 禁用点击效果（保留浮动卡片、密码框小眼睛和toast提示） */
+*:not(.float-card):not(.float-card *):not(.password-toggle-btn):not(.password-toggle-btn *):not(.eye-icon):not(.toast):active {
+    transform: none !important;
+}
+
+/* 禁用所有卡片动画 */
+.card,
+.request-card,
+.waterfall-card,
+.contact-item,
+.notification-item,
+.activity-item,
+.transaction-item {
+    transform: none !important;
+    transition: none !important;
+}
+
+/* 禁用按钮动画 */
+button,
+.btn,
+.btn-primary,
+.btn-secondary {
+    transform: none !important;
+    transition: none !important;
+}
+
+button:active,
+.btn:active,
+.btn-primary:active,
+.btn-secondary:active {
+    transform: none !important;
+}
+
+/* 禁用模态框动画 */
+.modal,
+.modal-content {
+    animation: none !important;
+    transition: none !important;
+}
+
+/* 禁用页面切换动画 */
+.page-transition,
+.slide-in,
+.slide-out {
+    animation: none !important;
+    transition: none !important;
+}
+
+/* 禁用滚动动画 */
+.scroll-animation {
+    animation: none !important;
+}
+
+/* 禁用加载动画 */
+.skeleton,
+.loading {
+    animation: none !important;
+    background: #f1f5f9 !important;
+}
+
+/* 修复分类项不可见问题 */
+.category-item {
+    opacity: 1 !important;
+    animation: none !important;
+}
+
+/* 禁用图标动画 */
+.greeting-icon,
+.cta-btn-icon,
+.blob-1,
+.blob-2 {
+    animation: none !important;
+}
+
+/* 保留浮动卡片呼吸动画 */
+.float-card {
+    animation: float 1.5s linear infinite !important;
+}
+
+/* 为每个卡片设置不同的动画延迟，形成错落有致的呼吸效果 */
+.float-card.card-1 {
+    animation-delay: 0s !important;
+}
+
+.float-card.card-2 {
+    animation-delay: 0.2s !important;
+}
+
+.float-card.card-3 {
+    animation-delay: 0.4s !important;
+}
+
+.float-card.card-4 {
+    animation-delay: 0.6s !important;
+}
+
+/* 保留轮播图切换动画 */
+.carousel-track {
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.carousel-dot {
+    transition: all 0.3s ease !important;
+}
+
+.carousel-arrow,
+.carousel-cta-btn {
+    transition: all 0.3s ease !important;
+}
+
+/* 禁用注册页面动画 */
+.register-left,
+.register-right {
+    animation: none !important;
+}
+
+/* 禁用移动端特定动画（保留轮播图、密码框小眼睛和toast提示） */
+@media (max-width: 768px) {
+    *:not(.carousel-track):not(.carousel-slide):not(.carousel-slide img):not(.password-toggle-btn):not(.password-toggle-btn *):not(.eye-icon):not(.toast),
+    *::before,
+    *::after {
+        transition: none !important;
+        animation: none !important;
+    }
+    
+    /* 轮播图保留transform */
+    .carousel-track {
+        transform: translateX(calc(var(--slide-index, 0) * -100%)) !important;
+    }
+    
+    /* 禁用 iOS 页面切换效果 */
+    body {
+        -webkit-tap-highlight-color: transparent !important;
+        -webkit-touch-callout: none !important;
+        -webkit-user-select: none !important;
+        user-select: none !important;
+    }
+    
+    .quick-grid-item,
+    .quick-item-icon,
+    .category-chip,
+    .waterfall-card,
+    .requests-page .request-card {
+        transform: none !important;
+        transition: none !important;
+    }
+    
+    .quick-grid-item:active,
+    .category-chip:active,
+    .waterfall-card:active,
+    .requests-page .request-card:active {
+        transform: none !important;
+    }
+}
