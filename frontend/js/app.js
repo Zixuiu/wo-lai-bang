@@ -1415,7 +1415,10 @@ async function handleLogin(event) {
             // 重新加载数据
             console.log('重新加载用户数据...');
             await loadCurrentUser();
-            await loadRequests();
+            // 只有在有 requests-grid 元素时才加载需求列表
+            if (document.getElementById('requests-grid')) {
+                await loadRequests();
+            }
             
             // 如果有待填充的场景数据，登录后继续打开发布弹窗
             if (window.pendingSceneData) {
