@@ -4674,3 +4674,203 @@
 2026-04-17 21:01:44,696 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:01:44] "GET /api/stats HTTP/1.1" 200 -
 2026-04-17 21:01:44,708 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:01:44] "GET /api/messages/unread-count HTTP/1.1" 200 -
 2026-04-17 21:01:45,543 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:01:45] "GET /sw.js HTTP/1.1" 200 -
+2026-04-17 21:02:40,723 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:40] "GET /?webview_request_time=1776459760412 HTTP/1.1" 200 -
+2026-04-17 21:02:40,829 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:40] "GET /css/style.css HTTP/1.1" 200 -
+2026-04-17 21:02:40,840 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:40] "GET /js/app.js HTTP/1.1" 200 -
+2026-04-17 21:02:40,843 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:40] "GET /css/mobile-redesign.css HTTP/1.1" 200 -
+2026-04-17 21:02:40,845 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:40] "GET /css/form-modern.css HTTP/1.1" 200 -
+2026-04-17 21:02:40,846 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:40] "GET /css/datetime-picker.css HTTP/1.1" 200 -
+2026-04-17 21:02:40,906 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:40] "GET /js/core.js HTTP/1.1" 200 -
+2026-04-17 21:02:40,908 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:40] "GET /js/mockData.js HTTP/1.1" 200 -
+2026-04-17 21:02:41,163 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:41] "GET /profile.html HTTP/1.1" 200 -
+2026-04-17 21:02:41,165 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:41] "GET /js/datetime-picker.js HTTP/1.1" 200 -
+2026-04-17 21:02:41,165 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:41] "GET /requests.html HTTP/1.1" 200 -
+2026-04-17 21:02:41,331 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:41] "GET /api/auth/me HTTP/1.1" 200 -
+2026-04-17 21:02:41,386 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:41] "GET /sw.js HTTP/1.1" 200 -
+2026-04-17 21:02:41,395 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:41] "GET /profile.html HTTP/1.1" 200 -
+2026-04-17 21:02:41,398 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:41] "GET /requests.html HTTP/1.1" 200 -
+2026-04-17 21:02:42,434 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:42] "GET /api/stats HTTP/1.1" 200 -
+2026-04-17 21:02:42,435 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:42] "GET /api/messages/unread-count HTTP/1.1" 200 -
+2026-04-17 21:02:43,093 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:43] "GET /requests.html HTTP/1.1" 200 -
+2026-04-17 21:02:43,220 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:43] "GET /sw.js HTTP/1.1" 200 -
+2026-04-17 21:02:43,752 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:43] "GET /requests.html HTTP/1.1" 200 -
+2026-04-17 21:02:43,784 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:43] "GET /css/style.css?v=3 HTTP/1.1" 200 -
+2026-04-17 21:02:43,790 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:43] "GET /css/form-modern.css HTTP/1.1" 200 -
+2026-04-17 21:02:43,797 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:43] "[36mGET /css/mobile-redesign.css?v=1 HTTP/1.1[0m" 304 -
+2026-04-17 21:02:43,799 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:43] "GET /css/no-animation.css HTTP/1.1" 200 -
+2026-04-17 21:02:43,800 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:43] "GET /css/datetime-picker.css HTTP/1.1" 200 -
+2026-04-17 21:02:43,800 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:43] "[36mGET /js/mockData.js?v=8 HTTP/1.1[0m" 304 -
+2026-04-17 21:02:43,806 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:43] "GET /js/app.js?v=8 HTTP/1.1" 200 -
+2026-04-17 21:02:43,827 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:43] "GET /js/datetime-picker.js HTTP/1.1" 200 -
+2026-04-17 21:02:43,891 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:43] "GET /api/auth/me HTTP/1.1" 200 -
+2026-04-17 21:02:43,901 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:43] "GET /index.html HTTP/1.1" 200 -
+2026-04-17 21:02:43,905 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:43] "GET /profile.html HTTP/1.1" 200 -
+2026-04-17 21:02:43,907 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:43] "GET /requests.html HTTP/1.1" 200 -
+2026-04-17 21:02:43,949 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:43] "GET /api/categories HTTP/1.1" 200 -
+2026-04-17 21:02:44,008 - __main__ - INFO - 获取需求列表 - 参数: ImmutableMultiDict([])
+2026-04-17 21:02:44,010 - __main__ - INFO - 返回 4 条需求
+2026-04-17 21:02:44,010 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:44] "GET /api/requests HTTP/1.1" 200 -
+2026-04-17 21:02:45,115 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:45] "GET /api/messages/unread-count HTTP/1.1" 200 -
+2026-04-17 21:02:45,116 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:45] "GET /api/stats HTTP/1.1" 200 -
+2026-04-17 21:02:45,190 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:45] "GET /profile.html HTTP/1.1" 200 -
+2026-04-17 21:02:45,218 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:45] "GET /css/style.css HTTP/1.1" 200 -
+2026-04-17 21:02:45,226 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:45] "GET /css/form-modern.css HTTP/1.1" 200 -
+2026-04-17 21:02:45,227 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:45] "GET /css/mobile-redesign.css HTTP/1.1" 200 -
+2026-04-17 21:02:45,230 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:45] "GET /css/datetime-picker.css HTTP/1.1" 200 -
+2026-04-17 21:02:45,231 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:45] "GET /css/no-animation.css HTTP/1.1" 200 -
+2026-04-17 21:02:45,231 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:45] "GET /js/mockData.js HTTP/1.1" 200 -
+2026-04-17 21:02:45,242 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:45] "GET /js/app.js HTTP/1.1" 200 -
+2026-04-17 21:02:45,285 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:45] "GET /js/datetime-picker.js HTTP/1.1" 200 -
+2026-04-17 21:02:45,313 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:45] "GET /api/auth/me HTTP/1.1" 200 -
+2026-04-17 21:02:45,327 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:45] "GET /history.html HTTP/1.1" 200 -
+2026-04-17 21:02:45,331 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:45] "GET /index.html HTTP/1.1" 200 -
+2026-04-17 21:02:45,335 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:45] "GET /requests.html HTTP/1.1" 200 -
+2026-04-17 21:02:45,335 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:45] "GET /profile.html HTTP/1.1" 200 -
+2026-04-17 21:02:45,356 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:45] "GET /api/auth/me HTTP/1.1" 200 -
+2026-04-17 21:02:45,702 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:45] "GET /sw.js HTTP/1.1" 200 -
+2026-04-17 21:02:46,214 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:46] "GET /notifications.html HTTP/1.1" 200 -
+2026-04-17 21:02:46,248 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:46] "GET /css/style.css?v=3 HTTP/1.1" 200 -
+2026-04-17 21:02:46,250 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:46] "GET /css/no-animation.css HTTP/1.1" 200 -
+2026-04-17 21:02:46,258 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:46] "GET /js/mockData.js HTTP/1.1" 200 -
+2026-04-17 21:02:46,263 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:46] "GET /js/app.js HTTP/1.1" 200 -
+2026-04-17 21:02:46,342 - __main__ - INFO - 获取用户 1 的联系人列表
+2026-04-17 21:02:46,342 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:46] "GET /api/auth/me HTTP/1.1" 200 -
+2026-04-17 21:02:46,343 - __main__ - INFO - 找到消息联系人ID: set()
+2026-04-17 21:02:46,344 - __main__ - INFO - 找到任务联系人: [2, 5]
+2026-04-17 21:02:46,344 - __main__ - INFO - 总联系人ID: {2, 5}
+2026-04-17 21:02:46,344 - __main__ - INFO - 返回 2 个联系人
+2026-04-17 21:02:46,345 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:46] "GET /api/messages/contacts HTTP/1.1" 200 -
+2026-04-17 21:02:46,965 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:46] "GET /sw.js HTTP/1.1" 200 -
+2026-04-17 21:02:47,407 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:47] "GET /api/stats HTTP/1.1" 200 -
+2026-04-17 21:02:47,435 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:47] "GET /index.html HTTP/1.1" 200 -
+2026-04-17 21:02:47,459 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:47] "GET /css/style.css HTTP/1.1" 200 -
+2026-04-17 21:02:47,466 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:47] "GET /css/form-modern.css HTTP/1.1" 200 -
+2026-04-17 21:02:47,469 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:47] "GET /js/app.js HTTP/1.1" 200 -
+2026-04-17 21:02:47,469 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:47] "GET /css/mobile-redesign.css HTTP/1.1" 200 -
+2026-04-17 21:02:47,474 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:47] "GET /js/core.js HTTP/1.1" 200 -
+2026-04-17 21:02:47,476 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:47] "GET /js/mockData.js HTTP/1.1" 200 -
+2026-04-17 21:02:47,476 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:47] "GET /css/datetime-picker.css HTTP/1.1" 200 -
+2026-04-17 21:02:47,533 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:47] "GET /js/datetime-picker.js HTTP/1.1" 200 -
+2026-04-17 21:02:47,535 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:47] "GET /requests.html HTTP/1.1" 200 -
+2026-04-17 21:02:47,536 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:47] "GET /profile.html HTTP/1.1" 200 -
+2026-04-17 21:02:47,588 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:47] "GET /api/auth/me HTTP/1.1" 200 -
+2026-04-17 21:02:47,652 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:47] "GET /requests.html HTTP/1.1" 200 -
+2026-04-17 21:02:47,653 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:47] "GET /profile.html HTTP/1.1" 200 -
+2026-04-17 21:02:47,991 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:47] "GET /requests.html HTTP/1.1" 200 -
+2026-04-17 21:02:48,042 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:48] "GET /css/style.css?v=3 HTTP/1.1" 200 -
+2026-04-17 21:02:48,046 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:48] "GET /css/mobile-redesign.css?v=1 HTTP/1.1" 200 -
+2026-04-17 21:02:48,048 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:48] "GET /css/form-modern.css HTTP/1.1" 200 -
+2026-04-17 21:02:48,049 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:48] "GET /css/datetime-picker.css HTTP/1.1" 200 -
+2026-04-17 21:02:48,053 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:48] "GET /js/mockData.js?v=8 HTTP/1.1" 200 -
+2026-04-17 21:02:48,056 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:48] "GET /css/no-animation.css HTTP/1.1" 200 -
+2026-04-17 21:02:48,057 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:48] "GET /js/app.js?v=8 HTTP/1.1" 200 -
+2026-04-17 21:02:48,104 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:48] "GET /js/datetime-picker.js HTTP/1.1" 200 -
+2026-04-17 21:02:48,108 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:48] "GET /sw.js HTTP/1.1" 200 -
+2026-04-17 21:02:48,156 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:48] "GET /index.html HTTP/1.1" 200 -
+2026-04-17 21:02:48,162 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:48] "GET /requests.html HTTP/1.1" 200 -
+2026-04-17 21:02:48,165 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:48] "GET /api/auth/me HTTP/1.1" 200 -
+2026-04-17 21:02:48,167 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:48] "GET /profile.html HTTP/1.1" 200 -
+2026-04-17 21:02:48,229 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:48] "GET /api/categories HTTP/1.1" 200 -
+2026-04-17 21:02:48,298 - __main__ - INFO - 获取需求列表 - 参数: ImmutableMultiDict([])
+2026-04-17 21:02:48,299 - __main__ - INFO - 返回 4 条需求
+2026-04-17 21:02:48,300 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:48] "GET /api/requests HTTP/1.1" 200 -
+2026-04-17 21:02:49,386 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:49] "GET /api/stats HTTP/1.1" 200 -
+2026-04-17 21:02:49,387 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:49] "GET /api/messages/unread-count HTTP/1.1" 200 -
+2026-04-17 21:02:49,916 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:49] "GET /sw.js HTTP/1.1" 200 -
+2026-04-17 21:02:50,000 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:50] "GET /request-detail.html?id=43 HTTP/1.1" 200 -
+2026-04-17 21:02:50,119 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:50] "GET /css/style.css HTTP/1.1" 200 -
+2026-04-17 21:02:50,122 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:50] "GET /css/no-animation.css HTTP/1.1" 200 -
+2026-04-17 21:02:50,123 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:50] "GET /js/mockData.js HTTP/1.1" 200 -
+2026-04-17 21:02:50,124 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:50] "GET /css/mobile-redesign.css HTTP/1.1" 200 -
+2026-04-17 21:02:51,877 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:51] "GET /sw.js HTTP/1.1" 200 -
+2026-04-17 21:02:53,089 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:53] "GET /requests.html HTTP/1.1" 200 -
+2026-04-17 21:02:53,225 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:53] "GET /css/style.css?v=3 HTTP/1.1" 200 -
+2026-04-17 21:02:53,230 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:53] "GET /css/form-modern.css HTTP/1.1" 200 -
+2026-04-17 21:02:53,233 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:53] "GET /css/mobile-redesign.css?v=1 HTTP/1.1" 200 -
+2026-04-17 21:02:53,238 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:53] "GET /css/datetime-picker.css HTTP/1.1" 200 -
+2026-04-17 21:02:53,243 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:53] "GET /js/datetime-picker.js HTTP/1.1" 200 -
+2026-04-17 21:02:53,245 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:53] "GET /css/no-animation.css HTTP/1.1" 200 -
+2026-04-17 21:02:53,247 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:53] "GET /js/mockData.js?v=8 HTTP/1.1" 200 -
+2026-04-17 21:02:53,250 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:53] "GET /js/app.js?v=8 HTTP/1.1" 200 -
+2026-04-17 21:02:53,322 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:53] "GET /index.html HTTP/1.1" 200 -
+2026-04-17 21:02:53,330 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:53] "GET /profile.html HTTP/1.1" 200 -
+2026-04-17 21:02:53,330 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:53] "GET /requests.html HTTP/1.1" 200 -
+2026-04-17 21:02:53,352 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:53] "GET /api/categories HTTP/1.1" 200 -
+2026-04-17 21:02:53,400 - __main__ - INFO - 获取需求列表 - 参数: ImmutableMultiDict([])
+2026-04-17 21:02:53,401 - __main__ - INFO - 返回 4 条需求
+2026-04-17 21:02:53,402 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:53] "GET /api/requests HTTP/1.1" 200 -
+2026-04-17 21:02:54,091 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:54] "GET /request-detail.html?id=36 HTTP/1.1" 200 -
+2026-04-17 21:02:54,187 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:54] "GET /css/style.css HTTP/1.1" 200 -
+2026-04-17 21:02:54,191 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:54] "GET /css/no-animation.css HTTP/1.1" 200 -
+2026-04-17 21:02:54,192 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:54] "GET /js/mockData.js HTTP/1.1" 200 -
+2026-04-17 21:02:54,193 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:54] "GET /css/mobile-redesign.css HTTP/1.1" 200 -
+2026-04-17 21:02:55,022 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:55] "GET /sw.js HTTP/1.1" 200 -
+2026-04-17 21:02:56,072 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:02:56] "GET /sw.js HTTP/1.1" 200 -
+2026-04-17 21:03:28,051 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:28] "GET /requests.html HTTP/1.1" 200 -
+2026-04-17 21:03:28,062 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:28] "GET /css/form-modern.css HTTP/1.1" 200 -
+2026-04-17 21:03:28,064 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:28] "GET /css/style.css?v=3 HTTP/1.1" 200 -
+2026-04-17 21:03:28,071 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:28] "GET /css/mobile-redesign.css?v=1 HTTP/1.1" 200 -
+2026-04-17 21:03:28,077 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:28] "GET /css/datetime-picker.css HTTP/1.1" 200 -
+2026-04-17 21:03:28,082 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:28] "GET /css/no-animation.css HTTP/1.1" 200 -
+2026-04-17 21:03:28,085 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:28] "GET /js/mockData.js?v=8 HTTP/1.1" 200 -
+2026-04-17 21:03:28,089 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:28] "GET /js/app.js?v=8 HTTP/1.1" 200 -
+2026-04-17 21:03:28,217 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:28] "GET /js/datetime-picker.js HTTP/1.1" 200 -
+2026-04-17 21:03:28,357 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:28] "GET /requests.html HTTP/1.1" 200 -
+2026-04-17 21:03:28,359 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:28] "GET /api/categories HTTP/1.1" 200 -
+2026-04-17 21:03:28,363 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:28] "GET /index.html HTTP/1.1" 200 -
+2026-04-17 21:03:28,471 - __main__ - INFO - 获取需求列表 - 参数: ImmutableMultiDict([])
+2026-04-17 21:03:28,472 - __main__ - INFO - 返回 4 条需求
+2026-04-17 21:03:28,473 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:28] "GET /api/requests HTTP/1.1" 200 -
+2026-04-17 21:03:29,562 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:29] "GET /api/stats HTTP/1.1" 200 -
+2026-04-17 21:03:29,667 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:29] "GET /api/messages/unread-count HTTP/1.1" 200 -
+2026-04-17 21:03:30,172 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:30] "GET /sw.js HTTP/1.1" 200 -
+2026-04-17 21:03:30,181 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:30] "GET /profile.html HTTP/1.1" 200 -
+2026-04-17 21:03:31,249 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:31] "GET /?webview_request_time=1776459811025 HTTP/1.1" 200 -
+2026-04-17 21:03:31,349 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:31] "GET /css/style.css HTTP/1.1" 200 -
+2026-04-17 21:03:31,367 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:31] "GET /css/mobile-redesign.css HTTP/1.1" 200 -
+2026-04-17 21:03:31,368 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:31] "GET /css/form-modern.css HTTP/1.1" 200 -
+2026-04-17 21:03:31,369 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:31] "GET /css/datetime-picker.css HTTP/1.1" 200 -
+2026-04-17 21:03:31,372 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:31] "GET /js/app.js HTTP/1.1" 200 -
+2026-04-17 21:03:31,397 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:31] "GET /js/core.js HTTP/1.1" 200 -
+2026-04-17 21:03:31,397 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:31] "GET /js/mockData.js HTTP/1.1" 200 -
+2026-04-17 21:03:31,447 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:31] "GET /js/datetime-picker.js HTTP/1.1" 200 -
+2026-04-17 21:03:31,456 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:31] "GET /requests.html HTTP/1.1" 200 -
+2026-04-17 21:03:31,457 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:31] "GET /profile.html HTTP/1.1" 200 -
+2026-04-17 21:03:31,716 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:31] "GET /api/auth/me HTTP/1.1" 200 -
+2026-04-17 21:03:31,804 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:31] "GET /requests.html HTTP/1.1" 200 -
+2026-04-17 21:03:31,807 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:31] "GET /profile.html HTTP/1.1" 200 -
+2026-04-17 21:03:31,938 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:31] "GET /sw.js HTTP/1.1" 200 -
+2026-04-17 21:03:32,201 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:32] "GET /requests.html HTTP/1.1" 200 -
+2026-04-17 21:03:32,855 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:32] "GET /api/stats HTTP/1.1" 200 -
+2026-04-17 21:03:32,858 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:32] "GET /api/messages/unread-count HTTP/1.1" 200 -
+2026-04-17 21:03:33,667 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:33] "GET /sw.js HTTP/1.1" 200 -
+2026-04-17 21:03:51,149 - werkzeug - WARNING - Werkzeug appears to be used in a production deployment. Consider switching to a production web server instead.
+2026-04-17 21:03:51,167 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8000
+ * Running on http://10.24.100.188:8000
+2026-04-17 21:03:51,167 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-04-17 21:03:51,167 - werkzeug - INFO -  * Restarting with stat
+2026-04-17 21:03:51,550 - werkzeug - WARNING - Werkzeug appears to be used in a production deployment. Consider switching to a production web server instead.
+2026-04-17 21:03:51,559 - werkzeug - WARNING -  * Debugger is active!
+2026-04-17 21:03:51,570 - werkzeug - INFO -  * Debugger PIN: 930-020-582
+2026-04-17 21:03:58,631 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:58] "GET /?webview_request_time=1776459838645 HTTP/1.1" 200 -
+2026-04-17 21:03:59,071 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:59] "GET /?webview_request_time=1776459838645 HTTP/1.1" 200 -
+2026-04-17 21:03:59,279 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:59] "GET /css/style.css HTTP/1.1" 200 -
+2026-04-17 21:03:59,289 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:59] "GET /js/app.js HTTP/1.1" 200 -
+2026-04-17 21:03:59,290 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:59] "GET /css/form-modern.css HTTP/1.1" 200 -
+2026-04-17 21:03:59,293 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:59] "GET /css/mobile-redesign.css HTTP/1.1" 200 -
+2026-04-17 21:03:59,297 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:59] "GET /js/core.js HTTP/1.1" 200 -
+2026-04-17 21:03:59,297 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:59] "GET /js/mockData.js HTTP/1.1" 200 -
+2026-04-17 21:03:59,298 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:59] "GET /css/datetime-picker.css HTTP/1.1" 200 -
+2026-04-17 21:03:59,628 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:59] "GET /js/datetime-picker.js HTTP/1.1" 200 -
+2026-04-17 21:03:59,629 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:59] "GET /profile.html HTTP/1.1" 200 -
+2026-04-17 21:03:59,631 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:59] "GET /sw.js HTTP/1.1" 200 -
+2026-04-17 21:03:59,631 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:59] "GET /requests.html HTTP/1.1" 200 -
+2026-04-17 21:03:59,789 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:03:59] "GET /api/auth/me HTTP/1.1" 200 -
+2026-04-17 21:04:00,216 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:04:00] "GET /requests.html HTTP/1.1" 200 -
+2026-04-17 21:04:00,316 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:04:00] "GET /requests.html HTTP/1.1" 200 -
+2026-04-17 21:04:00,317 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:04:00] "GET /profile.html HTTP/1.1" 200 -
+2026-04-17 21:04:00,960 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:04:00] "GET /api/messages/unread-count HTTP/1.1" 200 -
+2026-04-17 21:04:00,961 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:04:00] "GET /api/stats HTTP/1.1" 200 -
+2026-04-17 21:04:02,566 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:04:02] "GET /sw.js HTTP/1.1" 200 -
