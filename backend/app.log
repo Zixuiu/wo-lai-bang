@@ -4893,3 +4893,32 @@
 2026-04-17 21:04:46,008 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:04:46] "GET /api/stats HTTP/1.1" 200 -
 2026-04-17 21:04:46,009 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:04:46] "GET /api/messages/unread-count HTTP/1.1" 200 -
 2026-04-17 21:04:47,247 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:04:47] "GET /sw.js HTTP/1.1" 200 -
+2026-04-17 21:07:31,700 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:07:31] "GET /?webview_request_time=1776460051448 HTTP/1.1" 200 -
+2026-04-17 21:07:31,849 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:07:31] "GET /css/style.css HTTP/1.1" 200 -
+2026-04-17 21:07:31,849 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:07:31] "GET /js/app.js?v=2 HTTP/1.1" 200 -
+2026-04-17 21:07:31,900 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:07:31] "GET /css/form-modern.css HTTP/1.1" 200 -
+2026-04-17 21:07:31,909 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:07:31] "GET /css/mobile-redesign.css HTTP/1.1" 200 -
+2026-04-17 21:07:31,921 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:07:31] "GET /css/datetime-picker.css HTTP/1.1" 200 -
+2026-04-17 21:07:31,922 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:07:31] "GET /js/core.js HTTP/1.1" 200 -
+2026-04-17 21:07:31,927 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:07:31] "GET /js/mockData.js HTTP/1.1" 200 -
+2026-04-17 21:07:31,971 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:07:31] "GET /requests.html HTTP/1.1" 200 -
+2026-04-17 21:07:31,972 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:07:31] "GET /js/datetime-picker.js HTTP/1.1" 200 -
+2026-04-17 21:07:31,977 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:07:31] "GET /profile.html HTTP/1.1" 200 -
+2026-04-17 21:07:32,145 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:07:32] "GET /api/auth/me HTTP/1.1" 200 -
+2026-04-17 21:07:32,209 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:07:32] "GET /requests.html HTTP/1.1" 200 -
+2026-04-17 21:07:32,210 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:07:32] "GET /profile.html HTTP/1.1" 200 -
+2026-04-17 21:07:32,382 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:07:32] "GET /sw.js HTTP/1.1" 200 -
+2026-04-17 21:07:32,668 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:07:32] "GET /requests.html HTTP/1.1" 200 -
+2026-04-17 21:07:33,209 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:07:33] "GET /api/messages/unread-count HTTP/1.1" 200 -
+2026-04-17 21:07:33,210 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:07:33] "GET /api/stats HTTP/1.1" 200 -
+2026-04-17 21:07:33,994 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:07:33] "GET /sw.js HTTP/1.1" 200 -
+2026-04-17 21:09:05,544 - werkzeug - WARNING - Werkzeug appears to be used in a production deployment. Consider switching to a production web server instead.
+2026-04-17 21:09:05,566 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8000
+ * Running on http://10.24.100.188:8000
+2026-04-17 21:09:05,567 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-04-17 21:09:05,567 - werkzeug - INFO -  * Restarting with stat
+2026-04-17 21:09:05,963 - werkzeug - WARNING - Werkzeug appears to be used in a production deployment. Consider switching to a production web server instead.
+2026-04-17 21:09:05,973 - werkzeug - WARNING -  * Debugger is active!
+2026-04-17 21:09:05,987 - werkzeug - INFO -  * Debugger PIN: 930-020-582
