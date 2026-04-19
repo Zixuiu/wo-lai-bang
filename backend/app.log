@@ -4681,3 +4681,37 @@
 2026-04-19 01:07:43,561 - werkzeug - INFO - 127.0.0.1 - - [19/Apr/2026 01:07:43] "GET /api/messages/unread-count HTTP/1.1" 200 -
 2026-04-19 01:07:43,562 - werkzeug - INFO - 127.0.0.1 - - [19/Apr/2026 01:07:43] "GET /api/stats HTTP/1.1" 200 -
 2026-04-19 01:07:44,238 - werkzeug - INFO - 127.0.0.1 - - [19/Apr/2026 01:07:44] "GET /sw.js HTTP/1.1" 200 -
+2026-04-19 04:51:19,139 - werkzeug - WARNING - Werkzeug appears to be used in a production deployment. Consider switching to a production web server instead.
+2026-04-19 04:51:19,144 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.60.140.37:5000
+2026-04-19 04:51:19,144 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-04-19 04:51:19,145 - werkzeug - INFO -  * Restarting with stat
+2026-04-19 04:51:19,419 - werkzeug - WARNING - Werkzeug appears to be used in a production deployment. Consider switching to a production web server instead.
+2026-04-19 04:51:19,420 - werkzeug - WARNING -  * Debugger is active!
+2026-04-19 04:51:19,432 - werkzeug - INFO -  * Debugger PIN: 379-124-397
+2026-04-19 04:51:30,703 - werkzeug - INFO - 127.0.0.1 - - [19/Apr/2026 04:51:30] "GET /?webview_request_time=1776574288774 HTTP/1.1" 200 -
+2026-04-19 04:51:30,891 - werkzeug - INFO - 127.0.0.1 - - [19/Apr/2026 04:51:30] "GET /css/style.css HTTP/1.1" 200 -
+2026-04-19 04:51:30,901 - werkzeug - INFO - 127.0.0.1 - - [19/Apr/2026 04:51:30] "GET /js/app.js HTTP/1.1" 200 -
+2026-04-19 04:51:31,081 - werkzeug - INFO - 127.0.0.1 - - [19/Apr/2026 04:51:31] "GET /css/form-modern.css HTTP/1.1" 200 -
+2026-04-19 04:51:31,189 - werkzeug - INFO - 127.0.0.1 - - [19/Apr/2026 04:51:31] "GET /css/mobile-redesign.css HTTP/1.1" 200 -
+2026-04-19 04:51:31,211 - werkzeug - INFO - 127.0.0.1 - - [19/Apr/2026 04:51:31] "GET /css/datetime-picker.css HTTP/1.1" 200 -
+2026-04-19 04:51:31,251 - werkzeug - INFO - 127.0.0.1 - - [19/Apr/2026 04:51:31] "GET /js/core.js HTTP/1.1" 200 -
+2026-04-19 04:51:31,284 - werkzeug - INFO - 127.0.0.1 - - [19/Apr/2026 04:51:31] "GET /js/mockData.js HTTP/1.1" 200 -
+2026-04-19 04:51:31,325 - werkzeug - INFO - 127.0.0.1 - - [19/Apr/2026 04:51:31] "GET /js/datetime-picker.js HTTP/1.1" 200 -
+2026-04-19 04:51:31,398 - werkzeug - INFO - 127.0.0.1 - - [19/Apr/2026 04:51:31] "GET /requests.html HTTP/1.1" 200 -
+2026-04-19 04:51:31,399 - werkzeug - INFO - 127.0.0.1 - - [19/Apr/2026 04:51:31] "GET /sw.js HTTP/1.1" 200 -
+2026-04-19 04:51:31,402 - werkzeug - INFO - 127.0.0.1 - - [19/Apr/2026 04:51:31] "GET /profile.html HTTP/1.1" 200 -
+2026-04-19 04:51:31,736 - werkzeug - INFO - 127.0.0.1 - - [19/Apr/2026 04:51:31] "GET / HTTP/1.1" 200 -
+2026-04-19 04:51:31,746 - werkzeug - INFO - 127.0.0.1 - - [19/Apr/2026 04:51:31] "GET /index.html HTTP/1.1" 200 -
+2026-04-19 04:51:31,814 - werkzeug - INFO - 127.0.0.1 - - [19/Apr/2026 04:51:31] "GET /publish.html HTTP/1.1" 200 -
+2026-04-19 04:51:31,831 - werkzeug - INFO - 127.0.0.1 - - [19/Apr/2026 04:51:31] "GET /requests.html HTTP/1.1" 200 -
+2026-04-19 04:51:31,853 - werkzeug - INFO - 127.0.0.1 - - [19/Apr/2026 04:51:31] "GET /profile.html HTTP/1.1" 200 -
+2026-04-19 04:51:31,883 - werkzeug - INFO - 127.0.0.1 - - [19/Apr/2026 04:51:31] "GET /css/style.css HTTP/1.1" 200 -
+2026-04-19 04:51:31,890 - werkzeug - INFO - 127.0.0.1 - - [19/Apr/2026 04:51:31] "GET /css/form-modern.css HTTP/1.1" 200 -
+2026-04-19 04:51:31,913 - werkzeug - INFO - 127.0.0.1 - - [19/Apr/2026 04:51:31] "GET /css/mobile-redesign.css HTTP/1.1" 200 -
+2026-04-19 04:51:31,959 - werkzeug - INFO - 127.0.0.1 - - [19/Apr/2026 04:51:31] "GET /css/datetime-picker.css HTTP/1.1" 200 -
+2026-04-19 04:51:31,988 - werkzeug - INFO - 127.0.0.1 - - [19/Apr/2026 04:51:31] "GET /js/app.js HTTP/1.1" 200 -
+2026-04-19 04:51:31,994 - werkzeug - INFO - 127.0.0.1 - - [19/Apr/2026 04:51:31] "GET /js/utils.js HTTP/1.1" 200 -
+2026-04-19 04:51:32,017 - werkzeug - INFO - 127.0.0.1 - - [19/Apr/2026 04:51:32] "GET /js/datetime-picker.js HTTP/1.1" 200 -
