@@ -73,7 +73,7 @@
             }
             
             body {
-                background: linear-gradient(180deg, var(--soft-green) 0%, #fff 30%);
+                background: #ffffff;
                 min-height: 100vh;
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             }
@@ -84,16 +84,16 @@
 
             .mobile-header {
                 display: flex;
-                position: fixed;
+                position: sticky;
                 top: 0;
                 left: 0;
                 right: 0;
                 height: 56px;
-                background: rgba(255,255,255,0.95);
+                background: white;
                 backdrop-filter: blur(10px);
                 -webkit-backdrop-filter: blur(10px);
                 z-index: 100;
-                border-bottom: 1px solid var(--light-green);
+                border-bottom: 1px solid #e5e7eb;
                 align-items: center;
                 justify-content: space-between;
                 padding: 0 16px;
@@ -103,10 +103,24 @@
                 display: flex;
                 align-items: center;
                 gap: 4px;
-                color: var(--dark-green);
+                color: #6b7280;
                 text-decoration: none;
                 font-size: 15px;
                 font-weight: 500;
+                background: transparent;
+                border: none;
+                cursor: pointer;
+                padding: 4px;
+                border-radius: 8px;
+                transition: all 0.2s;
+            }
+            
+            .back-btn:hover {
+                background: #f3f4f6;
+            }
+            
+            .back-btn:active {
+                background: #e5e7eb;
             }
             
             .back-btn svg {
@@ -271,22 +285,31 @@
             }
         }
 
-        /* PC端隐藏移动端元素 */
+        /* PC 端隐藏移动端元素 */
         @media (min-width: 769px) {
-            .mobile-header, .hero-icon, .hero-subtitle-mobile, .start-btn {
+            .mobile-header {
+                display: none !important;
+            }
+            .hero-icon, .hero-subtitle-mobile, .start-btn {
                 display: none;
+            }
+        }
+        
+        /* 移动端显示移动端头部 */
+        @media (max-width: 768px) {
+            .mobile-header {
+                display: flex !important;
             }
         }
     </style>
 </head>
 <body>
     <!-- 移动端顶部导航 -->
-    <header class="mobile-header" style="display: none;">
+    <header class="mobile-header">
         <a href="index.html" class="back-btn">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M19 12H5M12 19l-7-7 7-7"/>
             </svg>
-            返回
         </a>
         <span class="header-title">使用指南</span>
         <div class="header-spacer"></div>
@@ -306,7 +329,7 @@
                 <button class="btn btn-primary" onclick="showPublishModal()">发布需求</button>
                 <div class="notification-icon" onclick="goToNotifications()">
                     🔔
-                    <span class="notification-badge" id="notification-badge">0</span>
+                    <span class="notification-badge" id="notification-badge" style="display: none;">0</span>
                 </div>
                 <div class="user-menu">
                     <div class="user-header">
@@ -391,7 +414,7 @@
                 <div class="footer-brand">
                     <span class="logo-icon">🤝</span>
                     <span class="logo-text">我来帮</span>
-                    <p>让人与人互助变得简单</p>
+                    <p>让人与人互助变得简单高效</p>
                 </div>
                 <div class="footer-links">
                     <div class="link-group">
@@ -1016,6 +1039,6 @@
     </div>
 
     <script src="js/mockData.js?v=6"></script>
-    <script src="js/app.js?v=7"></script>
+    <script src="js/app.v2.js?v=7"></script>
 </body>
 </html>

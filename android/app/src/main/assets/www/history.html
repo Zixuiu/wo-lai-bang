@@ -9,109 +9,106 @@
     <link rel="stylesheet" href="css/form-modern.css">
     <link rel="stylesheet" href="css/mobile-redesign.css">
     <link rel="stylesheet" href="css/datetime-picker.css">
+    <link rel="stylesheet" href="css/back-button.css">
     <style>
-        /* 新 UI 样式 */
+        /* ==================== 超级大改 - 历史记录页面 ==================== */
         .history-container {
-            max-width: 900px;
+            max-width: 1200px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 24px;
         }
         
-        /* 头部卡片 */
-        .history-header-card {
-            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-            border-radius: 24px;
-            padding: 32px;
-            margin-bottom: 24px;
-            color: white;
-            box-shadow: 0 10px 40px rgba(16, 185, 129, 0.3);
+        /* 页面标题区 - 简洁白色 */
+        .history-page-header {
+            margin-bottom: 32px;
         }
         
-        .history-header-card h1 {
+        .history-page-title {
             font-size: 1.75rem;
             font-weight: 700;
+            color: #1f2937;
             margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
         }
         
-        .history-header-card p {
-            opacity: 0.9;
+        .history-page-subtitle {
             font-size: 0.95rem;
+            color: #6b7280;
         }
         
-        /* 统计网格 */
+        /* 统计卡片 - 横向排列 */
         .stats-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-            margin-bottom: 24px;
+            gap: 20px;
+            margin-bottom: 32px;
         }
         
         .stat-box {
             background: white;
             border-radius: 16px;
-            padding: 20px;
-            text-align: center;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            border: 1px solid #f3f4f6;
             transition: all 0.3s ease;
-            border: 1px solid #f0f0f0;
         }
         
         .stat-box:hover {
-            transform: translateY(-4px);
+            transform: translateY(-2px);
             box-shadow: 0 8px 24px rgba(0,0,0,0.1);
         }
         
         .stat-box .stat-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: 12px;
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.5rem;
-            margin: 0 auto 12px;
+            font-size: 1.75rem;
+            flex-shrink: 0;
         }
         
-        .stat-box.total .stat-icon { background: linear-gradient(135deg, #d1fae5, #a7f3d0); }
-        .stat-box.pending .stat-icon { background: linear-gradient(135deg, #fef3c7, #fde68a); }
-        .stat-box.active .stat-icon { background: linear-gradient(135deg, #dbeafe, #bfdbfe); }
-        .stat-box.completed .stat-icon { background: linear-gradient(135deg, #10b981, #34d399); color: white; }
+        .stat-box.total .stat-icon { background: #ecfdf5; }
+        .stat-box.pending .stat-icon { background: #fffbeb; }
+        .stat-box.active .stat-icon { background: #eff6ff; }
+        .stat-box.completed .stat-icon { background: #f0fdf4; }
+        
+        .stat-box .stat-content {
+            flex: 1;
+        }
         
         .stat-box .stat-value {
             font-size: 1.75rem;
             font-weight: 700;
             color: #1f2937;
-            margin-bottom: 4px;
+            line-height: 1.2;
         }
         
         .stat-box .stat-name {
-            font-size: 0.85rem;
+            font-size: 0.875rem;
             color: #6b7280;
+            margin-top: 2px;
         }
         
-        /* 筛选标签 */
+        /* 筛选标签 - 胶囊样式 */
         .filter-tabs {
             display: flex;
-            gap: 8px;
-            margin-bottom: 20px;
-            background: white;
-            padding: 6px;
-            border-radius: 12px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            gap: 12px;
+            margin-bottom: 24px;
+            padding: 4px;
         }
         
         .filter-tab {
-            flex: 1;
-            padding: 10px 16px;
+            padding: 10px 24px;
             border: none;
             background: transparent;
             color: #6b7280;
             font-size: 0.9rem;
             font-weight: 500;
-            border-radius: 8px;
+            border-radius: 50px;
             cursor: pointer;
             transition: all 0.2s ease;
         }
@@ -122,55 +119,79 @@
         }
         
         .filter-tab.active {
-            background: linear-gradient(135deg, #10b981, #059669);
+            background: #1f2937;
             color: white;
-            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+        
+        /* 内容区 - 白色卡片 */
+        .history-content {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            border: 1px solid #f3f4f6;
         }
         
         /* 列表卡片 */
         .history-cards {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 16px;
         }
         
         .history-card {
-            background: white;
-            border-radius: 16px;
+            background: #fafafa;
+            border-radius: 12px;
             padding: 20px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
-            border: 1px solid #f3f4f6;
-            transition: all 0.3s ease;
+            border: 1px solid #f0f0f0;
+            transition: all 0.2s ease;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 16px;
         }
         
         .history-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 24px rgba(16, 185, 129, 0.15);
-            border-color: #10b981;
+            background: white;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            border-color: #e5e7eb;
+        }
+        
+        .history-card-icon {
+            width: 48px;
+            height: 48px;
+            background: white;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            flex-shrink: 0;
+            border: 1px solid #f0f0f0;
+        }
+        
+        .history-card-content {
+            flex: 1;
         }
         
         .history-card-header {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-bottom: 12px;
+            margin-bottom: 4px;
         }
         
         .history-card-title {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 600;
             color: #1f2937;
-            display: flex;
-            align-items: center;
-            gap: 8px;
         }
         
         .history-card-status {
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 0.75rem;
+            font-weight: 500;
         }
         
         .history-card-status.pending {
@@ -190,74 +211,87 @@
         
         .history-card-body {
             color: #6b7280;
-            font-size: 0.9rem;
-            line-height: 1.5;
-            margin-bottom: 12px;
+            font-size: 0.875rem;
+            margin-bottom: 4px;
         }
         
         .history-card-footer {
-            display: flex;
-            align-items: center;
-            gap: 16px;
             font-size: 0.8rem;
             color: #9ca3af;
         }
         
-        .history-card-footer span {
-            display: flex;
-            align-items: center;
-            gap: 4px;
+        .history-card-arrow {
+            color: #d1d5db;
+            font-size: 1.25rem;
         }
         
-        /* 空状态 */
+        /* 空状态 - 居中简洁 */
         .empty-state-new {
             text-align: center;
-            padding: 60px 20px;
-            background: white;
-            border-radius: 16px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.06);
+            padding: 80px 20px;
         }
         
         .empty-state-new .empty-icon {
-            width: 80px;
-            height: 80px;
-            background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
-            border-radius: 20px;
+            width: 120px;
+            height: 120px;
+            background: #f9fafb;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 2.5rem;
-            margin: 0 auto 20px;
+            font-size: 3rem;
+            margin: 0 auto 24px;
+            border: 2px dashed #e5e7eb;
         }
         
         .empty-state-new h3 {
             font-size: 1.25rem;
             color: #374151;
             margin-bottom: 8px;
+            font-weight: 600;
         }
         
         .empty-state-new p {
             color: #9ca3af;
-            margin-bottom: 20px;
+            margin-bottom: 24px;
+            font-size: 0.95rem;
         }
         
-        /* 分页 */
+        .empty-state-new .btn-primary {
+            background: #1f2937;
+            color: white;
+            padding: 12px 28px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .empty-state-new .btn-primary:hover {
+            background: #374151;
+            transform: translateY(-1px);
+        }
+        
+        /* 分页 - 简洁 */
         .pagination-new {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 16px;
-            margin-top: 24px;
-            padding: 16px;
+            gap: 8px;
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px solid #f3f4f6;
         }
         
         .pagination-new button {
-            padding: 10px 20px;
+            padding: 8px 16px;
             border: 1px solid #e5e7eb;
             background: white;
-            border-radius: 10px;
+            border-radius: 8px;
             color: #374151;
-            font-size: 0.9rem;
+            font-size: 0.875rem;
             cursor: pointer;
             transition: all 0.2s ease;
         }
@@ -268,31 +302,56 @@
         }
         
         .pagination-new button:disabled {
-            opacity: 0.5;
+            opacity: 0.4;
             cursor: not-allowed;
         }
         
         .pagination-new .page-info {
             color: #6b7280;
-            font-size: 0.9rem;
+            font-size: 0.875rem;
+            padding: 0 12px;
         }
         
-        @media (max-width: 768px) {
+        /* 响应式 */
+        @media (max-width: 1024px) {
             .stats-grid {
                 grid-template-columns: repeat(2, 1fr);
             }
+        }
+        
+        @media (max-width: 768px) {
+            .history-container {
+                padding: 16px;
+            }
             
-            .history-header-card {
-                padding: 24px;
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+            
+            .stat-box {
+                padding: 16px;
+            }
+            
+            .stat-box .stat-icon {
+                width: 44px;
+                height: 44px;
+                font-size: 1.5rem;
             }
             
             .filter-tabs {
-                flex-wrap: wrap;
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                -webkit-overflow-scrolling: touch;
             }
             
             .filter-tab {
-                flex: none;
-                min-width: calc(50% - 4px);
+                white-space: nowrap;
+                flex-shrink: 0;
+            }
+            
+            .history-content {
+                padding: 16px;
             }
         }
     </style>
@@ -318,10 +377,18 @@
     <!-- 主内容区域 -->
     <section class="main-content">
         <div class="history-container">
-            <!-- 头部卡片 -->
-            <div class="history-header-card">
-                <h1>📜 历史记录</h1>
-                <p>查看您发布过的所有需求记录</p>
+            <!-- 页面头部 -->
+            <div class="page-header">
+                <div class="page-header-left">
+                    <button class="back-btn" onclick="window.location.href='index.html'">←</button>
+                    <h1>历史记录</h1>
+                </div>
+            </div>
+            
+            <!-- 页面标题 -->
+            <div class="history-page-header">
+                <h1 class="history-page-title">历史记录</h1>
+                <p class="history-page-subtitle">查看和管理您发布过的所有需求</p>
             </div>
             
             <!-- 筛选标签 -->
@@ -332,22 +399,25 @@
                 <button class="filter-tab" data-filter="completed">已完成</button>
             </div>
             
-            <!-- 历史记录列表 -->
-            <div class="history-cards" id="history-list"></div>
-            
-            <!-- 空状态 -->
-            <div class="empty-state-new" id="history-empty" style="display: none;">
-                <div class="empty-icon">📭</div>
-                <h3>暂无历史记录</h3>
-                <p>您还没有发布过任何需求</p>
-                <button class="btn btn-primary" onclick="showPublishModal()">发布第一个需求</button>
-            </div>
-            
-            <!-- 分页控件 -->
-            <div class="pagination-new" id="pagination-container">
-                <button id="prev-btn" onclick="loadHistoryPage(-1)">上一页</button>
-                <span class="page-info">第 <span id="current-page">1</span> / <span id="total-pages">1</span> 页</span>
-                <button id="next-btn" onclick="loadHistoryPage(1)">下一页</button>
+            <!-- 内容区 -->
+            <div class="history-content">
+                <!-- 历史记录列表 -->
+                <div class="history-cards" id="history-list"></div>
+                
+                <!-- 空状态 -->
+                <div class="empty-state-new" id="history-empty" style="display: none;">
+                    <div class="empty-icon">📭</div>
+                    <h3>暂无历史记录</h3>
+                    <p>您还没有发布过任何需求</p>
+                    <button class="btn-primary" onclick="showPublishModal()">发布第一个需求</button>
+                </div>
+                
+                <!-- 分页控件 -->
+                <div class="pagination-new" id="pagination-container">
+                    <button id="prev-btn" onclick="loadHistoryPage(-1)">上一页</button>
+                    <span class="page-info">第 <span id="current-page">1</span> / <span id="total-pages">1</span> 页</span>
+                    <button id="next-btn" onclick="loadHistoryPage(1)">下一页</button>
+                </div>
             </div>
         </div>
     </section>
@@ -359,7 +429,7 @@
                 <div class="footer-brand">
                     <span class="logo-icon">🤝</span>
                     <span class="logo-text">我来帮</span>
-                    <p>让人与人互助变得简单</p>
+                    <p>让人与人互助变得简单高效</p>
                 </div>
                 <div class="footer-links">
                     <div class="link-group">
@@ -814,7 +884,7 @@
         </div>
     </div>
 
-    <script src="js/app.js?v=2"></script>
+    <script src="js/app.v2.js"></script>
     <script>
         // 显示未登录 UI
         function showNotLoggedInUI() {
@@ -825,12 +895,9 @@
             
             if (filters) filters.style.display = 'none';
             if (pagination) pagination.style.display = 'none';
-            if (header) {
-                header.innerHTML = `
-                    <h1>📜 历史记录</h1>
-                    <p>请先登录后查看您的需求记录</p>
-                `;
-            }
+            // 隐藏绿色头部卡片
+            if (header) header.style.display = 'none';
+            
             if (listContainer) {
                 listContainer.innerHTML = `
                     <div class="empty-state-new">
@@ -882,6 +949,23 @@
             });
         }
 
+        // 获取分类图标
+        function getCategoryIcon(category) {
+            const icons = {
+                '搬运': '📦',
+                '教育': '📚',
+                '技术': '💻',
+                '宠物': '🐾',
+                '跑腿': '🏃',
+                '维修': '🔧',
+                '设计': '🎨',
+                '健康': '🏥',
+                '家政': '🏠',
+                '其他': '📋'
+            };
+            return icons[category] || '📋';
+        }
+
         async function loadHistoryData() {
             try {
                 const token = authToken || localStorage.getItem('auth_token');
@@ -926,10 +1010,15 @@
             const accepted = allHistoryRequests.filter(r => r.status === 'accepted').length;
             const completed = allHistoryRequests.filter(r => r.status === 'completed').length;
 
-            document.getElementById('total-count').textContent = total;
-            document.getElementById('pending-count').textContent = pending;
-            document.getElementById('accepted-count').textContent = accepted;
-            document.getElementById('completed-count').textContent = completed;
+            const totalEl = document.getElementById('total-count');
+            const pendingEl = document.getElementById('pending-count');
+            const acceptedEl = document.getElementById('accepted-count');
+            const completedEl = document.getElementById('completed-count');
+
+            if (totalEl) totalEl.textContent = total;
+            if (pendingEl) pendingEl.textContent = pending;
+            if (acceptedEl) acceptedEl.textContent = accepted;
+            if (completedEl) completedEl.textContent = completed;
         }
 
         function renderHistoryList() {
@@ -983,23 +1072,20 @@
                     const location = req.location || '未知位置';
                     const description = req.description || '';
                     const reqId = req.id || 0;
+                    const categoryIcon = getCategoryIcon(category);
                     
                     return `
                 <div class="history-card" onclick="showRequestDetail(${reqId})">
-                    <div class="history-card-header">
-                        <div class="history-card-title">
-                            <span>${category}</span>
-                            ${title}
+                    <div class="history-card-icon">${categoryIcon}</div>
+                    <div class="history-card-content">
+                        <div class="history-card-header">
+                            <div class="history-card-title">${title}</div>
+                            <span class="history-card-status ${status}">${getStatusText(status)}</span>
                         </div>
-                        <span class="history-card-status ${status}">${getStatusText(status)}</span>
+                        <div class="history-card-body">${description.substring(0, 80)}${description.length > 80 ? '...' : ''}</div>
+                        <div class="history-card-footer">${formatTime(createdAt)} · ${location}</div>
                     </div>
-                    <div class="history-card-body">
-                        ${description.substring(0, 120)}${description.length > 120 ? '...' : ''}
-                    </div>
-                    <div class="history-card-footer">
-                        <span>🕐 ${formatTime(createdAt)}</span>
-                        <span>📍 ${location}</span>
-                    </div>
+                    <div class="history-card-arrow">›</div>
                 </div>
             `}).join('');
             } catch (err) {

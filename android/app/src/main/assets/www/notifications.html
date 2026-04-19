@@ -8,22 +8,53 @@
     <link rel="stylesheet" href="css/style.css?v=3">
     <link rel="stylesheet" href="css/no-animation.css">
     <style>
+        .main-content {
+            padding: 0 !important;
+        }
         .notifications-page {
-            padding: 20px;
+            padding: 0 16px 20px;
             max-width: 800px;
             margin: 0 auto;
-            margin-top: -20px;
         }
         .page-header {
-            margin-bottom: 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
+            padding: 12px 16px;
+            margin: 0 -16px 12px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .page-header-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
         }
         .page-header h1 {
-            font-size: 1.5rem;
-            margin-bottom: 4px;
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #111827;
+            margin: 0;
         }
-        .page-header p {
-            color: var(--gray-600);
-            font-size: 0.9rem;
+        .back-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #6b7280;
+            font-size: 1.25rem;
+            transition: all 0.2s;
+        }
+        .back-btn:active {
+            background: #f3f4f6;
         }
         /* 标签切换 */
         .tab-nav {
@@ -36,7 +67,7 @@
         }
         .tab-btn {
             flex: 1;
-            padding: 12px 8px;
+            padding: 12px 4px;
             border: none;
             background: transparent;
             color: #6b7280;
@@ -48,7 +79,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 6px;
+            gap: 4px;
+            white-space: nowrap;
         }
         .tab-btn:hover {
             background: #f3f4f6;
@@ -341,23 +373,31 @@
     <!-- 主内容区域 -->
     <section class="main-content">
         <div class="notifications-page">
+            <!-- 页面头部 -->
+            <div class="page-header">
+                <div class="page-header-left">
+                    <button class="back-btn" onclick="window.location.href='index.html'">←</button>
+                    <h1>消息</h1>
+                </div>
+            </div>
+            
             <!-- 标签导航 -->
             <div class="tab-nav">
                 <button class="tab-btn active" data-tab="contacts" onclick="switchTab('contacts')">
                     👥 联系人
-                    <span class="tab-badge" id="contact-badge" style="display:none">0</span>
+                    <span class="tab-badge" id="contact-badge" style="display:none"></span>
                 </button>
                 <button class="tab-btn" data-tab="notifications" onclick="switchTab('notifications')">
                     📢 通知
-                    <span class="tab-badge" id="notif-badge" style="display:none">0</span>
+                    <span class="tab-badge" id="notif-badge" style="display:none"></span>
                 </button>
                 <button class="tab-btn" data-tab="activity" onclick="switchTab('activity')">
                     📊 动态
-                    <span class="tab-badge" id="activity-badge" style="display:none">0</span>
+                    <span class="tab-badge" id="activity-badge" style="display:none"></span>
                 </button>
                 <button class="tab-btn" data-tab="transaction" onclick="switchTab('transaction')">
                     💰 交易
-                    <span class="tab-badge" id="trans-badge" style="display:none">0</span>
+                    <span class="tab-badge" id="trans-badge" style="display:none"></span>
                 </button>
             </div>
             
@@ -372,7 +412,7 @@
     </section>
 
     <script src="js/mockData.js"></script>
-    <script src="js/app.js"></script>
+    <script src="js/app.v2.js"></script>
     <script>
         // 模拟数据
         const mockData = {
@@ -422,7 +462,13 @@
         function init() {
             console.log('init called');
             const container = document.getElementById('content-list');
-            
+
+            // 强制隐藏所有徽章，等待数据加载后再显示
+            document.querySelectorAll('.tab-badge').forEach(badge => {
+                badge.style.display = 'none';
+                badge.textContent = '';
+            });
+
             // 检查登录状态
             const token = localStorage.getItem('auth_token');
             const userStr = localStorage.getItem('current_user');
@@ -561,7 +607,20 @@
                 }
                 
                 const contacts = result.data || [];
-                
+
+                // 计算总未读数并更新徽章
+                const totalUnread = contacts.reduce((sum, c) => sum + (c.unread || 0), 0);
+                const contactBadge = document.getElementById('contact-badge');
+                if (contactBadge) {
+                    if (totalUnread > 0) {
+                        contactBadge.textContent = totalUnread;
+                        contactBadge.style.display = 'inline-block';
+                    } else {
+                        contactBadge.textContent = '';
+                        contactBadge.style.display = 'none';
+                    }
+                }
+
                 if (contacts.length === 0) {
                     container.innerHTML = `
                         <div class="empty-state">
@@ -572,7 +631,7 @@
                     `;
                     return;
                 }
-                
+
                 renderContacts(container, contacts);
             } catch (error) {
                 container.innerHTML = `
@@ -681,8 +740,21 @@
                 
                 // 后端返回的数据格式: {notifications: [...], unread_count: number}
                 const notifications = result.data?.notifications || result.data || [];
-                console.log('通知列表:', notifications);
-                
+                const unreadCount = result.data?.unread_count || 0;
+                console.log('通知列表:', notifications, '未读数:', unreadCount);
+
+                // 更新通知徽章 - 只有大于0才显示
+                const notifBadge = document.getElementById('notif-badge');
+                if (notifBadge) {
+                    if (unreadCount > 0) {
+                        notifBadge.textContent = unreadCount;
+                        notifBadge.style.display = 'inline-block';
+                    } else {
+                        notifBadge.textContent = '';
+                        notifBadge.style.display = 'none';
+                    }
+                }
+
                 if (notifications.length === 0) {
                     container.innerHTML = `
                         <div class="empty-state">
@@ -693,7 +765,7 @@
                     `;
                     return;
                 }
-                
+
                 renderNotifications(container, notifications);
             } catch (error) {
                 container.innerHTML = `
@@ -952,7 +1024,7 @@
             }
             container.innerHTML = `
                 <div class="user-info" onclick="toggleUserDropdown()">
-                    <img src="${window.currentUser.avatar || 'data:image/svg+xml,<svg xmlns=\'http://www.w3.org/2000/svg\' viewBox=\'0 0 100 100\'><text y=\'.9em\' font-size=\'90\'>👤</text></svg>'}" alt="头像" class="user-avatar">
+                    <img src="${getAvatar(window.currentUser.username || window.currentUser.name)}" alt="头像" class="user-avatar">
                     <span class="user-name">${window.currentUser.name}</span>
                 </div>
                 <div class="user-dropdown" id="user-dropdown">

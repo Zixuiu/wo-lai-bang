@@ -93,9 +93,192 @@
             font-size: 2.5rem;
             color: #1f2937;
         }
+
+        /* 移动端顶部导航 */
+        .mobile-header {
+            display: none;
+        }
+
+        /* 移动端响应式样式 */
+        @media (max-width: 768px) {
+            .mobile-header {
+                display: flex;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 56px;
+                background: white;
+                z-index: 100;
+                border-bottom: 1px solid #e5e7eb;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 16px;
+            }
+
+            .mobile-header .back-btn {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                color: #6b7280;
+                text-decoration: none;
+                font-size: 15px;
+                font-weight: 500;
+                background: transparent;
+                border: none;
+                cursor: pointer;
+                padding: 4px;
+                border-radius: 8px;
+                transition: all 0.2s;
+            }
+
+            .mobile-header .back-btn:hover {
+                background: #f3f4f6;
+            }
+
+            .mobile-header .back-btn:active {
+                background: #e5e7eb;
+            }
+
+            .mobile-header .back-btn svg {
+                width: 20px;
+                height: 20px;
+            }
+
+            .mobile-header .header-title {
+                font-size: 17px;
+                font-weight: 600;
+                color: #1f2937;
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+
+            .mobile-header .header-spacer {
+                width: 40px;
+            }
+
+            /* 隐藏桌面端导航 */
+            .navbar {
+                display: none;
+            }
+
+            /* 页面内容调整 */
+            .page-section {
+                padding-top: 56px !important;
+                padding-bottom: 0 !important;
+                background: #f8fafc !important;
+            }
+            
+            .page-section .container {
+                padding: 0 !important;
+                max-width: 100% !important;
+                background: #f8fafc !important;
+            }
+            
+            /* body背景色统一 */
+            body {
+                background: #f8fafc !important;
+            }
+
+            /* 隐藏桌面端标题 */
+            .page-title {
+                display: none;
+            }
+
+            /* 表单容器重构 - 填满全屏 */
+            .feedback-form-container {
+                padding: 1.5rem 1rem;
+                margin: 0;
+                border-radius: 0;
+                box-shadow: none;
+                max-width: 100%;
+                min-height: calc(100vh - 56px);
+                background: #f8fafc;
+            }
+            
+            .feedback-form-container:hover {
+                transform: none;
+                box-shadow: none;
+            }
+            
+            /* 描述文字样式 */
+            .form-description {
+                text-align: left;
+                color: #64748b;
+                margin-bottom: 1.5rem;
+                font-size: 0.875rem;
+                line-height: 1.5;
+            }
+            
+            /* 表单组样式优化 */
+            .form-group {
+                margin-bottom: 1.25rem;
+                background: white;
+                padding: 1rem;
+                border-radius: 12px;
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+            }
+            
+            .form-group label {
+                font-size: 0.9375rem;
+                font-weight: 600;
+                color: #1f2937;
+                margin-bottom: 0.75rem;
+            }
+            
+            /* 输入框样式优化 */
+            .form-group select,
+            .form-group textarea,
+            .form-group input {
+                padding: 0.875rem 1rem;
+                border: 1px solid #e5e7eb;
+                border-radius: 10px;
+                font-size: 0.9375rem;
+                background: #f9fafb;
+            }
+            
+            .form-group select:focus,
+            .form-group textarea:focus,
+            .form-group input:focus {
+                border-color: #10b981;
+                box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+                background: white;
+            }
+            
+            .form-group textarea {
+                min-height: 140px;
+            }
+            
+            /* 提交按钮样式优化 */
+            .submit-btn {
+                padding: 1rem;
+                border-radius: 10px;
+                font-size: 1rem;
+                font-weight: 600;
+                margin-top: 0.5rem;
+                box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+            }
+            
+            /* 隐藏页脚 */
+            .footer {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
+    <!-- 移动端顶部导航 -->
+    <header class="mobile-header">
+        <a href="javascript:history.back()" class="back-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+        </a>
+        <span class="header-title">意见反馈</span>
+        <div class="header-spacer"></div>
+    </header>
+
     <!-- 导航栏 -->
     <nav class="navbar">
         <div class="nav-container">
@@ -113,7 +296,7 @@
                 <!-- 通知图标 -->
                 <div class="notification-icon" onclick="goToNotifications()">
                     🔔
-                    <span class="notification-badge" id="notification-badge">0</span>
+                    <span class="notification-badge" id="notification-badge" style="display: none;">0</span>
                 </div>
                 
                 <!-- 用户信息 -->
@@ -177,7 +360,7 @@
                 <div class="footer-brand">
                     <span class="logo-icon">🤝</span>
                     <span class="logo-text">我来帮</span>
-                    <p>让人与人互助变得简单</p>
+                    <p>让人与人互助变得简单高效</p>
                 </div>
                 <div class="footer-links">
                     <div class="link-group">
@@ -894,6 +1077,6 @@
         </div>
     </div>
 
-    <script src="js/app.js?v=7"></script>
+    <script src="js/app.v2.js?v=7"></script>
 </body>
 </html>

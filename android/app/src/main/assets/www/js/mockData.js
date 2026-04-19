@@ -31,84 +31,7 @@ function initMockData() {
         return R * c;
     };
 
-    mockRequests = [
-        {
-            id: 1,
-            user_id: 1,
-            title: '帮忙搬家具',
-            description: '周末搬家，需要2-3个壮劳力帮忙搬家具，从3楼搬到1楼，大概2小时，有偿！',
-            category: '搬运',
-            location: '北京市朝阳区',
-            lat: 39.9,
-            lng: 116.4,
-            reward: '200元',
-            status: 'pending',
-            created_at: '2026-01-28 09:00:00',
-            completed_at: null,
-            helper_id: null,
-            is_urgent: false,
-            user_nickname: '张三',
-            user_avatar: getAvatar('zhangsan'),
-            user_rating: 4.8
-        },
-        {
-            id: 2,
-            user_id: 2,
-            title: '辅导小学数学',
-            description: '孩子三年级，数学成绩不太好，需要一位有耐心的大学生辅导，每周两次',
-            category: '教育',
-            location: '上海市浦东新区',
-            lat: 31.2,
-            lng: 121.5,
-            reward: '100元/小时',
-            status: 'accepted',
-            created_at: '2026-01-27 14:00:00',
-            completed_at: null,
-            helper_id: 1,
-            is_urgent: false,
-            user_nickname: '李四',
-            user_avatar: getAvatar('lisi'),
-            user_rating: 4.9
-        },
-        {
-            id: 3,
-            user_id: 3,
-            title: '电脑重装系统',
-            description: '电脑中毒了，需要重装系统，最好是Win11，带激活',
-            category: '技术',
-            location: '广州市天河区',
-            lat: 23.1,
-            lng: 113.3,
-            reward: '80元',
-            status: 'completed',
-            created_at: '2026-01-25 10:30:00',
-            completed_at: '2026-01-26 16:00:00',
-            helper_id: 4,
-            is_urgent: false,
-            user_nickname: '王五',
-            user_avatar: getAvatar('wangwu'),
-            user_rating: 4.7
-        },
-        {
-            id: 4,
-            user_id: 4,
-            title: '帮忙遛狗',
-            description: '临时出差3天，需要有人帮忙照顾家里的金毛，每天遛两次',
-            category: '宠物',
-            location: '深圳市南山区',
-            lat: 22.5,
-            lng: 114.0,
-            reward: '150元/天',
-            status: 'pending',
-            created_at: '2026-01-29 08:00:00',
-            completed_at: null,
-            helper_id: null,
-            is_urgent: false,
-            user_nickname: '赵六',
-            user_avatar: getAvatar('zhaoliu'),
-            user_rating: 5.0
-        }
-    ];
+    mockRequests = [];
 
     mockCategories = [
         { id: 1, name: '搬运', icon: '📦', description: '搬家、搬运物品等' },
@@ -119,28 +42,7 @@ function initMockData() {
         { id: 6, name: '维修', icon: '🔧', description: '家电维修、管道疏通' }
     ];
 
-    mockNotifications = [
-        {
-            id: 1,
-            user_id: 1,
-            type: 'help_request',
-            title: '新的需求',
-            content: '有人发布了新的需求：帮忙搬家具',
-            is_read: false,
-            created_at: '2026-01-28 10:00:00',
-            related_id: 1
-        },
-        {
-            id: 2,
-            user_id: 1,
-            type: 'message',
-            title: '新消息',
-            content: '李四回复了您的评论',
-            is_read: true,
-            created_at: '2026-01-27 15:00:00',
-            related_id: null
-        }
-    ];
+    mockNotifications = [];
     window.mockNotifications = mockNotifications;
 }
 

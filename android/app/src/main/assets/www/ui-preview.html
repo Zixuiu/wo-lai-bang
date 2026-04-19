@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UI预览 - 三个设计方案</title>
+    <link rel="stylesheet" href="css/ui-preview.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f0f2f5;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        }
+        
+        .header h1 {
+            font-size: 1.5rem;
+            color: #1f2937;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            color: #6b7280;
+            font-size: 0.875rem;
+        }
+        
+        .style-selector {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+        
+        .style-btn {
+            padding: 0.75rem 1.5rem;
+            border: 2px solid #e5e7eb;
+            background: white;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            color: #4b5563;
+            transition: all 0.2s ease;
+        }
+        
+        .style-btn:hover {
+            border-color: #22c55e;
+            color: #22c55e;
+        }
+        
+        .style-btn.active {
+            background: #22c55e;
+            border-color: #22c55e;
+            color: white;
+        }
+        
+        .preview-wrapper {
+            max-width: 480px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 24px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        
+        .preview-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 1.5rem;
+            text-align: center;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f3f4f6;
+        }
+        
+        .apply-btn {
+            display: block;
+            width: 100%;
+            max-width: 480px;
+            margin: 2rem auto;
+            padding: 1rem 2rem;
+            background: linear-gradient(135deg, #22c55e, #16a34a);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+        }
+        
+        .apply-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
+        }
+        
+        /* 移动端背景适配 */
+        .mobile-bg-glass {
+            background: linear-gradient(180deg, #f0fdf4 0%, #ffffff 30%, #f8fafc 100%);
+        }
+        
+        .mobile-bg-minimal {
+            background: #ffffff;
+        }
+        
+        .mobile-bg-neumorphism {
+            background: #e8ecf1;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎨 UI 设计方案预览</h1>
+        <p>点击下方按钮切换不同风格，选择你喜欢的设计</p>
+    </div>
+    
+    <div class="style-selector">
+        <button class="style-btn active" onclick="switchStyle('glass')">方案一：毛玻璃风</button>
+        <button class="style-btn" onclick="switchStyle('minimal')">方案二：极简风</button>
+        <button class="style-btn" onclick="switchStyle('neumorphism')">方案三：新拟物风</button>
+    </div>
+    
+    <div class="preview-wrapper" id="previewWrapper">
+        <div class="preview-title" id="previewTitle">方案一：现代毛玻璃风</div>
+        
+        <!-- 快捷功能网格 -->
+        <div class="quick-grid glass-style" id="quickGrid">
+            <a href="#" class="quick-grid-item">
+                <div class="quick-item-icon" style="background: linear-gradient(135deg, #dcfce7, #bbf7d0);">
+                    <span>🔍</span>
+                </div>
+                <span class="quick-item-text">浏览需求</span>
+            </a>
+            <a href="#" class="quick-grid-item">
+                <div class="quick-item-icon" style="background: linear-gradient(135deg, #dbeafe, #bfdbfe);">
+                    <span>📋</span>
+                </div>
+                <span class="quick-item-text">我的需求</span>
+            </a>
+            <a href="#" class="quick-grid-item">
+                <div class="quick-item-icon" style="background: linear-gradient(135deg, #fef3c7, #fde68a);">
+                    <span>👤</span>
+                </div>
+                <span class="quick-item-text">个人中心</span>
+            </a>
+            <a href="#" class="quick-grid-item">
+                <div class="quick-item-icon" style="background: linear-gradient(135deg, #fce7f3, #fbcfe8);">
+                    <span>📖</span>
+                </div>
+                <span class="quick-item-text">常见场景</span>
+            </a>
+            <a href="#" class="quick-grid-item">
+                <div class="quick-item-icon" style="background: linear-gradient(135deg, #e0e7ff, #c7d2fe);">
+                    <span>📚</span>
+                </div>
+                <span class="quick-item-text">使用指南</span>
+            </a>
+            <a href="#" class="quick-grid-item">
+                <div class="quick-item-icon" style="background: linear-gradient(135deg, #fef3c7, #fde68a);">
+                    <span>❓</span>
+                </div>
+                <span class="quick-item-text">常见问题</span>
+            </a>
+            <a href="#" class="quick-grid-item">
+                <div class="quick-item-icon" style="background: linear-gradient(135deg, #fce7f3, #fbcfe8);">
+                    <span>💡</span>
+                </div>
+                <span class="quick-item-text">意见反馈</span>
+            </a>
+            <button class="quick-grid-item">
+                <div class="quick-item-icon" style="background: linear-gradient(135deg, #f3f4f6, #e5e7eb);">
+                    <span>⋯</span>
+                </div>
+                <span class="quick-item-text">更多</span>
+            </button>
+        </div>
+        
+        <!-- 统计卡片 -->
+        <div class="stats-card glass-style" id="statsCard">
+            <div class="stat-item">
+                <span class="stat-icon">👥</span>
+                <span class="stat-value">1280</span>
+                <span class="stat-label">邻居</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <span class="stat-icon">📦</span>
+                <span class="stat-value">356</span>
+                <span class="stat-label">需求</span>
+            </div>
+            <div class="stat-divider"></div>
+            <div class="stat-item">
+                <span class="stat-icon">✅</span>
+                <span class="stat-value">892</span>
+                <span class="stat-label">已完成</span>
+            </div>
+        </div>
+    </div>
+    
+    <button class="apply-btn" onclick="applyStyle()">应用此设计方案</button>
+    
+    <script>
+        const styleNames = {
+            'glass': '方案一：现代毛玻璃风',
+            'minimal': '方案二：极简扁平风',
+            'neumorphism': '方案三：新拟物风'
+        };
+        
+        const styleClasses = {
+            'glass': 'glass-style',
+            'minimal': 'minimal-style',
+            'neumorphism': 'neumorphism-style'
+        };
+        
+        const bgClasses = {
+            'glass': 'mobile-bg-glass',
+            'minimal': 'mobile-bg-minimal',
+            'neumorphism': 'mobile-bg-neumorphism'
+        };
+        
+        let currentStyle = 'glass';
+        
+        function switchStyle(style) {
+            currentStyle = style;
+            
+            // 更新按钮状态
+            document.querySelectorAll('.style-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // 更新标题
+            document.getElementById('previewTitle').textContent = styleNames[style];
+            
+            // 更新快捷功能网格样式
+            const quickGrid = document.getElementById('quickGrid');
+            Object.values(styleClasses).forEach(cls => {
+                quickGrid.classList.remove(cls);
+            });
+            quickGrid.classList.add(styleClasses[style]);
+            
+            // 更新统计卡片样式
+            const statsCard = document.getElementById('statsCard');
+            Object.values(styleClasses).forEach(cls => {
+                statsCard.classList.remove(cls);
+            });
+            statsCard.classList.add(styleClasses[style]);
+            
+            // 更新预览区背景
+            const wrapper = document.getElementById('previewWrapper');
+            Object.values(bgClasses).forEach(cls => {
+                wrapper.classList.remove(cls);
+            });
+            wrapper.classList.add(bgClasses[style]);
+        }
+        
+        function applyStyle() {
+            // 保存选择到 localStorage
+            localStorage.setItem('selectedUIStyle', currentStyle);
+            
+            // 显示确认信息
+            const btn = document.querySelector('.apply-btn');
+            const originalText = btn.textContent;
+            btn.textContent = '✓ 已应用！正在跳转...';
+            btn.style.background = '#16a34a';
+            
+            setTimeout(() => {
+                // 跳转到首页
+                window.location.href = 'index.html?applyStyle=' + currentStyle;
+            }, 1000);
+        }
+        
+        // 页面加载时检查是否有已保存的选择
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedStyle = localStorage.getItem('selectedUIStyle');
+            if (savedStyle) {
+                // 如果有保存的选择，自动切换到该样式
+                const btn = document.querySelector(`button[onclick="switchStyle('${savedStyle}')"]`);
+                if (btn) {
+                    btn.click();
+                }
+            }
+        });
+    </script>
+</body>
+</html>

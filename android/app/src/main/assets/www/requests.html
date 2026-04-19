@@ -5,6 +5,19 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>需求大厅 - 我来帮</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤝</text></svg>">
+    <!-- 提前恢复登录状态，避免导航栏闪烁 -->
+    <script>
+        (function() {
+            const user = localStorage.getItem('current_user');
+            const token = localStorage.getItem('auth_token');
+            if (user && token) {
+                try {
+                    const userData = JSON.parse(user);
+                    window.__INITIAL_USER__ = userData;
+                } catch (e) {}
+            }
+        })();
+    </script>
     <link rel="stylesheet" href="css/style.css?v=3">
     <link rel="stylesheet" href="css/form-modern.css">
     <link rel="stylesheet" href="css/mobile-redesign.css?v=1">
@@ -34,17 +47,49 @@
                 <!-- 通知图标 -->
                 <div class="notification-icon" onclick="goToNotifications()">
                     🔔
-                    <span class="notification-badge" id="notification-badge">0</span>
+                    <span class="notification-badge" id="notification-badge" style="display: none;">0</span>
                 </div>
                 
                 <!-- 用户信息 -->
                 <div class="user-menu">
                     <div class="user-header">
-                        <div class="user-avatar">
-                            <img src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'%3E%3C/path%3E%3Ccircle cx='12' cy='7' r='4'%3E%3C/circle%3E%3C/svg%3E" alt="用户头像">
+                        <div class="user-avatar" id="nav-user-avatar-container" style="position:relative;">
+                            <img id="nav-user-avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'%3E%3C/path%3E%3Ccircle cx='12' cy='7' r='4'%3E%3C/circle%3E%3C/svg%3E" alt="用户头像">
+                            <div id="nav-user-initial" style="display:none; width:32px; height:32px; border-radius:50%; background:linear-gradient(135deg, #22c55e, #4ade80); color:white; font-size:14px; font-weight:bold; text-align:center; line-height:32px; position:absolute; top:0; left:0;"></div>
                         </div>
-                        <span class="user-name">未登录</span>
+                        <span class="user-name" id="nav-user-name">未登录</span>
                     </div>
+                    <script>
+                        (function() {
+                            const user = window.__INITIAL_USER__;
+                            if (user) {
+                                const nameEl = document.getElementById('nav-user-name');
+                                const avatarImg = document.getElementById('nav-user-avatar');
+                                const initialDiv = document.getElementById('nav-user-initial');
+                                if (nameEl) nameEl.textContent = user.nickname || user.username || '用户';
+                                if (avatarImg && initialDiv) {
+                                    const seed = user.nickname || user.username || '用户';
+                                    let initial = '';
+                                    if (seed && typeof seed === 'string') {
+                                        const name = seed.trim();
+                                        if (name.length > 0) {
+                                            const firstChar = name.charAt(0);
+                                            if (/[\u4e00-\u9fa5]/.test(firstChar)) {
+                                                initial = firstChar;
+                                            } else {
+                                                initial = firstChar.toUpperCase();
+                                            }
+                                        }
+                                    }
+                                    if (initial) {
+                                        avatarImg.style.display = 'none';
+                                        initialDiv.style.display = 'block';
+                                        initialDiv.textContent = initial;
+                                    }
+                                }
+                            }
+                        })();
+                    </script>
                     <div class="user-dropdown" id="user-dropdown">
                         <a href="profile.html" class="dropdown-item">个人资料</a>
                         <button class="dropdown-item admin-only" onclick="showAdminPanel()">管理员中心</button>
@@ -71,25 +116,33 @@
                 
                 <!-- 右侧需求列表 -->
                 <main class="content-main">
-                    <div class="section-header">
-                        <div class="filter-tabs">
-                            <button class="tab-btn active" data-filter="all">全部</button>
-                            <button class="tab-btn" data-filter="pending">待帮助</button>
-                            <button class="tab-btn" data-filter="accepted">进行中</button>
-                            <button class="tab-btn" data-filter="completed">已完成</button>
+                    <!-- 统一筛选栏 -->
+                    <div class="filter-bar-v2">
+                        <!-- 第一行：搜索框和分类按钮 -->
+                        <div class="filter-row filter-row-search">
+                            <div class="search-box-v2">
+                                <span class="search-icon">🔍</span>
+                                <input type="text" id="search-input" placeholder="搜索需求..." onkeyup="if(event.key==='Enter')searchRequests(this.value)">
+                            </div>
+                            <div class="filter-actions-v2 filter-actions-main">
+                                <button class="filter-chip" onclick="showCategoryModal()" title="分类">
+                                    <span class="filter-chip-icon">📂</span>
+                                </button>
+                            </div>
                         </div>
-                    </div>
-
-                    <div class="search-bar">
-                        <div class="search-input-wrapper">
-                            <input type="text" id="search-input" placeholder="搜索需求..." onkeyup="if(event.key==='Enter')searchRequests(this.value)">
-                            <button class="btn btn-primary search-btn-inline" onclick="searchRequests(document.getElementById('search-input').value)">搜索</button>
-                            <button class="btn btn-secondary category-btn-inline" onclick="showCategoryModal()">📂 分类</button>
+                        <!-- 第二行：附近和最新按钮 -->
+                        <div class="filter-row filter-row-tags">
+                            <div class="filter-actions-v2 filter-actions-tags">
+                                <button class="filter-chip" onclick="showNearbyRequests()">
+                                    <span class="filter-chip-icon">📍</span>
+                                    <span class="filter-chip-text">附近</span>
+                                </button>
+                                <button class="filter-chip" id="sort-latest-btn">
+                                    <span class="filter-chip-icon">🔥</span>
+                                    <span class="filter-chip-text">最新</span>
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                    <div class="filter-actions-bar">
-                        <button class="btn btn-secondary filter-action-btn" onclick="showNearbyRequests()">📍 附近</button>
-                        <button class="btn btn-secondary filter-action-btn" id="sort-latest-btn">🔥 最新</button>
                     </div>
                     <div class="requests-grid" id="requests-grid">
                         <!-- 动态生成需求卡片 -->
@@ -113,7 +166,7 @@
                 <div class="footer-brand">
                     <span class="logo-icon">🤝</span>
                     <span class="logo-text">我来帮</span>
-                    <p>让人与人互助变得简单</p>
+                    <p>让人与人互助变得简单高效</p>
                 </div>
                 <div class="footer-links">
                     <div class="link-group">
@@ -525,6 +578,6 @@
 
     <script src="js/mockData.js?v=8"></script>
     <script src="js/datetime-picker.js" defer></script>
-    <script src="js/app.js?v=8"></script>
+    <script src="js/app.v2.js?v=8"></script>
 </body>
 </html>

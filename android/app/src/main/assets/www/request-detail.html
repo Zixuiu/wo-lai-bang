@@ -26,9 +26,10 @@
             padding: 0.75rem 1rem;
             display: flex;
             align-items: center;
+            justify-content: flex-start;
             gap: 0.75rem;
         }
-        
+
         .back-btn {
             width: 36px;
             height: 36px;
@@ -41,19 +42,17 @@
             font-size: 1.25rem;
             cursor: pointer;
             transition: all 0.2s ease;
+            order: -1;
         }
-        
+
         .back-btn:active {
             background: #e2e8f0;
         }
-        
+
         .detail-header-title {
             font-size: 1rem;
             font-weight: 600;
             color: #1e293b;
-            flex: 1;
-            text-align: center;
-            margin-right: 36px;
         }
         
         /* 内容区域 */
@@ -480,6 +479,45 @@
         let currentRequest = null;
         let authToken = null;
 
+        // 生成渐变色头像
+        function getAvatar(seed) {
+            // 提取首字母或第一个中文字符
+            let initial = '';
+            if (seed && typeof seed === 'string') {
+                const name = seed.trim();
+                if (name.length > 0) {
+                    const firstChar = name.charAt(0);
+                    if (/[\u4e00-\u9fa5]/.test(firstChar)) {
+                        initial = firstChar;
+                    } else {
+                        initial = firstChar.toUpperCase();
+                    }
+                }
+            }
+
+            // 如果没有提取到字符，返回默认图标
+            if (!initial) {
+                return `data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'%3E%3C/path%3E%3Ccircle cx='12' cy='7' r='4'%3E%3C/circle%3E%3C/svg%3E`;
+            }
+
+            // 使用与卡片头像一致的渐变色
+            const primaryColor = '#22c55e';
+            const secondaryColor = '#4ade80';
+
+            const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='40' height='40' viewBox='0 0 40 40'>
+                <defs>
+                    <linearGradient id='grad' x1='0%' y1='0%' x2='100%' y2='100%'>
+                        <stop offset='0%' style='stop-color:${primaryColor}'/>
+                        <stop offset='100%' style='stop-color:${secondaryColor}'/>
+                    </linearGradient>
+                </defs>
+                <circle cx='20' cy='20' r='20' fill='url(#grad)'/>
+                <text x='20' y='26' font-size='18' font-family='Arial, sans-serif' fill='white' text-anchor='middle' font-weight='bold'>${initial}</text>
+            </svg>`;
+
+            return `data:image/svg+xml,${encodeURIComponent(svg)}`;
+        }
+
         // Toast 提示函数
         function showToast(message, type = 'info') {
             const toast = document.createElement('div');
@@ -685,7 +723,7 @@
                     <h2 class="card-title">👤 发布者</h2>
                     <div class="user-info">
                         <div class="user-avatar">
-                            ${req.user_avatar ? `<img src="${req.user_avatar}" alt="">` : (req.user_nickname ? req.user_nickname.charAt(0) : '👤')}
+                            <img src="${getAvatar(req.user_nickname)}" alt="">
                         </div>
                         <div class="user-meta">
                             <div class="user-name">${escapeHtml(req.user_nickname || '匿名用户')}</div>
@@ -701,7 +739,7 @@
                     <h2 class="card-title">🤝 帮助者</h2>
                     <div class="user-info">
                         <div class="user-avatar">
-                            ${req.helper.avatar ? `<img src="${req.helper.avatar}" alt="">` : (req.helper.nickname ? req.helper.nickname.charAt(0) : '👤')}
+                            <img src="${getAvatar(req.helper.username || req.helper.nickname)}" alt="">
                         </div>
                         <div class="user-meta">
                             <div class="user-name">${escapeHtml(req.helper.nickname)}</div>

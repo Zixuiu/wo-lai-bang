@@ -328,32 +328,3 @@
     }
 }
 
-/* 深色模式适配 */
-@media (prefers-color-scheme: dark) {
-    .datetime-picker-popup {
-        background: #1f2937;
-        border-color: #374151;
-    }
-    
-    .calendar-nav-btn,
-    .time-picker-select,
-    .datetime-input {
-        background: #1f2937;
-        border-color: #374151;
-        color: #f9fafb;
-    }
-    
-    .calendar-day {
-        color: #f9fafb;
-    }
-    
-    .calendar-day.other-month {
-        color: #6b7280;
-    }
-    
-    .quick-option {
-        background: #1f2937;
-        border-color: #374151;
-        color: #9ca3af;
-    }
-}

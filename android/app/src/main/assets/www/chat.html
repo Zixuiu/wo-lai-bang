@@ -35,32 +35,35 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
+            background: white;
+            border-bottom: 1px solid #e5e7eb;
             padding: 12px 16px;
             display: flex;
             align-items: center;
             gap: 12px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
         
         .back-btn {
-            width: 36px;
-            height: 36px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.2);
+            width: 32px;
+            height: 32px;
             border: none;
-            color: white;
-            font-size: 1.25rem;
-            cursor: pointer;
+            background: transparent;
+            border-radius: 8px;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.2s ease;
+            cursor: pointer;
+            color: #6b7280;
+            font-size: 1.25rem;
+            transition: all 0.2s;
         }
         
         .back-btn:hover {
-            background: rgba(255,255,255,0.3);
+            background: #f3f4f6;
+        }
+        
+        .back-btn:active {
+            background: #e5e7eb;
         }
         
         .chat-user-info {
@@ -91,11 +94,12 @@
         .chat-user-name {
             font-size: 1rem;
             font-weight: 600;
+            color: #111827;
         }
         
         .chat-user-status {
             font-size: 0.75rem;
-            opacity: 0.9;
+            color: #6b7280;
         }
         
         /* 消息列表区域 */
@@ -558,7 +562,7 @@
             document.getElementById('chat-user-name').textContent = displayName;
             document.getElementById('chat-user-status').textContent = otherUser.online ? '在线' : '';
             
-            // 头像显示用户名的第一个字
+            // 头像显示用户名的第一个字（使用统一的渐变色）
             const avatarEl = document.getElementById('chat-user-avatar');
             const firstChar = displayName ? displayName.charAt(0) : '?';
             avatarEl.textContent = firstChar;
@@ -566,7 +570,7 @@
                 width: 40px;
                 height: 40px;
                 border-radius: 50%;
-                background: linear-gradient(135deg, #10b981, #059669);
+                background: linear-gradient(135deg, #22c55e, #4ade80);
                 color: white;
                 display: flex;
                 align-items: center;

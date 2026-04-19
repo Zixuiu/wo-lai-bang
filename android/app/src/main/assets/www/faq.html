@@ -50,7 +50,12 @@
             margin: 0;
         }
 
-        /* 大标题 */
+        /* 移动端顶部导航 */
+        .mobile-header {
+            display: none;
+        }
+
+        /* 大标题 - 桌面端显示 */
         .faq-main-title {
             text-align: center;
             font-size: 2.5rem;
@@ -61,6 +66,7 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
+            position: relative;
         }
 
         /* 搜索框 */
@@ -201,23 +207,77 @@
 
         /* ==================== 移动端响应式样式 ==================== */
         @media (max-width: 768px) {
-            /* 大标题 */
+            /* 移动端顶部导航 */
+            .mobile-header {
+                display: flex;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                height: 56px;
+                background: white;
+                z-index: 100;
+                border-bottom: 1px solid #e5e7eb;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0 16px;
+            }
+
+            .mobile-header .back-btn {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                color: #6b7280;
+                text-decoration: none;
+                font-size: 15px;
+                font-weight: 500;
+                background: transparent;
+                border: none;
+                cursor: pointer;
+                padding: 4px;
+                border-radius: 8px;
+                transition: all 0.2s;
+            }
+
+            .mobile-header .back-btn:hover {
+                background: #f3f4f6;
+            }
+
+            .mobile-header .back-btn:active {
+                background: #e5e7eb;
+            }
+
+            .mobile-header .back-btn svg {
+                width: 20px;
+                height: 20px;
+            }
+
+            .mobile-header .header-title {
+                font-size: 17px;
+                font-weight: 600;
+                color: #1f2937;
+                position: absolute;
+                left: 50%;
+                transform: translateX(-50%);
+            }
+
+            .mobile-header .header-spacer {
+                width: 40px;
+            }
+
+            /* 大标题 - 移动端隐藏 */
             .faq-main-title {
-                font-size: 1.75rem;
-                margin-bottom: 1.5rem;
+                display: none;
             }
 
             /* 导航栏调整 */
             .navbar {
                 display: none;
             }
-            .page-section {
-                padding-top: 1rem !important;
-            }
 
             /* 页面内容区 */
             .page-section {
-                padding-top: 4.5rem !important;
+                padding-top: 5rem !important;
                 padding-bottom: 80px;
             }
             .container {
@@ -310,8 +370,19 @@
     </style>
 </head>
 <body>
+    <!-- 移动端顶部导航 -->
+    <header class="mobile-header">
+        <a href="javascript:history.back()" class="back-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+        </a>
+        <span class="header-title">常见问题</span>
+        <div class="header-spacer"></div>
+    </header>
+
     <!-- 页面内容 -->
-    <section class="page-section" style="padding-top: 6rem; min-height: 100vh;">
+    <section class="page-section" style="padding-top: 6rem; min-height: 100vh; position: relative;">
         <div class="container">
             <!-- 大标题 -->
             <h1 class="faq-main-title">常见问题</h1>
@@ -542,7 +613,7 @@
                 <div class="footer-brand">
                     <span class="logo-icon">🤝</span>
                     <span class="logo-text">我来帮</span>
-                    <p>让人与人互助变得简单</p>
+                    <p>让人与人互助变得简单高效</p>
                 </div>
                 <div class="footer-links">
                     <div class="link-group">
@@ -572,7 +643,7 @@
     </footer>
 
     <script src="js/mockData.js?v=6"></script>
-    <script src="js/app.js?v=7"></script>
+    <script src="js/app.v2.js?v=7"></script>
     <script>
         // 分页配置
         const ITEMS_PER_PAGE = 5;

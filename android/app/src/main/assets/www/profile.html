@@ -5,6 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>个人中心 - 我来帮</title>
     <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤝</text></svg>">
+    <!-- 提前恢复登录状态，避免页面闪烁 -->
+    <script>
+        (function() {
+            const user = localStorage.getItem('current_user');
+            const token = localStorage.getItem('auth_token');
+            if (user && token) {
+                try {
+                    const userData = JSON.parse(user);
+                    window.__INITIAL_USER__ = userData;
+                    // 提前设置首字母，避免显示默认头像
+                    const seed = userData.nickname || userData.username || '用户';
+                    let initial = '';
+                    if (seed && typeof seed === 'string') {
+                        const name = seed.trim();
+                        if (name.length > 0) {
+                            const firstChar = name.charAt(0);
+                            if (/[\u4e00-\u9fa5]/.test(firstChar)) {
+                                initial = firstChar;
+                            } else {
+                                initial = firstChar.toUpperCase();
+                            }
+                        }
+                    }
+                    window.__USER_INITIAL__ = initial;
+                } catch (e) {}
+            }
+        })();
+    </script>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/form-modern.css">
     <link rel="stylesheet" href="css/mobile-redesign.css">
@@ -112,7 +140,7 @@
 
         .profile-hero {
             background: linear-gradient(135deg, var(--primary) 0%, #10b981 100%);
-            padding: 5rem 1.25rem 2rem;
+            padding: 2.75rem 1.25rem 1.25rem;
             position: relative;
             overflow: hidden;
         }
@@ -173,10 +201,24 @@
             object-fit: cover;
         }
 
+        .profile-avatar[src=""],
+        .profile-avatar:not([src]) {
+            background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .profile-avatar[src=""]::after,
+        .profile-avatar:not([src])::after {
+            content: '👤';
+            font-size: 2rem;
+        }
+
         .profile-stats-wrapper {
             position: relative;
             z-index: 10;
-            margin-top: -1.5rem;
+            margin-top: -1rem;
             padding: 0 1.25rem;
         }
 
@@ -267,36 +309,37 @@
         }
 
         .profile-menu-section {
-            padding: 0 1.25rem;
-            margin-bottom: 1.5rem;
+            padding: 0 1rem;
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
         }
 
         .profile-menu-title {
-            font-size: 1.125rem;
+            font-size: 1rem;
             font-weight: 700;
             color: var(--gray-800);
-            margin-bottom: 1rem;
+            margin-bottom: 0.75rem;
         }
 
         .profile-menu-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 0.5rem;
+            gap: 0.375rem;
         }
 
         .profile-menu-item {
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 0.5rem;
-            padding: 1rem 0.25rem;
+            gap: 0.375rem;
+            padding: 0.75rem 0.25rem;
             background: var(--gray-50);
             border: 1px solid var(--gray-100);
             border-radius: var(--radius);
             cursor: pointer;
             transition: all 0.2s ease;
-            min-width: 0;
             text-decoration: none;
+            min-width: 0;
         }
 
         .profile-menu-item:active {
@@ -305,7 +348,7 @@
         }
 
         .profile-menu-icon {
-            font-size: 1.5rem;
+            font-size: 1.25rem;
         }
 
         .profile-menu-label {
@@ -319,7 +362,7 @@
         }
 
         .profile-list-section {
-            padding: 0 1.25rem;
+            padding: 0 1rem;
         }
 
         .profile-list {
@@ -332,8 +375,8 @@
         .profile-list-item {
             display: flex;
             align-items: center;
-            padding: 1rem;
-            min-height: 72px;
+            padding: 0.75rem;
+            min-height: 60px;
             cursor: pointer;
             transition: all 0.2s ease;
             text-decoration: none;
@@ -370,16 +413,16 @@
         }
 
         .profile-list-icon {
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             border-radius: var(--radius);
             background: var(--gray-100);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.25rem;
+            font-size: 1.125rem;
             line-height: 1;
-            margin-right: 0.875rem;
+            margin-right: 0.75rem;
             flex-shrink: 0;
         }
 
@@ -388,14 +431,14 @@
         }
 
         .profile-list-title {
-            font-size: 0.9375rem;
+            font-size: 0.875rem;
             font-weight: 600;
             color: var(--gray-800);
             margin-bottom: 0.125rem;
         }
 
         .profile-list-desc {
-            font-size: 0.75rem;
+            font-size: 0.6875rem;
             color: var(--gray-500);
         }
 
@@ -555,6 +598,11 @@
             }
         }
 
+        /* 顶部导航栏添加阴影，与侧边栏区分 */
+        .navbar {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
         @media (min-width: 769px) {
             .mobile-tab-bar,
             .mobile-bottom-spacer {
@@ -586,15 +634,44 @@
                 border-bottom: 1px solid var(--gray-100);
             }
 
-            .profile-user-avatar {
+            .profile-user-avatar-wrapper {
                 width: 80px;
                 height: 80px;
                 border-radius: 50%;
-                background: linear-gradient(135deg, var(--primary) 0%, #10b981 100%);
+                background: linear-gradient(135deg, #e0e7ff 0%, #c7d2fe 100%);
                 margin: 0 auto 1rem;
                 border: 4px solid white;
                 box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                overflow: hidden;
+            }
+
+            .profile-user-avatar-wrapper:has(img[src]:not([src=""])) {
+                background: transparent;
+            }
+
+            .profile-user-avatar {
+                width: 100%;
+                height: 100%;
+                border-radius: 50%;
                 object-fit: cover;
+                display: none;
+            }
+
+            .profile-user-avatar[src]:not([src=""]) {
+                display: block;
+            }
+
+            .profile-user-avatar-wrapper::before {
+                content: '👤';
+                font-size: 2.5rem;
+            }
+
+            .profile-user-avatar-wrapper:has(img[src]:not([src=""]))::before,
+            .profile-user-avatar-wrapper:has(#pc-profile-initial:not(:empty))::before {
+                display: none;
             }
 
             .profile-user-name {
@@ -880,9 +957,25 @@
                     <div class="profile-greeting-label">个人中心</div>
                     <div class="profile-greeting-name" id="profile-name">加载中...</div>
                 </div>
-                <img class="profile-avatar" id="profile-avatar" src="" alt="头像">
             </div>
         </div>
+        <script>
+            (function() {
+                const user = window.__INITIAL_USER__;
+                if (user) {
+                    const nameEl = document.getElementById('profile-name');
+                    const statsDiv = document.getElementById('profile-stats');
+                    if (nameEl) nameEl.textContent = user.nickname || user.username || '用户';
+                    if (statsDiv) statsDiv.style.display = 'flex';
+                    const helpCount = Number(user?.help_count) || 0;
+                    const requestCount = Number(user?.request_count) || 0;
+                    const statHelp = document.getElementById('stat-help');
+                    const statRequest = document.getElementById('stat-request');
+                    if (statHelp) statHelp.textContent = helpCount;
+                    if (statRequest) statRequest.textContent = requestCount;
+                }
+            })();
+        </script>
 
         <div class="profile-stats-wrapper">
             <div class="profile-stats" id="profile-stats" style="display: none;">
@@ -899,7 +992,7 @@
 
         <div class="profile-pc-layout">
             <div class="profile-menu-section">
-                <h3 class="profile-menu-title">我的服务</h3>
+
                 <div class="profile-menu-grid">
                     <button class="profile-menu-item" onclick="switchTab('requests')">
                         <span class="profile-menu-icon">📋</span>
@@ -965,7 +1058,10 @@
 
         <aside class="profile-sidebar">
             <div class="profile-user-card">
-                <img class="profile-user-avatar" id="pc-profile-avatar" src="" alt="头像">
+                <div class="profile-user-avatar-wrapper" id="pc-avatar-wrapper" style="background:transparent;">
+                    <img class="profile-user-avatar" id="pc-profile-avatar" src="" alt="" style="display:none;">
+                    <div id="pc-profile-initial" style="width:72px; height:72px; border-radius:50%; background:linear-gradient(135deg, #22c55e, #4ade80); color:white; font-size:28px; font-weight:bold; text-align:center; line-height:72px;"><script>document.write(window.__USER_INITIAL__ || '')</script></div>
+                </div>
                 <div class="profile-user-name" id="pc-profile-name">加载中...</div>
                 <div class="profile-user-role" id="pc-profile-role">普通用户</div>
                 
@@ -980,6 +1076,49 @@
                     </div>
                 </div>
             </div>
+            <script>
+                (function() {
+                    const user = window.__INITIAL_USER__;
+                    if (user) {
+                        const nameEl = document.getElementById('pc-profile-name');
+                        const avatarImg = document.getElementById('pc-profile-avatar');
+                        const initialDiv = document.getElementById('pc-profile-initial');
+                        const roleEl = document.getElementById('pc-profile-role');
+                        const statsDiv = document.getElementById('pc-profile-stats');
+                        const avatarWrapper = document.getElementById('pc-avatar-wrapper');
+                        if (nameEl) nameEl.textContent = user.nickname || user.username || '用户';
+                        if (roleEl) roleEl.textContent = user.username === 'admin' ? '管理员' : '普通用户';
+                        if (avatarImg && initialDiv) {
+                            const seed = user.nickname || user.username || '用户';
+                            let initial = '';
+                            if (seed && typeof seed === 'string') {
+                                const name = seed.trim();
+                                if (name.length > 0) {
+                                    const firstChar = name.charAt(0);
+                                    if (/[\u4e00-\u9fa5]/.test(firstChar)) {
+                                        initial = firstChar;
+                                    } else {
+                                        initial = firstChar.toUpperCase();
+                                    }
+                                }
+                            }
+                            if (initial) {
+                                avatarImg.style.display = 'none';
+                                initialDiv.style.display = 'block';
+                                initialDiv.textContent = initial;
+                                if (avatarWrapper) avatarWrapper.style.background = 'transparent';
+                            }
+                        }
+                        if (statsDiv) statsDiv.style.display = 'grid';
+                        const helpCount = Number(user?.help_count) || 0;
+                        const requestCount = Number(user?.request_count) || 0;
+                        const statHelp = document.getElementById('pc-stat-help');
+                        const statRequest = document.getElementById('pc-stat-request');
+                        if (statHelp) statHelp.textContent = helpCount;
+                        if (statRequest) statRequest.textContent = requestCount;
+                    }
+                })();
+            </script>
 
             <nav class="profile-sidebar-menu">
                 <div class="profile-sidebar-title">我的服务</div>
@@ -1332,7 +1471,7 @@
 
     <script src="js/mockData.js"></script>
     <script src="js/datetime-picker.js" defer></script>
-    <script src="js/app.js"></script>
+    <script src="js/app.v2.js"></script>
     <script>
         // 注意：不要重新声明 currentUser 和 authToken！
         // 因为 app.js 已经声明了全局变量，这里重新声明会覆盖登录状态！
@@ -1416,14 +1555,16 @@
             const pcLogoutItem = document.getElementById('pc-logout-item');
 
             if (currentUser) {
-                avatar.src = currentUser.avatar || getAvatar(currentUser.id);
-                name.textContent = currentUser.nickname || currentUser.username;
-                stats.style.display = 'flex';
+                if (avatar) avatar.src = getAvatar(currentUser.username || currentUser.nickname);
+                if (name) name.textContent = currentUser.nickname || currentUser.username;
+                if (stats) stats.style.display = 'flex';
                 
                 const helpCount = Number(currentUser?.help_count) || 0;
                 const requestCount = Number(currentUser?.request_count) || 0;
-                document.getElementById('stat-help').textContent = helpCount;
-                document.getElementById('stat-request').textContent = requestCount;
+                const statHelpEl = document.getElementById('stat-help');
+                const statRequestEl = document.getElementById('stat-request');
+                if (statHelpEl) statHelpEl.textContent = helpCount;
+                if (statRequestEl) statRequestEl.textContent = requestCount;
 
                 if (actions) {
                     actions.innerHTML = `
@@ -1438,7 +1579,7 @@
                     `;
                 }
 
-                logoutItem.classList.add('visible');
+                if (logoutItem) logoutItem.classList.add('visible');
 
                 const isAdmin = currentUser.username === 'admin';
                 adminItems.forEach(item => {
@@ -1448,14 +1589,16 @@
                 });
 
                 if (pcAvatar) {
-                    pcAvatar.src = currentUser.avatar || getAvatar(currentUser.id);
+                    pcAvatar.src = getAvatar(currentUser.username || currentUser.nickname);
                 }
                 if (pcName) pcName.textContent = currentUser.nickname || currentUser.username;
                 if (pcRole) pcRole.textContent = isAdmin ? '管理员' : '普通用户';
                 if (pcStats) {
                     pcStats.style.display = 'grid';
-                    document.getElementById('pc-stat-help').textContent = helpCount;
-                    document.getElementById('pc-stat-request').textContent = requestCount;
+                    const pcStatHelpEl = document.getElementById('pc-stat-help');
+                    const pcStatRequestEl = document.getElementById('pc-stat-request');
+                    if (pcStatHelpEl) pcStatHelpEl.textContent = helpCount;
+                    if (pcStatRequestEl) pcStatRequestEl.textContent = requestCount;
                 }
                 if (pcActions) {
                     pcActions.innerHTML = `
@@ -1471,9 +1614,9 @@
                 }
                 if (pcLogoutItem) pcLogoutItem.classList.add('visible');
             } else {
-                avatar.src = '';
-                name.textContent = '请登录';
-                stats.style.display = 'none';
+                if (avatar) avatar.src = '';
+                if (name) name.textContent = '请登录';
+                if (stats) stats.style.display = 'none';
 
                 if (actions) {
                     actions.innerHTML = `
@@ -1488,7 +1631,7 @@
                     `;
                 }
 
-                logoutItem.classList.remove('visible');
+                if (logoutItem) logoutItem.classList.remove('visible');
                 adminItems.forEach(item => {
                     item.classList.remove('visible');
                 });
@@ -1715,20 +1858,6 @@
                         <h3 class="profile-section-title" style="margin: 0;">个人设置</h3>
                     </div>
                     <div style="background: white; border-radius: var(--radius-md); border: 1px solid var(--gray-100); padding: 1.25rem;">
-                        <div class="profile-form-group" style="text-align: center; margin-bottom: 1.5rem;">
-                            <label class="profile-form-label" for="avatar-input" style="display: block; margin-bottom: 0.75rem; cursor: pointer;" onclick="document.getElementById('avatar-input').click()">头像</label>
-                            <div style="position: relative; display: inline-block;">
-                                <div id="avatar-preview" style="width: 100px; height: 100px; border-radius: 50%; background: var(--gray-100); display: flex; align-items: center; justify-content: center; overflow: hidden; border: 3px solid var(--gray-200); cursor: pointer;" onclick="document.getElementById('avatar-input').click()">
-                                    ${currentUser.avatar ? `<img src="${currentUser.avatar}" style="width: 100%; height: 100%; object-fit: cover;">` : '<span style="font-size: 3rem;">👤</span>'}
-                                </div>
-                                <div style="position: absolute; bottom: 0; right: 0; width: 32px; height: 32px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1rem; cursor: pointer; border: 2px solid white;" onclick="document.getElementById('avatar-input').click()">
-                                    📷
-                                </div>
-                            </div>
-                            <input type="file" id="avatar-input" accept="image/*" style="display: none;" onchange="handleAvatarUpload(this)">
-                            <p style="font-size: 0.75rem; color: var(--gray-500); margin-top: 0.5rem;">点击上传头像，支持 jpg/png/gif</p>
-                        </div>
-
                         <div class="profile-form-group">
                             <label class="profile-form-label" for="setting-nickname">用户名</label>
                             <input type="text" class="profile-form-input" id="setting-nickname" value="${currentUser.nickname || ''}" placeholder="请输入用户名" autocomplete="nickname">
@@ -1755,61 +1884,6 @@
                     </div>
                 </div>
             `;
-        }
-
-        async function handleAvatarUpload(input) {
-            const file = input.files[0];
-            if (!file) return;
-
-            const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-            if (!allowedTypes.includes(file.type)) {
-                showToast('请上传 jpg/png/gif/webp 格式的图片', 'error');
-                return;
-            }
-
-            if (file.size > 16 * 1024 * 1024) {
-                showToast('图片大小不能超过 16MB', 'error');
-                return;
-            }
-
-            const formData = new FormData();
-            formData.append('avatar', file);
-
-            try {
-                showToast('正在上传头像...', 'info');
-
-                const response = await fetch('/api/users/avatar', {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${authToken}`
-                    },
-                    body: formData
-                });
-
-                if (!response.ok) {
-                    showToast('头像上传失败', 'error');
-                    return;
-                }
-
-                const result = await response.json();
-
-                if (result.success) {
-                    currentUser.avatar = result.data.avatar_url;
-                    localStorage.setItem('current_user', JSON.stringify(currentUser));
-
-                    const preview = document.getElementById('avatar-preview');
-                    preview.innerHTML = `<img src="${result.data.avatar_url}" style="width: 100%; height: 100%; object-fit: cover;">`;
-
-                    updateProfileUI();
-
-                    showToast('头像上传成功', 'success');
-                } else {
-                    showToast(result.message || '上传失败', 'error');
-                }
-            } catch (error) {
-                console.error('上传头像失败:', error);
-                showToast('上传失败，请检查网络连接', 'error');
-            }
         }
 
         async function loadMyRequests() {
@@ -1906,6 +1980,32 @@
             const date = new Date(dateStr);
             return date.toLocaleDateString('zh-CN');
         }
+
+        // 检查登录状态并跳转到登录页面
+        function checkLoginAndShowModal(targetUrl) {
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                // 未登录，跳转到首页并显示登录弹窗
+                const redirectUrl = targetUrl || 'profile.html';
+                window.location.href = 'index.html?showLogin=1&redirect=' + encodeURIComponent(redirectUrl);
+                return false;
+            }
+            return true;
+        }
+
+        // 覆盖原来的switchTab函数，添加登录检查
+        const originalSwitchTab = switchTab;
+        switchTab = function(tab) {
+            const token = localStorage.getItem('auth_token');
+            if (!token) {
+                // 未登录，跳转到首页并显示登录弹窗
+                const targetUrl = 'profile.html?tab=' + tab;
+                window.location.href = 'index.html?showLogin=1&redirect=' + encodeURIComponent(targetUrl);
+                return;
+            }
+            // 已登录，执行原来的逻辑
+            originalSwitchTab(tab);
+        };
     </script>
 </body>
 </html>

@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>忘记密码 - 我来帮</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤝</text></svg>">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/back-button.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f8fafc;
+            min-height: 100vh;
+        }
+        
+        .forgot-container {
+            max-width: 480px;
+            margin: 0 auto;
+            padding: 1rem;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* 头部 */
+        .forgot-header {
+            text-align: center;
+            padding: 2rem 0 1.5rem;
+        }
+        
+        .forgot-logo {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+        }
+        
+        .forgot-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #22c55e;
+            margin-bottom: 0.5rem;
+        }
+        
+        .forgot-subtitle {
+            font-size: 0.9375rem;
+            color: #6b7280;
+        }
+        
+        /* 表单区域 */
+        .forgot-form-wrapper {
+            background: white;
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            flex: 1;
+        }
+        
+        .forgot-form {
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+        
+        .form-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        
+        .form-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9375rem;
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .form-icon {
+            font-size: 1rem;
+        }
+        
+        .form-input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 1rem;
+            background: #f9fafb;
+            transition: all 0.2s ease;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #22c55e;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+        }
+        
+        .form-input-wrapper .form-input {
+            padding-right: 2.5rem;
+        }
+        
+        .password-toggle {
+            position: absolute;
+            right: 0.75rem;
+            background: none;
+            border: none;
+            font-size: 1.125rem;
+            color: #9ca3af;
+            cursor: pointer;
+            padding: 0.25rem;
+        }
+        
+        /* 验证码行 */
+        .code-row {
+            display: flex;
+            gap: 0.75rem;
+        }
+        
+        .code-row .form-input {
+            flex: 1;
+        }
+        
+        .code-btn {
+            padding: 0 1rem;
+            height: 48px;
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            font-size: 0.875rem;
+            color: #374151;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all 0.2s ease;
+        }
+        
+        .code-btn:hover {
+            background: #e5e7eb;
+        }
+        
+        .code-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        /* 密码强度 */
+        .password-strength {
+            margin-top: 0.5rem;
+        }
+        
+        .strength-bar {
+            height: 4px;
+            background: #e5e7eb;
+            border-radius: 2px;
+            overflow: hidden;
+        }
+        
+        .strength-fill {
+            height: 100%;
+            width: 0;
+            border-radius: 2px;
+            transition: all 0.3s ease;
+        }
+        
+        .strength-text {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+            display: block;
+        }
+        
+        /* 提交按钮 */
+        .submit-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+            margin-top: 0.5rem;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(34, 197, 94, 0.4);
+        }
+        
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+        
+        /* 底部链接 */
+        .form-footer {
+            text-align: center;
+            margin-top: 1.5rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #e5e7eb;
+        }
+        
+        .form-footer a {
+            color: #22c55e;
+            font-weight: 600;
+            text-decoration: none;
+        }
+        
+        .form-footer a:hover {
+            text-decoration: underline;
+        }
+        
+        /* 返回按钮 */
+        .back-link {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: #6b7280;
+            text-decoration: none;
+            font-size: 0.9375rem;
+            margin-bottom: 1rem;
+        }
+        
+        .back-link:hover {
+            color: #374151;
+        }
+    </style>
+</head>
+<body>
+    <div class="forgot-container">
+        <!-- 返回链接 -->
+        <a href="index.html" class="back-link">
+            <span>←</span>
+            <span>返回登录</span>
+        </a>
+        
+        <!-- 表单 -->
+        <div class="forgot-form-wrapper">
+            <form id="forgot-form" class="forgot-form" onsubmit="handleForgotSubmit(event)">
+                <!-- 邮箱 -->
+                <div class="form-field">
+                    <label class="form-label">
+                        <span class="form-icon">📧</span>
+                        邮箱
+                    </label>
+                    <input type="email" id="email" name="email" class="form-input" placeholder="请输入邮箱" required>
+                </div>
+                
+                <!-- 验证码 -->
+                <div class="form-field">
+                    <label class="form-label">
+                        <span class="form-icon">🔢</span>
+                        验证码
+                    </label>
+                    <div class="code-row">
+                        <input type="text" id="code" name="code" class="form-input" placeholder="请输入6位验证码" maxlength="6" required autocomplete="one-time-code">
+                        <button type="button" class="code-btn" id="send-code-btn" onclick="sendVerificationCode()">获取验证码</button>
+                    </div>
+                </div>
+                
+                <!-- 新密码 -->
+                <div class="form-field">
+                    <label class="form-label">
+                        <span class="form-icon">🔒</span>
+                        新密码
+                    </label>
+                    <div class="form-input-wrapper">
+                        <input type="password" id="new-password" name="newPassword" class="form-input" placeholder="请输入新密码" oninput="checkPasswordStrength(this.value)" required>
+                        <button type="button" class="password-toggle" onclick="togglePassword('new-password')">👁</button>
+                    </div>
+                    <div class="password-strength" id="password-strength" style="display: none;">
+                        <div class="strength-bar">
+                            <div class="strength-fill" id="strength-fill"></div>
+                        </div>
+                        <span class="strength-text" id="strength-text"></span>
+                    </div>
+                </div>
+                
+                <!-- 确认新密码 -->
+                <div class="form-field">
+                    <label class="form-label">
+                        <span class="form-icon">🔒</span>
+                        确认新密码
+                    </label>
+                    <div class="form-input-wrapper">
+                        <input type="password" id="confirm-password" name="confirmPassword" class="form-input" placeholder="请再次输入新密码" required>
+                        <button type="button" class="password-toggle" onclick="togglePassword('confirm-password')">👁</button>
+                    </div>
+                </div>
+                
+                <!-- 提交按钮 -->
+                <button type="submit" class="submit-btn">
+                    <span>重置密码</span>
+                    <span>→</span>
+                </button>
+            </form>
+            
+            <!-- 底部链接 -->
+            <div class="form-footer">
+                <span>想起密码了？</span>
+                <a href="index.html">去登录</a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_BASE_URL = 'http://localhost:5000/api';
+        
+        // 切换密码显示/隐藏
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+            } else {
+                input.type = 'password';
+            }
+        }
+        
+        // 检查密码强度
+        function checkPasswordStrength(password) {
+            const strengthDiv = document.getElementById('password-strength');
+            const fillDiv = document.getElementById('strength-fill');
+            const textSpan = document.getElementById('strength-text');
+            
+            if (!password) {
+                strengthDiv.style.display = 'none';
+                return;
+            }
+            
+            strengthDiv.style.display = 'block';
+            
+            let strength = 0;
+            if (password.length >= 8) strength++;
+            if (/[a-z]/.test(password) && /[A-Z]/.test(password)) strength++;
+            if (/\d/.test(password)) strength++;
+            if (/[^a-zA-Z0-9]/.test(password)) strength++;
+            
+            const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e'];
+            const texts = ['弱', '一般', '良好', '强'];
+            
+            fillDiv.style.width = ((strength / 4) * 100) + '%';
+            fillDiv.style.backgroundColor = colors[strength - 1] || '#ef4444';
+            textSpan.textContent = '密码强度：' + (texts[strength - 1] || '弱');
+            textSpan.style.color = colors[strength - 1] || '#ef4444';
+        }
+        
+        // 发送验证码
+        async function sendVerificationCode() {
+            const email = document.getElementById('email').value;
+            if (!email) {
+                alert('请先输入邮箱');
+                return;
+            }
+            
+            const btn = document.getElementById('send-code-btn');
+            btn.disabled = true;
+            btn.textContent = '发送中...';
+            
+            try {
+                const formData = new FormData();
+                formData.append('contact', email);
+                
+                const response = await fetch(`${API_BASE_URL}/auth/forgot-password`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('验证码已发送到您的邮箱');
+                    // 倒计时
+                    let count = 60;
+                    const timer = setInterval(() => {
+                        count--;
+                        btn.textContent = `${count}秒后重试`;
+                        if (count <= 0) {
+                            clearInterval(timer);
+                            btn.disabled = false;
+                            btn.textContent = '获取验证码';
+                        }
+                    }, 1000);
+                } else {
+                    alert(result.message || '发送失败');
+                    btn.disabled = false;
+                    btn.textContent = '获取验证码';
+                }
+            } catch (error) {
+                alert('发送失败，请检查网络');
+                btn.disabled = false;
+                btn.textContent = '获取验证码';
+            }
+        }
+        
+        // 处理表单提交
+        async function handleForgotSubmit(event) {
+            event.preventDefault();
+            
+            const email = document.getElementById('email').value;
+            const code = document.getElementById('code').value;
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+            
+            if (newPassword !== confirmPassword) {
+                alert('两次输入的密码不一致');
+                return;
+            }
+            
+            if (newPassword.length < 6) {
+                alert('密码长度至少6位');
+                return;
+            }
+            
+            try {
+                const formData = new FormData();
+                formData.append('contact', email);
+                formData.append('code', code);
+                formData.append('newPassword', newPassword);
+                
+                const response = await fetch(`${API_BASE_URL}/auth/reset-password`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert('密码重置成功！请使用新密码登录');
+                    window.location.href = 'index.html';
+                } else {
+                    alert(result.message || '重置失败');
+                }
+            } catch (error) {
+                alert('重置失败，请检查网络');
+            }
+        }
+    </script>
+</body>
+</html>
