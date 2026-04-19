@@ -300,11 +300,11 @@ const CONFIG = {
     ANIMATION_INTERVAL: 30,
     MAX_TITLE_LENGTH: 100,
     MAX_DESCRIPTION_LENGTH: 1000,
-    API_BASE_URL: '/api',
+    API_BASE_URL: 'http://127.0.0.1:8000/api',
     CACHE_DURATION: 5 * 60 * 1000, // 缓存5分钟
     DEBOUNCE_DELAY: 300, // 防抖延迟300ms
     THROTTLE_DELAY: 1000, // 节流延迟1s
-    WS_URL: '/socket.io/?EIO=4&transport=websocket', // WebSocket 地址 (Socket.IO 格式)
+    WS_URL: 'http://127.0.0.1:8000/socket.io/?EIO=4&transport=websocket', // WebSocket 地址 (Socket.IO 格式)
     WS_RECONNECT_DELAY: 3000 // WebSocket 重连延迟
 };
 

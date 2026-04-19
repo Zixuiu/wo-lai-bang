@@ -4982,3 +4982,13 @@
 2026-04-17 21:15:04,861 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:15:04] "GET /api/stats HTTP/1.1" 200 -
 2026-04-17 21:15:09,598 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:15:09] "GET /profile.html HTTP/1.1" 200 -
 2026-04-17 21:15:09,598 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 21:15:09] "GET /requests.html HTTP/1.1" 200 -
+2026-04-19 00:50:46,593 - werkzeug - WARNING - Werkzeug appears to be used in a production deployment. Consider switching to a production web server instead.
+2026-04-19 00:50:46,614 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:8000
+ * Running on http://10.24.108.105:8000
+2026-04-19 00:50:46,614 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-04-19 00:50:46,614 - werkzeug - INFO -  * Restarting with stat
+2026-04-19 00:50:47,008 - werkzeug - WARNING - Werkzeug appears to be used in a production deployment. Consider switching to a production web server instead.
+2026-04-19 00:50:47,018 - werkzeug - WARNING -  * Debugger is active!
+2026-04-19 00:50:47,034 - werkzeug - INFO -  * Debugger PIN: 138-245-961
