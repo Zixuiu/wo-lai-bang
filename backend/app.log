@@ -4269,3 +4269,13 @@
 2026-04-17 20:35:13,746 - __main__ - INFO - 获取需求列表 - 参数: ImmutableMultiDict([])
 2026-04-17 20:35:13,747 - __main__ - INFO - 返回 4 条需求
 2026-04-17 20:35:13,747 - werkzeug - INFO - 127.0.0.1 - - [17/Apr/2026 20:35:13] "HEAD /api/requests HTTP/1.1" 200 -
+2026-04-19 00:48:53,755 - werkzeug - WARNING - Werkzeug appears to be used in a production deployment. Consider switching to a production web server instead.
+2026-04-19 00:48:53,761 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5000
+ * Running on http://10.24.113.147:5000
+2026-04-19 00:48:53,761 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2026-04-19 00:48:53,761 - werkzeug - INFO -  * Restarting with stat
+2026-04-19 00:48:54,126 - werkzeug - WARNING - Werkzeug appears to be used in a production deployment. Consider switching to a production web server instead.
+2026-04-19 00:48:54,128 - werkzeug - WARNING -  * Debugger is active!
+2026-04-19 00:48:54,138 - werkzeug - INFO -  * Debugger PIN: 110-742-161
