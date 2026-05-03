@@ -381,8 +381,10 @@ export default {
 				latitude: 39.908823,
 				longitude: 116.397470,
 				time: '今天 14:00',
+				deadline: '今天 18:00',
 				image: ''
 			}
+			this.deadlineValue = [0, 18]
 			uni.showToast({ title: '已填充测试数据', icon: 'success' })
 		},
 		selectCategory(name) {
