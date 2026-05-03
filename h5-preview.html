@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>我来帮 - 邻里互助平台</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #F8FAFC;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+        #app { min-height: 100vh; }
+        
+        /* Header */
+        .header-section {
+            padding: 100px 40px 30px;
+            background: #FFFFFF;
+            border-radius: 0 0 60px 60px;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.02);
+        }
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 40px;
+        }
+        .greeting { font-size: 48px; font-weight: 800; color: #1E293B; display: block; }
+        .stats-summary { font-size: 26px; color: #64748B; margin-top: 8px; display: block; }
+        
+        .location-picker {
+            background: #ECFDF5;
+            padding: 12px 24px;
+            border-radius: 100px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            max-width: 240px;
+        }
+        .location-picker svg { width: 28px; height: 28px; color: #10B981; }
+        .loc-name { font-size: 22px; color: #10B981; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .loc-arrow { color: #10B981; }
+        
+        /* Search */
+        .search-container { margin-top: 10px; }
+        .search-bar {
+            background: #F1F5F9;
+            height: 90px;
+            border-radius: 30px;
+            display: flex;
+            align-items: center;
+            padding: 0 30px;
+        }
+        .search-bar svg { width: 32px; height: 32px; margin-right: 20px; color: #94A3B8; }
+        .search-input { flex: 1; font-size: 28px; color: #1E293B; border: none; background: transparent; outline: none; }
+        .search-input::placeholder { color: #94A3B8; }
+        
+        /* Main scroll */
+        .main-scroll { padding: 40px 40px 120px; }
+        
+        /* Bento grid */
+        .bento-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            grid-auto-rows: 200px;
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+        .bento-item {
+            background: #FFFFFF;
+            border-radius: 48px;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.02);
+        }
+        .recommend-card {
+            grid-column: span 2;
+            background: linear-gradient(135deg, #10B981, #34D399);
+            color: #FFFFFF;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .card-tag {
+            font-size: 22px;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 4px 16px;
+            border-radius: 10px;
+            width: fit-content;
+            margin-bottom: 12px;
+        }
+        .card-title { font-size: 36px; font-weight: 800; }
+        .card-desc { font-size: 22px; opacity: 0.8; margin-top: 4px; }
+        .recommend-card svg { font-size: 80px; opacity: 0.9; }
+        
+        .urgent-card { background: #FFF7ED; }
+        .urgent-card .card-label { font-size: 24px; color: #EA580C; font-weight: 700; }
+        .urgent-card .card-value { font-size: 56px; font-weight: 800; color: #EA580C; margin: 4px 0; }
+        .urgent-card .card-sub { font-size: 22px; color: #F97316; }
+        
+        .reward-card { background: #F0F9FF; }
+        .reward-card .card-label { font-size: 24px; color: #0284C7; font-weight: 700; }
+        .reward-card .card-value { font-size: 50px; font-weight: 800; color: #0284C7; margin: 4px 0; }
+        .reward-card .card-sub { font-size: 22px; color: #0EA5E9; }
+        
+        .card-bg-icon { position: absolute; right: -10px; bottom: -10px; font-size: 80px; opacity: 0.1; transform: rotate(-15deg); }
+        
+        /* Category tabs */
+        .category-tabs { margin-bottom: 30px; }
+        .category-scroll { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 10px; }
+        .category-scroll::-webkit-scrollbar { display: none; }
+        .category-tab {
+            display: flex;
+            align-items: center;
+            padding: 16px 28px;
+            background: #F1F5F9;
+            border-radius: 100px;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .category-tab svg { width: 40px; height: 40px; margin-right: 10px; }
+        .category-tab .tab-name { font-size: 26px; font-weight: 600; color: #64748B; }
+        .category-tab.active { background: linear-gradient(135deg, #10B981, #059669); box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25); }
+        .category-tab.active .tab-name { color: #FFFFFF; }
+        
+        /* Section title */
+        .section-title-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .section-title { font-size: 34px; font-weight: 800; color: #1E293B; }
+        .sort-group { display: flex; gap: 12px; }
+        .sort-btn {
+            background: #F1F5F9;
+            padding: 10px 18px;
+            border-radius: 100px;
+            font-size: 22px;
+            color: #64748B;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .sort-btn.active { background: linear-gradient(135deg, #10B981, #059669); color: #FFFFFF; }
+        
+        /* Need cards */
+        .need-bento-card {
+            background: #FFFFFF;
+            border-radius: 48px;
+            padding: 30px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.02);
+        }
+        .card-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        .user-info { display: flex; align-items: center; gap: 16px; }
+        .avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #FFFFFF;
+            font-weight: 800;
+            font-size: 28px;
+        }
+        .meta { display: flex; flex-direction: column; }
+        .name { font-size: 26px; font-weight: 700; color: #1E293B; }
+        .time { font-size: 20px; color: #94A3B8; }
+        .price { font-size: 34px; font-weight: 800; color: #10B981; }
+        
+        .need-title { font-size: 30px; font-weight: 800; color: #1E293B; margin-bottom: 8px; display: block; }
+        .need-desc { font-size: 26px; color: #64748B; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+        
+        .card-footer { margin-top: 24px; display: flex; justify-content: space-between; align-items: center; }
+        .loc-wrap { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+        .loc-tag { display: flex; align-items: center; gap: 4px; background: #F3F4F6; padding: 4px 8px; border-radius: 6px; }
+        .loc-tag svg { width: 12px; height: 12px; color: #6B7280; }
+        .loc-text { font-size: 11px; color: #6B7280; }
+        .dist-tag { font-size: 10px; color: #10B981; font-weight: 600; background: #ECFDF5; padding: 4px 8px; border-radius: 6px; }
+        
+        .action-group { display: flex; gap: 12px; align-items: center; }
+        .share-btn {
+            width: 64px;
+            height: 64px;
+            background: #F0F9FF;
+            border-radius: 100px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+        .share-btn svg { width: 28px; height: 28px; color: #0284C7; }
+        .action-btn {
+            background: #10B981;
+            color: #FFFFFF;
+            font-size: 24px;
+            font-weight: 700;
+            padding: 12px 36px;
+            border-radius: 100px;
+            cursor: pointer;
+        }
+        
+        /* Bottom nav */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #FFFFFF;
+            display: flex;
+            justify-content: space-around;
+            padding: 20px 0 calc(20px + env(safe-area-inset-bottom));
+            box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.05);
+            border-radius: 40px 40px 0 0;
+        }
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: #94A3B8;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .nav-item.active { color: #10B981; }
+        .nav-item svg { width: 48px; height: 48px; }
+        .nav-item .nav-text { font-size: 22px; font-weight: 600; }
+        .publish-btn {
+            background: linear-gradient(135deg, #10B981, #059669);
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: -40px;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.3);
+            cursor: pointer;
+        }
+        .publish-btn svg { width: 48px; height: 48px; color: #FFFFFF; }
+        
+        /* Privacy modal */
+        .privacy-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .privacy-modal {
+            width: 640px;
+            max-height: 80vh;
+            background: #F8FAFC;
+            border-radius: 24px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+        }
+        .privacy-header { padding: 40px; text-align: center; }
+        .privacy-title { font-size: 36px; font-weight: 800; color: #1E293B; }
+        .privacy-content { flex: 1; padding: 0 40px; max-height: 50vh; overflow-y: auto; }
+        .privacy-desc { font-size: 28px; color: #64748B; line-height: 1.6; display: block; margin-bottom: 30px; }
+        .privacy-item { background: #ECFDF5; border-radius: 16px; padding: 24px; margin-bottom: 20px; }
+        .privacy-item-title { font-size: 30px; font-weight: 700; color: #059669; display: block; margin-bottom: 12px; }
+        .privacy-item-text { font-size: 26px; color: #64748B; line-height: 1.5; display: block; }
+        .privacy-tip { font-size: 24px; color: #94A3B8; line-height: 1.6; display: block; margin-top: 20px; margin-bottom: 30px; }
+        .privacy-footer { padding: 20px 40px 40px; }
+        .privacy-link { text-align: center; margin-bottom: 20px; }
+        .privacy-link-text { font-size: 28px; color: #10B981; text-decoration: underline; cursor: pointer; }
+        .privacy-btn {
+            width: 100%;
+            height: 96px;
+            background: linear-gradient(135deg, #10B981, #059669);
+            color: #FFFFFF;
+            font-size: 32px;
+            font-weight: 800;
+            border-radius: 48px;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);
+            cursor: pointer;
+        }
+        
+        /* Toast */
+        .toast {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.75);
+            color: #FFFFFF;
+            padding: 24px 48px;
+            border-radius: 16px;
+            font-size: 28px;
+            z-index: 10000;
+            animation: fadeIn 0.3s;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        
+        /* Empty state */
+        .empty-state { padding: 100px 40px; text-align: center; display: flex; flex-direction: column; align-items: center; }
+        .empty-icon { font-size: 100px; margin-bottom: 20px; }
+        .empty-title { font-size: 30px; font-weight: 700; color: #64748B; }
+        .empty-subtitle { font-size: 24px; color: #94A3B8; margin-top: 8px; }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- Privacy Modal -->
+        <div v-if="showPrivacy" class="privacy-overlay" @click="showPrivacy = false">
+            <div class="privacy-modal" @click.stop>
+                <div class="privacy-header">
+                    <div class="privacy-title">隐私保护指引</div>
+                </div>
+                <div class="privacy-content">
+                    <div class="privacy-desc">感谢您使用「我来帮」！在您使用我们的服务前，请您仔细阅读并同意以下内容：</div>
+                    <div class="privacy-item">
+                        <div class="privacy-item-title">📋 信息收集</div>
+                        <div class="privacy-item-text">我们将收集您的位置信息、设备信息等，以为您提供更好的邻里互助服务。</div>
+                    </div>
+                    <div class="privacy-item">
+                        <div class="privacy-item-title">🔒 信息保护</div>
+                        <div class="privacy-item-text">我们承诺保护您的个人信息安全，不对外泄露您的隐私。</div>
+                    </div>
+                    <div class="privacy-item">
+                        <div class="privacy-item-title">📖 详细条款</div>
+                        <div class="privacy-item-text">阅读完整的隐私政策条款请点击下方链接。</div>
+                    </div>
+                    <div class="privacy-tip">请您务必审慎阅读并充分理解上述内容，如有任何疑问可联系我们。</div>
+                </div>
+                <div class="privacy-footer">
+                    <button class="privacy-btn" @click="agreePrivacy">同意并继续</button>
+                    <div class="privacy-link">
+                        <span class="privacy-link-text">查看完整隐私政策 ›</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Toast -->
+        <div v-if="toast" class="toast">{{ toast }}</div>
+        
+        <!-- Header -->
+        <div class="header-section">
+            <div class="header-content">
+                <div>
+                    <div class="greeting">{{ greeting }}，邻居</div>
+                    <div class="stats-summary">今天有 {{ filteredNeeds.length }} 个新需求等待帮助</div>
+                </div>
+                <div class="location-picker" @click="pickLocation">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                    <span class="loc-name">{{ locationName }}</span>
+                    <svg class="loc-arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"></path></svg>
+                </div>
+            </div>
+            <div class="search-container">
+                <div class="search-bar">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="M21 21l-4.35-4.35"></path></svg>
+                    <input class="search-input" placeholder="找点什么帮帮忙..." v-model="searchQuery" />
+                </div>
+            </div>
+        </div>
+        
+        <!-- Main content -->
+        <div class="main-scroll">
+            <!-- Bento grid -->
+            <div class="bento-grid">
+                <div class="bento-item recommend-card">
+                    <div>
+                        <div class="card-tag">今日推荐</div>
+                        <div class="card-title">最适合你的 3 个任务</div>
+                        <div class="card-desc">基于您的技能和信用推荐</div>
+                    </div>
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
+                </div>
+                <div class="bento-item urgent-card">
+                    <div class="card-label">急需帮手</div>
+                    <div class="card-value">{{ urgentCount }}</div>
+                    <div class="card-sub">个紧急订单</div>
+                    <svg class="card-bg-icon" viewBox="0 0 24 24" fill="currentColor"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                </div>
+                <div class="bento-item reward-card">
+                    <div class="card-label">高额赏金</div>
+                    <div class="card-value">¥{{ maxReward }}</div>
+                    <div class="card-sub">最高可赚</div>
+                    <svg class="card-bg-icon" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"></circle></svg>
+                </div>
+            </div>
+            
+            <!-- Category tabs -->
+            <div class="category-tabs">
+                <div class="category-scroll">
+                    <div class="category-tab" :class="{ active: activeCategory === '全部' }" @click="selectCategory('全部')">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                        <span class="tab-name">全部</span>
+                    </div>
+                    <div v-for="cat in categories" :key="cat.name" class="category-tab" :class="{ active: activeCategory === cat.name }" @click="selectCategory(cat.name)">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                        <span class="tab-name">{{ cat.name }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Section title -->
+            <div class="section-title-box">
+                <div class="section-title">附近需求</div>
+                <div class="sort-group">
+                    <div class="sort-btn" :class="{ active: sortBy === 'distance' }" @click="sortBy = 'distance'">距离</div>
+                    <div class="sort-btn" :class="{ active: sortBy === 'reward' }" @click="sortBy = 'reward'">金额</div>
+                    <div class="sort-btn" :class="{ active: sortBy === 'time' }" @click="sortBy = 'time'">最新</div>
+                </div>
+            </div>
+            
+            <!-- Needs list -->
+            <div v-if="filteredNeeds.length === 0" class="empty-state">
+                <div class="empty-icon">🌸</div>
+                <div class="empty-title">暂无新需求</div>
+                <div class="empty-subtitle">暂时没有需求，等待一会再来看看吧</div>
+            </div>
+            
+            <div v-for="need in filteredNeeds" :key="need.id" class="need-bento-card">
+                <div class="card-top">
+                    <div class="user-info">
+                        <div class="avatar" :style="{ background: getAvatarBg(need.publisher.nickname) }">
+                            {{ need.publisher.nickname[0] }}
+                        </div>
+                        <div class="meta">
+                            <div class="name">{{ need.publisher.nickname }}</div>
+                            <div class="time">{{ formatTime(need.createdAt) }}</div>
+                        </div>
+                    </div>
+                    <div class="price">¥{{ need.reward }}</div>
+                </div>
+                <div class="need-title">{{ need.title }}</div>
+                <div class="need-desc">{{ need.description }}</div>
+                <div class="card-footer">
+                    <div class="loc-wrap">
+                        <div class="loc-tag">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                            <span class="loc-text">{{ need.location }}</span>
+                        </div>
+                        <span class="dist-tag">{{ need.distance }}</span>
+                    </div>
+                    <div class="action-group">
+                        <div class="share-btn" @click="shareNeed(need)">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"></circle><circle cx="6" cy="12" r="3"></circle><circle cx="18" cy="19" r="3"></circle><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line></svg>
+                        </div>
+                        <div class="action-btn" @click="acceptNeed(need)">接单</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Bottom nav -->
+        <div class="bottom-nav">
+            <div class="nav-item active">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path></svg>
+                <span class="nav-text">首页</span>
+            </div>
+            <div class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                <span class="nav-text">订单</span>
+            </div>
+            <div class="publish-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            </div>
+            <div class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                <span class="nav-text">消息</span>
+            </div>
+            <div class="nav-item">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <span class="nav-text">我的</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/vue@3.4.21/dist/vue.global.prod.js"></script>
+    <script>
+        const { createApp, ref, computed, onMounted } = Vue
+        
+        createApp({
+            setup() {
+                const showPrivacy = ref(true)
+                const toast = ref('')
+                const searchQuery = ref('')
+                const locationName = ref('阳光花园')
+                const activeCategory = ref('全部')
+                const sortBy = ref('time')
+                
+                const categories = [
+                    { name: '跑腿', icon: 'run' },
+                    { name: '家务', icon: 'housework' },
+                    { name: '专业', icon: 'professional' },
+                    { name: '其他', icon: 'others' }
+                ]
+                
+                const needs = ref([
+                    { id: 1, title: '帮忙取个快递', description: '菜鸟驿站3号柜，取件码6789', reward: 5, location: '阳光花园', distance: '300m', category: '跑腿', publisher: { nickname: '小明' }, createdAt: Date.now() - 3600000, isUrgent: true },
+                    { id: 2, title: '搬家搬运家具', description: '需要帮忙搬运一些家具，从1楼到5楼', reward: 80, location: '幸福小区', distance: '1.2km', category: '跑腿', publisher: { nickname: '小红' }, createdAt: Date.now() - 7200000, isUrgent: false },
+                    { id: 3, title: '照看宠物一天', description: '出差一天，需要人帮忙喂猫铲屎', reward: 100, location: '和谐家园', distance: '800m', category: '其他', publisher: { nickname: '阿花' }, createdAt: Date.now() - 10800000, isUrgent: false },
+                    { id: 4, title: '电脑维修重装系统', description: '电脑蓝屏需要重装Win10系统', reward: 50, location: '绿色家园', distance: '2.5km', category: '专业', publisher: { nickname: '老王' }, createdAt: Date.now() - 86400000, isUrgent: false },
+                    { id: 5, title: '周末大扫除', description: '需要打扫100平米的房子，包括擦窗', reward: 120, location: '阳光花园', distance: '500m', category: '家务', publisher: { nickname: '小李' }, createdAt: Date.now() - 172800000, isUrgent: true }
+                ])
+                
+                const greeting = computed(() => {
+                    const hour = new Date().getHours()
+                    if (hour >= 5 && hour < 12) return '早安'
+                    if (hour >= 12 && hour < 14) return '午安'
+                    if (hour >= 14 && hour < 18) return '下午好'
+                    if (hour >= 18 && hour < 22) return '晚上好'
+                    return '夜深了'
+                })
+                
+                const filteredNeeds = computed(() => {
+                    let result = [...needs.value]
+                    
+                    if (searchQuery.value.trim()) {
+                        const query = searchQuery.value.toLowerCase()
+                        result = result.filter(n => 
+                            n.title.toLowerCase().includes(query) ||
+                            n.description.toLowerCase().includes(query)
+                        )
+                    }
+                    
+                    if (activeCategory.value !== '全部') {
+                        result = result.filter(n => n.category === activeCategory.value)
+                    }
+                    
+                    if (sortBy.value === 'reward') {
+                        result.sort((a, b) => b.reward - a.reward)
+                    } else if (sortBy.value === 'time') {
+                        result.sort((a, b) => b.createdAt - a.createdAt)
+                    }
+                    
+                    return result
+                })
+                
+                const urgentCount = computed(() => needs.value.filter(n => n.isUrgent).length)
+                const maxReward = computed(() => Math.max(...needs.value.map(n => n.reward)))
+                
+                function getAvatarBg(name) {
+                    const colors = ['#10B981', '#3B82F6', '#F59E0B', '#EF4444', '#8B5CF6']
+                    let hash = 0
+                    for (let i = 0; i < name.length; i++) {
+                        hash = name.charCodeAt(i) + ((hash << 5) - hash)
+                    }
+                    return colors[Math.abs(hash) % colors.length]
+                }
+                
+                function formatTime(timestamp) {
+                    const diff = Date.now() - timestamp
+                    if (diff < 3600000) return `${Math.floor(diff/60000)}分钟前`
+                    if (diff < 86400000) return `${Math.floor(diff/3600000)}小时前`
+                    return `${Math.floor(diff/86400000)}天前`
+                }
+                
+                function showToast(msg) {
+                    toast.value = msg
+                    setTimeout(() => toast.value = '', 2000)
+                }
+                
+                function agreePrivacy() {
+                    showPrivacy.value = false
+                    showToast('欢迎使用我来帮！')
+                }
+                
+                function pickLocation() {
+                    showToast('位置选择功能')
+                }
+                
+                function selectCategory(name) {
+                    activeCategory.value = activeCategory.value === name ? '全部' : name
+                }
+                
+                function shareNeed(need) {
+                    showToast(`分享"${need.title}"给好友`)
+                }
+                
+                function acceptNeed(need) {
+                    showToast(`成功接单：${need.title}`)
+                }
+                
+                onMounted(() => {
+                    const hasAgreed = localStorage.getItem('hasAgreedPrivacyPolicy')
+                    if (hasAgreed) {
+                        showPrivacy.value = false
+                    }
+                })
+                
+                return {
+                    showPrivacy, toast, searchQuery, locationName, activeCategory, sortBy,
+                    categories, needs, filteredNeeds, urgentCount, maxReward,
+                    greeting, getAvatarBg, formatTime, agreePrivacy, pickLocation,
+                    selectCategory, shareNeed, acceptNeed
+                }
+            }
+        }).mount('#app')
+    </script>
+</body>
+</html>
