@@ -146,11 +146,26 @@ export default {
 				deadline: this.need.deadline || '',
 				category: this.need.category || '其他'
 			}
-			uni.setStorageSync('editData', needData)
-			alert('已保存编辑数据，准备跳转到发布页')
-			uni.navigateTo({
-				url: '/pages/publish/publish'
-			})
+			try {
+				uni.setStorageSync('editData', needData)
+				console.log('editData已保存')
+				alert('已保存编辑数据，尝试跳转...')
+				console.log('使用switchTab跳转到发布页...')
+				uni.switchTab({
+					url: '/pages/publish/publish',
+					success: () => {
+						console.log('switchTab成功')
+						alert('切换成功！')
+					},
+					fail: (err) => {
+						console.log('switchTab失败:', err)
+						alert('switchTab失败: ' + JSON.stringify(err))
+					}
+				})
+			} catch (e) {
+				console.error('保存数据错误:', e)
+				alert('保存数据错误: ' + (e.message || e))
+			}
 		},
 		republishNeed() {
 			console.log('再次发布被调用')
@@ -169,11 +184,24 @@ export default {
 				deadline: this.need.deadline || '',
 				category: this.need.category || '其他'
 			}
-			uni.setStorageSync('republishData', needData)
-			alert('已保存重新发布数据，准备跳转到发布页')
-			uni.navigateTo({
-				url: '/pages/publish/publish'
-			})
+			try {
+				uni.setStorageSync('republishData', needData)
+				alert('已保存重新发布数据，尝试跳转...')
+				uni.switchTab({
+					url: '/pages/publish/publish',
+					success: () => {
+						console.log('switchTab成功')
+						alert('切换成功！')
+					},
+					fail: (err) => {
+						console.log('switchTab失败:', err)
+						alert('switchTab失败: ' + JSON.stringify(err))
+					}
+				})
+			} catch (e) {
+				console.error('保存数据错误:', e)
+				alert('保存数据错误: ' + (e.message || e))
+			}
 		}
 	}
 }
