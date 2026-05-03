@@ -2,9 +2,9 @@
 	<view class="container">
 		<!-- Header -->
 		<view class="header">
-			<text class="header-title">创建任务</text>
+			<text class="header-title">{{ isEdit ? '编辑任务' : '创建任务' }}</text>
 			<view class="header-right">
-				<text class="test-btn" @click="fillTestData">测试</text>
+				<text v-if="!isEdit" class="test-btn" @click="fillTestData">测试</text>
 			</view>
 		</view>
 
@@ -228,7 +228,7 @@
 				<view class="action-footer dual">
 					<button class="back-link" @click="prevStep">上一步</button>
 					<button class="next-btn" @click="handleSubmit">
-						{{ isSubmitting ? '发布中...' : '确认发布' }}
+						{{ isSubmitting ? (isEdit ? '保存中...' : '发布中...') : (isEdit ? '保存修改' : '确认发布') }}
 					</button>
 				</view>
 			</view>
@@ -236,11 +236,11 @@
 			<!-- Step 3: 发布成功 -->
 			<view v-if="currentStep === 3" class="step-content success-step animate-in">
 				<view class="success-icon">🎉</view>
-				<view class="success-title">发布成功</view>
-				<view class="success-desc">您的需求已发布，等待邻居来接单吧~</view>
+				<view class="success-title">{{ isEdit ? '保存成功' : '发布成功' }}</view>
+				<view class="success-desc">{{ isEdit ? '您的需求已更新' : '您的需求已发布，等待邻居来接单吧~' }}</view>
 				<view class="success-actions">
 					<button class="action-btn primary" @click="goOrders">查看订单</button>
-					<button class="action-btn secondary" @click="continuePublish">继续发布</button>
+					<button v-if="!isEdit" class="action-btn secondary" @click="continuePublish">继续发布</button>
 					<button class="action-btn ghost" @click="goHome">返回首页</button>
 				</view>
 			</view>
@@ -292,6 +292,8 @@ export default {
 	},
 	data() {
 		return {
+			isEdit: false,
+			editId: null,
 			currentStep: 1,
 			categories: [
 				{ name: '跑腿', icon: 'run' },
@@ -336,14 +338,23 @@ export default {
 	onLoad() {
 		this.initTimePicker()
 		this.initDeadlinePicker()
-		const republishData = uni.getStorageSync('republishData')
-		if (republishData) {
-			this.form = { ...this.form, ...republishData }
-			uni.removeStorageSync('republishData')
-		}
-		const draft = uni.getStorageSync('publishDraft')
-		if (draft) {
-			this.form = { ...this.form, ...draft }
+		
+		const editData = uni.getStorageSync('editData')
+		if (editData) {
+			this.isEdit = true
+			this.editId = editData.id
+			this.form = { ...this.form, ...editData }
+			uni.removeStorageSync('editData')
+		} else {
+			const republishData = uni.getStorageSync('republishData')
+			if (republishData) {
+				this.form = { ...this.form, ...republishData }
+				uni.removeStorageSync('republishData')
+			}
+			const draft = uni.getStorageSync('publishDraft')
+			if (draft) {
+				this.form = { ...this.form, ...draft }
+			}
 		}
 	},
 	onShow() {
@@ -581,7 +592,7 @@ export default {
 			
 			this.isSubmitting = true
 			try {
-				await this.needStore.addNeed({
+				const needData = {
 					title: this.form.title.trim(),
 					description: this.form.description.trim(),
 					reward: Number(this.form.reward) || 0,
@@ -592,13 +603,21 @@ export default {
 					longitude: this.form.longitude,
 					image: this.form.image,
 					time: this.form.time,
-					deadline: this.form.deadline || ''
-				})
+					deadline: this.form.deadline || '',
+					category: this.form.category
+				}
+				
+				if (this.isEdit && this.editId) {
+					await this.needStore.updateNeed(this.editId, needData)
+				} else {
+					await this.needStore.addNeed(needData)
+				}
 				
 				uni.removeStorageSync('publishDraft')
+				uni.removeStorageSync('editData')
 				this.currentStep = 3
 			} catch (e) {
-				uni.showToast({ title: '发布失败，请重试', icon: 'none' })
+				uni.showToast({ title: this.isEdit ? '保存失败，请重试' : '发布失败，请重试', icon: 'none' })
 			} finally {
 				this.isSubmitting = false
 			}

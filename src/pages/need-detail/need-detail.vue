@@ -71,17 +71,21 @@
 				<button v-else-if="need.status === 'completed'"
 					class="btn btn-s" disabled>订单已完成</button>
 
-				<!-- Case 5: Cancelled, my own need - republish -->
-				<button v-else-if="need.status === 'cancelled' && need.publisher.id === userStore.currentUser.id"
-					class="btn btn-p" @click="republishNeed">再次发布</button>
+				<!-- Case 5: Cancelled, my own need - republish and edit -->
+				<view v-else-if="need.status === 'cancelled' && need.publisher.id === userStore.currentUser.id" class="btn-row">
+					<button class="btn btn-p" @click="editNeed">编辑需求</button>
+					<button class="btn btn-s" @click="republishNeed">再次发布</button>
+				</view>
 
 				<!-- Case 6: Cancelled -->
 				<button v-else-if="need.status === 'cancelled'"
 					class="btn btn-s" disabled>已取消</button>
 
 				<!-- Case 7: My own open need -->
-				<button v-else-if="need.status === 'open' && need.publisher.id === userStore.currentUser.id"
-					class="btn btn-s" @click="cancelNeed">取消发布</button>
+				<view v-else-if="need.status === 'open' && need.publisher.id === userStore.currentUser.id" class="btn-row">
+					<button class="btn btn-s" @click="editNeed">编辑需求</button>
+					<button class="btn btn-cancel" @click="cancelNeed">取消发布</button>
+				</view>
 			</view>
 		</scroll-view>
 
@@ -300,6 +304,27 @@ export default {
 		previewImage(image) {
 			uni.previewImage({ urls: [image] })
 		},
+		editNeed() {
+			const needData = {
+				id: this.need.id,
+				isEdit: true,
+				title: this.need.title,
+				description: this.need.description,
+				reward: this.need.reward,
+				location: this.need.location,
+				detailAddress: this.need.detailAddress || '',
+				address: this.need.address,
+				latitude: this.need.latitude,
+				longitude: this.need.longitude,
+				image: this.need.image || '',
+				deadline: this.need.deadline || '',
+				category: this.need.category || '其他'
+			}
+			uni.setStorageSync('editData', needData)
+			uni.navigateTo({
+				url: '/pages/publish/publish'
+			})
+		},
 		republishNeed() {
 			const needData = {
 				title: this.need.title,
@@ -428,6 +453,15 @@ export default {
 	padding-bottom: 40px;
 }
 
+.btn-row {
+	display: flex;
+	gap: 12px;
+}
+
+.btn-row .btn {
+	flex: 1;
+}
+
 button {
 	border: none !important;
 	outline: none !important;
@@ -437,6 +471,10 @@ button {
 	background-color: transparent !important;
 	margin: 0 !important;
 	padding: 0 !important;
+}
+
+button::after {
+	border: none !important;
 }
 
 .btn {
@@ -455,14 +493,19 @@ button {
 }
 
 .btn-p {
-	background: #10B981;
+	background: #10B981 !important;
 	color: white;
 	box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);
 }
 
 .btn-s {
-	background: #F3F4F6;
+	background: #F3F4F6 !important;
 	color: #6B7280;
+}
+
+.btn-cancel {
+	background: #FEF2F2 !important;
+	color: #EF4444;
 }
 
 .loading {

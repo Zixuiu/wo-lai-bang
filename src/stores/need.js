@@ -249,6 +249,30 @@ export const useNeedStore = defineStore('need', {
       need.status = 'cancelled'
       return { success: true, message: '已取消' }
     },
+    
+    updateNeed(needId, needData) {
+      const userStore = useUserStore()
+      const needIndex = this.needs.findIndex(n => n.id === needId)
+      if (needIndex === -1) {
+        return { success: false, message: '需求不存在' }
+      }
+      const need = this.needs[needIndex]
+      if (need.publisher.id !== userStore.currentUser.id) {
+        return { success: false, message: '没有权限编辑' }
+      }
+      // 更新需求数据
+      this.needs[needIndex] = {
+        ...need,
+        ...needData,
+        id: needId,
+        updatedAt: Date.now()
+      }
+      // 如果是已取消状态，更新后重新设为开放状态
+      if (need.status === 'cancelled') {
+        this.needs[needIndex].status = 'open'
+      }
+      return { success: true, message: '更新成功' }
+    },
 
     setSearchQuery(query) {
       this.searchQuery = query
