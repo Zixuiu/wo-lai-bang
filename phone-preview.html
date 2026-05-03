@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>我来帮 - 手机预览</title>
   <style>
@@ -17,12 +17,14 @@
       justify-content: center;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      padding: 20px;
     }
     .phone-container {
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 20px;
+      transform-origin: center center;
     }
     .phone {
       position: relative;
@@ -76,9 +78,6 @@
       border: none;
       background: #fff;
     }
-    .phone-buttons {
-      position: absolute;
-    }
     .power-button {
       position: absolute;
       right: -4px;
@@ -108,15 +107,17 @@
     }
     .controls {
       display: flex;
-      gap: 15px;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
     }
     .btn {
-      padding: 12px 24px;
+      padding: 10px 18px;
       border: none;
       border-radius: 10px;
       background: rgba(255, 255, 255, 0.2);
       color: white;
-      font-size: 14px;
+      font-size: 13px;
       cursor: pointer;
       backdrop-filter: blur(10px);
       transition: all 0.3s;
@@ -129,11 +130,21 @@
       color: rgba(255, 255, 255, 0.8);
       font-size: 14px;
     }
+    @media (max-height: 900px), (max-width: 450px) {
+      .phone-container {
+        transform: scale(0.6);
+      }
+    }
+    @media (max-height: 650px), (max-width: 320px) {
+      .phone-container {
+        transform: scale(0.45);
+      }
+    }
   </style>
 </head>
 <body>
-  <div class="phone-container">
-    <div class="phone">
+  <div class="phone-container" id="phoneContainer">
+    <div class="phone" id="phone">
       <div class="power-button"></div>
       <div class="volume-up"></div>
       <div class="volume-down"></div>
@@ -145,7 +156,7 @@
         <iframe class="phone-screen" src="index.html"></iframe>
       </div>
     </div>
-    <div class="info">iPhone X 尺寸 - 375×812</div>
+    <div class="info" id="info">iPhone X 尺寸 - 375×812</div>
     <div class="controls">
       <button class="btn" onclick="toggleSize('iphone')">iPhone X</button>
       <button class="btn" onclick="toggleSize('iphone-plus')">iPhone Plus</button>
@@ -154,26 +165,41 @@
     </div>
   </div>
   <script>
+    let currentScale = 1;
+    let currentType = 'iphone';
+    const sizes = {
+      'iphone': { width: 375, height: 812 },
+      'iphone-plus': { width: 414, height: 896 },
+      'android': { width: 360, height: 740 }
+    };
     function toggleSize(type) {
-      const phone = document.querySelector('.phone');
-      switch(type) {
-        case 'iphone':
-          phone.style.width = '375px';
-          phone.style.height = '812px';
-          document.querySelector('.info').textContent = 'iPhone X 尺寸 - 375×812';
-          break;
-        case 'iphone-plus':
-          phone.style.width = '414px';
-          phone.style.height = '896px';
-          document.querySelector('.info').textContent = 'iPhone Plus 尺寸 - 414×896';
-          break;
-        case 'android':
-          phone.style.width = '360px';
-          phone.style.height = '740px';
-          document.querySelector('.info').textContent = 'Android 尺寸 - 360×740';
-          break;
-      }
+      currentType = type;
+      const phone = document.getElementById('phone');
+      const size = sizes[type];
+      phone.style.width = size.width + 'px';
+      phone.style.height = size.height + 'px';
+      const labels = {
+        'iphone': 'iPhone X 尺寸 - 375×812',
+        'iphone-plus': 'iPhone Plus 尺寸 - 414×896',
+        'android': 'Android 尺寸 - 360×740'
+      };
+      document.getElementById('info').textContent = labels[type];
+      adjustScale();
     }
+    function adjustScale() {
+      const container = document.getElementById('phoneContainer');
+      const windowWidth = window.innerWidth;
+      const windowHeight = window.innerHeight;
+      const size = sizes[currentType];
+      const phoneWidth = size.width + 40;
+      const phoneHeight = size.height + 120;
+      const scaleX = (windowWidth - 40) / phoneWidth;
+      const scaleY = (windowHeight - 40) / phoneHeight;
+      currentScale = Math.min(scaleX, scaleY, 1);
+      container.style.transform = `scale(${currentScale})`;
+    }
+    window.addEventListener('resize', adjustScale);
+    adjustScale();
   </script>
 </body>
 </html>
