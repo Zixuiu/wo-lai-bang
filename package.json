@@ -1,0 +1,40 @@
+{
+  "name": "wo-laibang-app",
+  "version": "1.0.0",
+  "description": "我来帮 - 邻里互助平台",
+  "main": "main.js",
+  "scripts": {
+    "dev:h5": "uni",
+    "dev:mp-weixin": "uni --platform mp-weixin",
+    "dev:app": "uni --platform app",
+    "build:h5": "uni build",
+    "build:mp-weixin": "uni build --platform mp-weixin",
+    "build:app": "uni build --platform app"
+  },
+  "keywords": [
+    "uni-app",
+    "邻里互助",
+    "社区服务"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "@iconify-icons/tabler": "^1.2.95",
+    "@iconify/vue": "^4.1.2",
+    "@tabler/icons-vue": "^3.41.1",
+    "@vitejs/plugin-vue": "^6.0.6",
+    "pinia": "^3.0.4",
+    "vite": "^8.0.10",
+    "vue": "^3.2.0",
+    "vuex": "^4.0.0"
+  },
+  "devDependencies": {
+    "@dcloudio/uni-app": "3.0.0-alpha-5000820260420001",
+    "@dcloudio/uni-app-plus": "3.0.0-alpha-5000820260420001",
+    "@dcloudio/uni-h5": "3.0.0-alpha-5000820260420001",
+    "@dcloudio/uni-mp-weixin": "3.0.0-alpha-5000820260420001"
+  },
+  "uni-app": {
+    "scripts": {}
+  }
+}
