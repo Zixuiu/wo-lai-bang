@@ -1,9 +1,5 @@
 <template>
 	<view class="container">
-		<!-- Simple Nav -->
-		<view class="nav-header">
-		</view>
-
 		<!-- Content -->
 		<scroll-view class="screen" scroll-y v-if="need">
 			<view class="hero-title">{{ need.title }}</view>
@@ -52,45 +48,45 @@
 				<view class="label">最晚什么时候</view>
 				<view class="value deadline-text">{{ need.deadline }}</view>
 			</view>
-
-			<!-- Action Button -->
-			<view class="btn-group">
-				<!-- Case 1: Open need, not mine -->
-				<view v-if="need.status === 'open' && need.publisher.id !== userStore.currentUser.id" 
-					class="btn btn-p" @click="acceptNeed">✋ 接单帮忙</view>
-				
-				<!-- Case 2: Accepted need, involve me -->
-				<view v-else-if="need.status === 'accepted' && (need.publisher.id === userStore.currentUser.id || isAccepter)" 
-					class="btn btn-p" @click="goToChat">立即沟通</view>
-				
-				<!-- Case 3: Completed need, need rating -->
-				<view v-else-if="need.status === 'completed' && need.publisher.id === userStore.currentUser.id && !need.isRated" 
-					class="btn btn-p" @click="rateOrder">评价帮手</view>
-
-				<!-- Case 4: Already completed/rated -->
-				<view v-else-if="need.status === 'completed'"
-					class="btn btn-s disabled">订单已完成</view>
-
-				<!-- Case 5: Cancelled, my own need - republish and edit -->
-				<view v-else-if="need.status === 'cancelled' && need.publisher.id === userStore.currentUser.id" class="btn-row">
-					<view class="btn btn-p" @click="editNeed">编辑需求</view>
-					<view class="btn btn-s" @click="republishNeed">再次发布</view>
-				</view>
-
-				<!-- Case 6: Cancelled -->
-				<view v-else-if="need.status === 'cancelled'"
-					class="btn btn-s disabled">已取消</view>
-
-				<!-- Case 7: My own open need -->
-				<view v-else-if="need.status === 'open' && need.publisher.id === userStore.currentUser.id" class="btn-row">
-					<view class="btn btn-s" @click="editNeed">编辑需求</view>
-					<view class="btn btn-cancel" @click="cancelNeed">取消发布</view>
-				</view>
-			</view>
 		</scroll-view>
 
+		<!-- Action Button (移出scroll-view) -->
+		<view class="btn-group-fixed">
+			<!-- Case 1: Open need, not mine -->
+			<view v-if="need && need.status === 'open' && need.publisher.id !== userStore.currentUser.id" 
+				class="btn btn-p" @click="acceptNeed">✋ 接单帮忙</view>
+			
+			<!-- Case 2: Accepted need, involve me -->
+			<view v-else-if="need && need.status === 'accepted' && (need.publisher.id === userStore.currentUser.id || isAccepter)" 
+				class="btn btn-p" @click="goToChat">立即沟通</view>
+			
+			<!-- Case 3: Completed need, need rating -->
+			<view v-else-if="need && need.status === 'completed' && need.publisher.id === userStore.currentUser.id && !need.isRated" 
+				class="btn btn-p" @click="rateOrder">评价帮手</view>
+
+			<!-- Case 4: Already completed/rated -->
+			<view v-else-if="need && need.status === 'completed'"
+				class="btn btn-s disabled">订单已完成</view>
+
+			<!-- Case 5: Cancelled, my own need - republish and edit -->
+			<view v-else-if="need && need.status === 'cancelled' && need.publisher.id === userStore.currentUser.id" class="btn-row">
+				<view class="btn btn-p" @click="editNeed">编辑需求</view>
+				<view class="btn btn-s" @click="republishNeed">再次发布</view>
+			</view>
+
+			<!-- Case 6: Cancelled -->
+			<view v-else-if="need && need.status === 'cancelled'"
+				class="btn btn-s disabled">已取消</view>
+
+			<!-- Case 7: My own open need -->
+			<view v-else-if="need && need.status === 'open' && need.publisher.id === userStore.currentUser.id" class="btn-row">
+				<view class="btn btn-s" @click="editNeed">编辑需求</view>
+				<view class="btn btn-cancel" @click="cancelNeed">取消发布</view>
+			</view>
+		</view>
+
 		<!-- 加载中 -->
-		<view v-else class="loading">
+		<view v-if="!need" class="loading">
 			<text class="loading-text">加载中...</text>
 		</view>
 
@@ -111,23 +107,23 @@
 		</view>
 
 		<!-- 确认弹窗 -->
-		<view v-if="confirmVisible" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center;" @click="confirmVisible = false">
-			<view style="width:560rpx;background:#FFFFFF;border-radius:32rpx;overflow:hidden;" @click.stop>
-				<view style="padding:40rpx 40rpx 20rpx;text-align:center;">
-					<text style="font-size:34rpx;font-weight:700;color:#1E293B;">{{ confirmTitle }}</text>
+		<view v-if="confirmVisible" class="confirm-mask" @click="confirmVisible = false">
+			<view class="confirm-popup" @click.stop>
+				<view class="confirm-title-box">
+					<text class="confirm-title-text">{{ confirmTitle }}</text>
 				</view>
-				<view style="padding:0 40rpx 30rpx;text-align:center;">
-					<text style="font-size:28rpx;color:#64748B;line-height:1.6;">{{ confirmContent }}</text>
+				<view class="confirm-content-box">
+					<text class="confirm-content-text">{{ confirmContent }}</text>
 				</view>
-				<view style="display:flex;border-top:1rpx solid #F1F5F9;">
-					<view style="flex:1;height:96rpx;display:flex;align-items:center;justify-content:center;" v-if="confirmCancelText" @click="confirmVisible = false">
-						<text style="font-size:30rpx;font-weight:600;color:#64748B;">{{ confirmCancelText }}</text>
+				<view class="confirm-buttons">
+					<view class="confirm-btn cancel" v-if="confirmCancelText" @click="confirmVisible = false">
+						<text>{{ confirmCancelText }}</text>
 					</view>
-					<view style="flex:1;height:96rpx;display:flex;align-items:center;justify-content:center;border-left:1rpx solid #F1F5F9;" v-if="confirmCancelText" @click="confirmVisible = false; if(onConfirm) onConfirm()">
-						<text style="font-size:30rpx;font-weight:700;color:#10B981;">{{ confirmConfirmText }}</text>
+					<view class="confirm-btn confirm" v-if="confirmCancelText" @click="confirmVisible = false; if(onConfirm) onConfirm()">
+						<text>{{ confirmConfirmText }}</text>
 					</view>
-					<view style="flex:1;height:96rpx;display:flex;align-items:center;justify-content:center;" v-else @click="confirmVisible = false; if(onConfirm) onConfirm()">
-						<text style="font-size:30rpx;font-weight:700;color:#10B981;">{{ confirmConfirmText }}</text>
+					<view class="confirm-btn confirm full" v-else @click="confirmVisible = false; if(onConfirm) onConfirm()">
+						<text>{{ confirmConfirmText }}</text>
 					</view>
 				</view>
 			</view>
@@ -305,6 +301,10 @@ export default {
 			uni.previewImage({ urls: [image] })
 		},
 		editNeed() {
+			console.log('editNeed 方法被调用')
+			console.log('当前need:', this.need)
+			console.log('当前用户:', this.userStore.currentUser)
+			
 			const needData = {
 				id: this.need.id,
 				isEdit: true,
@@ -320,6 +320,7 @@ export default {
 				deadline: this.need.deadline || '',
 				category: this.need.category || '其他'
 			}
+			console.log('editData:', needData)
 			uni.setStorageSync('editData', needData)
 			uni.navigateTo({
 				url: '/pages/publish/publish'
@@ -352,20 +353,16 @@ export default {
 .container {
 	min-height: 100vh;
 	background: #FFFFFF;
-}
-
-.nav-header {
-	padding: 44px 20px 10px;
-}
-
-.back-btn {
-	font-size: 24px;
-	color: #10B981;
+	display: flex;
+	flex-direction: column;
 }
 
 .screen {
+	flex: 1;
 	padding: 0 30px;
-	height: calc(100vh - 80px);
+	padding-bottom: 100px;
+	overflow-y: auto;
+	-webkit-overflow-scrolling: touch;
 }
 
 .hero-title {
@@ -453,6 +450,16 @@ export default {
 	padding-bottom: 40px;
 }
 
+.btn-group-fixed {
+	padding: 20px 30px;
+	padding-bottom: env(safe-area-inset-bottom, 20px);
+	background: #FFFFFF;
+	position: fixed;
+	bottom: 0;
+	left: 0;
+	right: 0;
+}
+
 .btn-row {
 	display: flex;
 	gap: 12px;
@@ -470,6 +477,8 @@ export default {
 	justify-content: center;
 	font-weight: 700;
 	font-size: 16px;
+	cursor: pointer;
+	user-select: none;
 }
 
 .btn-p {
@@ -490,6 +499,78 @@ export default {
 
 .btn.disabled {
 	opacity: 0.6;
+}
+
+.confirm-mask {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0.5);
+	z-index: 99999;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.confirm-popup {
+	width: 560rpx;
+	background: #FFFFFF;
+	border-radius: 32rpx;
+	overflow: hidden;
+}
+
+.confirm-title-box {
+	padding: 40rpx 40rpx 20rpx;
+	text-align: center;
+}
+
+.confirm-title-text {
+	font-size: 34rpx;
+	font-weight: 700;
+	color: #1E293B;
+}
+
+.confirm-content-box {
+	padding: 0 40rpx 30rpx;
+	text-align: center;
+}
+
+.confirm-content-text {
+	font-size: 28rpx;
+	color: #64748B;
+	line-height: 1.6;
+}
+
+.confirm-buttons {
+	display: flex;
+	border-top: 1rpx solid #F1F5F9;
+}
+
+.confirm-btn {
+	flex: 1;
+	height: 96rpx;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.confirm-btn.cancel {
+	color: #64748B;
+	font-size: 30rpx;
+	font-weight: 600;
+}
+
+.confirm-btn.confirm {
+	color: #10B981;
+	font-size: 30rpx;
+	font-weight: 700;
+	border-left: 1rpx solid #F1F5F9;
+}
+
+.confirm-btn.full {
+	border-left: none;
 }
 
 .loading {
