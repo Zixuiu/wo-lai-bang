@@ -56,35 +56,35 @@
 			<!-- Action Button -->
 			<view class="btn-group">
 				<!-- Case 1: Open need, not mine -->
-				<button v-if="need.status === 'open' && need.publisher.id !== userStore.currentUser.id" 
-					class="btn btn-p" @click="acceptNeed">✋ 接单帮忙</button>
+				<view v-if="need.status === 'open' && need.publisher.id !== userStore.currentUser.id" 
+					class="btn btn-p" @click="acceptNeed">✋ 接单帮忙</view>
 				
 				<!-- Case 2: Accepted need, involve me -->
-				<button v-else-if="need.status === 'accepted' && (need.publisher.id === userStore.currentUser.id || isAccepter)" 
-					class="btn btn-p" @click="goToChat">立即沟通</button>
+				<view v-else-if="need.status === 'accepted' && (need.publisher.id === userStore.currentUser.id || isAccepter)" 
+					class="btn btn-p" @click="goToChat">立即沟通</view>
 				
 				<!-- Case 3: Completed need, need rating -->
-				<button v-else-if="need.status === 'completed' && need.publisher.id === userStore.currentUser.id && !need.isRated" 
-					class="btn btn-p" @click="rateOrder">评价帮手</button>
+				<view v-else-if="need.status === 'completed' && need.publisher.id === userStore.currentUser.id && !need.isRated" 
+					class="btn btn-p" @click="rateOrder">评价帮手</view>
 
 				<!-- Case 4: Already completed/rated -->
-				<button v-else-if="need.status === 'completed'"
-					class="btn btn-s" disabled>订单已完成</button>
+				<view v-else-if="need.status === 'completed'"
+					class="btn btn-s disabled">订单已完成</view>
 
 				<!-- Case 5: Cancelled, my own need - republish and edit -->
 				<view v-else-if="need.status === 'cancelled' && need.publisher.id === userStore.currentUser.id" class="btn-row">
-					<button class="btn btn-p" @click="editNeed">编辑需求</button>
-					<button class="btn btn-s" @click="republishNeed">再次发布</button>
+					<view class="btn btn-p" @click="editNeed">编辑需求</view>
+					<view class="btn btn-s" @click="republishNeed">再次发布</view>
 				</view>
 
 				<!-- Case 6: Cancelled -->
-				<button v-else-if="need.status === 'cancelled'"
-					class="btn btn-s" disabled>已取消</button>
+				<view v-else-if="need.status === 'cancelled'"
+					class="btn btn-s disabled">已取消</view>
 
 				<!-- Case 7: My own open need -->
 				<view v-else-if="need.status === 'open' && need.publisher.id === userStore.currentUser.id" class="btn-row">
-					<button class="btn btn-s" @click="editNeed">编辑需求</button>
-					<button class="btn btn-cancel" @click="cancelNeed">取消发布</button>
+					<view class="btn btn-s" @click="editNeed">编辑需求</view>
+					<view class="btn btn-cancel" @click="cancelNeed">取消发布</view>
 				</view>
 			</view>
 		</scroll-view>
@@ -462,21 +462,6 @@ export default {
 	flex: 1;
 }
 
-button {
-	border: none !important;
-	outline: none !important;
-	box-shadow: none !important;
-	-webkit-appearance: none !important;
-	background: transparent !important;
-	background-color: transparent !important;
-	margin: 0 !important;
-	padding: 0 !important;
-}
-
-button::after {
-	border: none !important;
-}
-
 .btn {
 	height: 56px;
 	border-radius: 28px;
@@ -485,27 +470,26 @@ button::after {
 	justify-content: center;
 	font-weight: 700;
 	font-size: 16px;
-	border: none !important;
-	outline: none !important;
-	box-shadow: none !important;
-	-webkit-appearance: none !important;
-	background-color: transparent !important;
 }
 
 .btn-p {
-	background: #10B981 !important;
+	background: #10B981;
 	color: white;
 	box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);
 }
 
 .btn-s {
-	background: #F3F4F6 !important;
+	background: #F3F4F6;
 	color: #6B7280;
 }
 
 .btn-cancel {
-	background: #FEF2F2 !important;
+	background: #FEF2F2;
 	color: #EF4444;
+}
+
+.btn.disabled {
+	opacity: 0.6;
 }
 
 .loading {
