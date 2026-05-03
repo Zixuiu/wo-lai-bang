@@ -52,6 +52,15 @@
 
 		<!-- Action Button (移出scroll-view) -->
 		<view class="btn-group-fixed">
+			<!-- 调试信息 -->
+			<view style="padding: 10px; background: #f5f5f5; margin-bottom: 10px; font-size: 12px;">
+				<text>need: {{ need ? '存在' : '不存在' }}</text><br/>
+				<text>status: {{ need ? need.status : '无' }}</text><br/>
+				<text>publisherId: {{ need ? need.publisher?.id : '无' }}</text><br/>
+				<text>currentUserId: {{ userStore.currentUser?.id }}</text><br/>
+				<text>isMatch: {{ need && need.publisher?.id === userStore.currentUser?.id ? '是' : '否' }}</text>
+			</view>
+			
 			<!-- Case 1: Open need, not mine -->
 			<view v-if="need && need.status === 'open' && need.publisher.id !== userStore.currentUser.id" 
 				class="btn btn-p" @click="acceptNeed">✋ 接单帮忙</view>
