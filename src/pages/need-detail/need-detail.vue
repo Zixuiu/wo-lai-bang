@@ -47,21 +47,9 @@
 			</view>
 		</scroll-view>
 
-		<!-- Action Button (移出scroll-view) -->
+		<!-- Action Button -->
 		<view class="btn-group-fixed">
-			<!-- 调试信息 -->
-			<view style="padding: 10px; background: #f5f5f5; margin-bottom: 10px; font-size: 12px;">
-				<text>need: {{ need ? '存在' : '不存在' }}</text><br/>
-				<text>status: {{ need ? need.status : '无' }}</text><br/>
-				<text>点击计数: {{ clickCount }}</text>
-			</view>
-			
-			<!-- 直接显示测试按钮 -->
-			<view class="btn btn-p" @click="testClick">测试点击</view>
-			<view class="btn-row" style="margin-top: 10px;">
-				<view class="btn btn-p" @click="editNeed">编辑需求</view>
-				<view class="btn btn-s" @click="republishNeed">再次发布</view>
-			</view>
+			<view class="btn btn-p" @click="republishNeed">再次发布</view>
 		</view>
 
 		<!-- 加载中 -->
@@ -85,8 +73,7 @@ export default {
 	},
 	data() {
 		return {
-			need: null,
-			clickCount: 0
+			need: null
 		}
 	},
 	onLoad(options) {
@@ -118,59 +105,13 @@ export default {
 			const date = new Date(timestamp)
 			return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
 		},
-		testClick() {
-			this.clickCount++
-			console.log('测试按钮被点击！次数:', this.clickCount)
-			alert('按钮点击成功！次数: ' + this.clickCount)
-		},
-		editNeed() {
-			console.log('编辑需求被调用')
-			this.clickCount++
+		republishNeed() {
 			if (!this.need) {
-				alert('需求不存在')
+				uni.showToast({ title: '需求不存在', icon: 'none' })
 				return
 			}
-			alert('准备编辑需求: ' + this.need.title)
-			const needData = {
-				id: this.need.id,
-				isEdit: true,
-				title: this.need.title,
-				description: this.need.description,
-				reward: this.need.reward,
-				location: this.need.location,
-				detailAddress: this.need.detailAddress || '',
-				address: this.need.address,
-				latitude: this.need.latitude,
-				longitude: this.need.longitude,
-				image: this.need.image || '',
-				deadline: this.need.deadline || '',
-				category: this.need.category || '其他'
-			}
-			try {
-				uni.setStorageSync('editData', needData)
-				console.log('editData已保存')
-				alert('已保存编辑数据，尝试跳转...')
-				console.log('使用switchTab跳转到发布页...')
-				uni.switchTab({
-					url: '/pages/publish/publish',
-					success: () => {
-						console.log('switchTab成功')
-						alert('切换成功！')
-					},
-					fail: (err) => {
-						console.log('switchTab失败:', err)
-						alert('switchTab失败: ' + JSON.stringify(err))
-					}
-				})
-			} catch (e) {
-				console.error('保存数据错误:', e)
-				alert('保存数据错误: ' + (e.message || e))
-			}
-		},
-		republishNeed() {
-			console.log('再次发布被调用')
-			this.clickCount++
-			alert('准备再次发布: ' + this.need.title)
+			
+			// 保存原来的数据
 			const needData = {
 				title: this.need.title,
 				description: this.need.description,
@@ -182,26 +123,17 @@ export default {
 				longitude: this.need.longitude,
 				image: this.need.image || '',
 				deadline: this.need.deadline || '',
-				category: this.need.category || '其他'
+				category: this.need.category || '其他',
+				originalId: this.need.id
 			}
-			try {
-				uni.setStorageSync('republishData', needData)
-				alert('已保存重新发布数据，尝试跳转...')
-				uni.switchTab({
-					url: '/pages/publish/publish',
-					success: () => {
-						console.log('switchTab成功')
-						alert('切换成功！')
-					},
-					fail: (err) => {
-						console.log('switchTab失败:', err)
-						alert('switchTab失败: ' + JSON.stringify(err))
-					}
-				})
-			} catch (e) {
-				console.error('保存数据错误:', e)
-				alert('保存数据错误: ' + (e.message || e))
-			}
+			
+			uni.setStorageSync('republishData', needData)
+			uni.showToast({ title: '数据已准备，即将跳转', icon: 'success' })
+			
+			// 跳转到发布页面
+			uni.switchTab({
+				url: '/pages/publish/publish'
+			})
 		}
 	}
 }
@@ -298,15 +230,6 @@ export default {
 	right: 0;
 }
 
-.btn-row {
-	display: flex;
-	gap: 12px;
-}
-
-.btn-row .btn {
-	flex: 1;
-}
-
 .btn {
 	height: 56px;
 	border-radius: 28px;
@@ -323,11 +246,6 @@ export default {
 	background: #10B981;
 	color: white;
 	box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);
-}
-
-.btn-s {
-	background: #F3F4F6;
-	color: #6B7280;
 }
 
 .loading {
