@@ -1,0 +1,1 @@
+var a="development",e={env:a,API_BASE_URL:"https://api.wolaibang.com",WS_BASE_URL:"wss://api.wolaibang.com",GAODE_MAP_KEY:"",TENCENT_MAP_KEY:"",USE_MOCK:!0,requestTimeout:3e4,uploadTimeout:6e4,wechatAppId:"",aliPayAppId:"",JPUSH_APP_KEY:""};export{e as t};
