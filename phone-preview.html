@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>我来帮 - 手机预览</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    .phone-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+    .phone {
+      position: relative;
+      width: 375px;
+      height: 812px;
+      background: #1a1a1a;
+      border-radius: 40px;
+      padding: 12px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5),
+                  0 0 0 2px #333,
+                  inset 0 0 0 2px #2a2a2a;
+    }
+    .phone-frame {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      background: #000;
+      border-radius: 30px;
+      overflow: hidden;
+    }
+    .notch {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 150px;
+      height: 30px;
+      background: #000;
+      border-radius: 0 0 15px 15px;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+    .camera {
+      width: 12px;
+      height: 12px;
+      background: #1a1a1a;
+      border-radius: 50%;
+    }
+    .speaker {
+      width: 40px;
+      height: 6px;
+      background: #1a1a1a;
+      border-radius: 3px;
+    }
+    .phone-screen {
+      width: 100%;
+      height: 100%;
+      border: none;
+      background: #fff;
+    }
+    .phone-buttons {
+      position: absolute;
+    }
+    .power-button {
+      position: absolute;
+      right: -4px;
+      top: 120px;
+      width: 4px;
+      height: 60px;
+      background: #2a2a2a;
+      border-radius: 0 2px 2px 0;
+    }
+    .volume-up {
+      position: absolute;
+      left: -4px;
+      top: 100px;
+      width: 4px;
+      height: 35px;
+      background: #2a2a2a;
+      border-radius: 2px 0 0 2px;
+    }
+    .volume-down {
+      position: absolute;
+      left: -4px;
+      top: 150px;
+      width: 4px;
+      height: 35px;
+      background: #2a2a2a;
+      border-radius: 2px 0 0 2px;
+    }
+    .controls {
+      display: flex;
+      gap: 15px;
+    }
+    .btn {
+      padding: 12px 24px;
+      border: none;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.2);
+      color: white;
+      font-size: 14px;
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+      transition: all 0.3s;
+    }
+    .btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+      transform: translateY(-2px);
+    }
+    .info {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="phone-container">
+    <div class="phone">
+      <div class="power-button"></div>
+      <div class="volume-up"></div>
+      <div class="volume-down"></div>
+      <div class="phone-frame">
+        <div class="notch">
+          <div class="speaker"></div>
+          <div class="camera"></div>
+        </div>
+        <iframe class="phone-screen" src="index.html"></iframe>
+      </div>
+    </div>
+    <div class="info">iPhone X 尺寸 - 375×812</div>
+    <div class="controls">
+      <button class="btn" onclick="toggleSize('iphone')">iPhone X</button>
+      <button class="btn" onclick="toggleSize('iphone-plus')">iPhone Plus</button>
+      <button class="btn" onclick="toggleSize('android')">Android</button>
+      <button class="btn" onclick="window.open('index.html', '_blank')">全屏查看</button>
+    </div>
+  </div>
+  <script>
+    function toggleSize(type) {
+      const phone = document.querySelector('.phone');
+      switch(type) {
+        case 'iphone':
+          phone.style.width = '375px';
+          phone.style.height = '812px';
+          document.querySelector('.info').textContent = 'iPhone X 尺寸 - 375×812';
+          break;
+        case 'iphone-plus':
+          phone.style.width = '414px';
+          phone.style.height = '896px';
+          document.querySelector('.info').textContent = 'iPhone Plus 尺寸 - 414×896';
+          break;
+        case 'android':
+          phone.style.width = '360px';
+          phone.style.height = '740px';
+          document.querySelector('.info').textContent = 'Android 尺寸 - 360×740';
+          break;
+      }
+    }
+  </script>
+</body>
+</html>
