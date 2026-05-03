@@ -49,12 +49,42 @@
 
 		<!-- Action Button -->
 		<view class="btn-group-fixed">
-			<view class="btn btn-p" @click="republishNeed">再次发布</view>
+			<!-- 如果是已取消状态，显示"再次发布"按钮 -->
+			<view v-if="need && need.status === 'cancelled'" 
+				class="btn btn-p" @click="republishNeed">再次发布</view>
+			
+			<!-- 如果是其他状态，显示"取消订单"按钮 -->
+			<view v-else-if="need && need.status !== 'completed'" 
+				class="btn btn-cancel" @click="cancelNeed">取消订单</view>
+			
+			<!-- 已完成状态不显示按钮 -->
+			<view v-else-if="need && need.status === 'completed'" 
+				class="btn btn-s disabled">订单已完成</view>
 		</view>
 
 		<!-- 加载中 -->
 		<view v-if="!need" class="loading">
 			<text class="loading-text">加载中...</text>
+		</view>
+
+		<!-- 确认弹窗 -->
+		<view v-if="confirmVisible" class="confirm-mask" @click="confirmVisible = false">
+			<view class="confirm-popup" @click.stop>
+				<view class="confirm-title-box">
+					<text class="confirm-title-text">{{ confirmTitle }}</text>
+				</view>
+				<view class="confirm-content-box">
+					<text class="confirm-content-text">{{ confirmContent }}</text>
+				</view>
+				<view class="confirm-buttons">
+					<view class="confirm-btn cancel" @click="confirmVisible = false">
+						<text>取消</text>
+					</view>
+					<view class="confirm-btn confirm" @click="handleConfirm">
+						<text>确定</text>
+					</view>
+				</view>
+			</view>
 		</view>
 	</view>
 </template>
@@ -73,7 +103,11 @@ export default {
 	},
 	data() {
 		return {
-			need: null
+			need: null,
+			confirmVisible: false,
+			confirmTitle: '提示',
+			confirmContent: '',
+			onConfirm: null
 		}
 	},
 	onLoad(options) {
@@ -104,6 +138,27 @@ export default {
 			if (!timestamp) return ''
 			const date = new Date(timestamp)
 			return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
+		},
+		cancelNeed() {
+			this.confirmTitle = '取消订单'
+			this.confirmContent = '确定要取消这个订单吗？取消后可以再次发布。'
+			this.onConfirm = () => {
+				this.need.status = 'cancelled'
+				this.need.cancelledAt = Date.now()
+				const needInStore = this.needStore.needs.find(n => n.id === this.need.id)
+				if (needInStore) {
+					needInStore.status = 'cancelled'
+					needInStore.cancelledAt = Date.now()
+				}
+				uni.showToast({ title: '订单已取消', icon: 'success' })
+			}
+			this.confirmVisible = true
+		},
+		handleConfirm() {
+			this.confirmVisible = false
+			if (this.onConfirm) {
+				this.onConfirm()
+			}
 		},
 		republishNeed() {
 			if (!this.need) {
@@ -248,6 +303,21 @@ export default {
 	box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);
 }
 
+.btn-s {
+	background: #F3F4F6;
+	color: #6B7280;
+}
+
+.btn-cancel {
+	background: #FEF2F2;
+	color: #EF4444;
+	box-shadow: 0 10px 20px rgba(239, 68, 68, 0.1);
+}
+
+.btn.disabled {
+	opacity: 0.6;
+}
+
 .loading {
 	display: flex;
 	align-items: center;
@@ -257,5 +327,74 @@ export default {
 
 .loading-text {
 	color: #6B7280;
+}
+
+/* 确认弹窗样式 */
+.confirm-mask {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0.5);
+	z-index: 99999;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.confirm-popup {
+	width: 560rpx;
+	background: #FFFFFF;
+	border-radius: 32rpx;
+	overflow: hidden;
+}
+
+.confirm-title-box {
+	padding: 40rpx 40rpx 20rpx;
+	text-align: center;
+}
+
+.confirm-title-text {
+	font-size: 34rpx;
+	font-weight: 700;
+	color: #1E293B;
+}
+
+.confirm-content-box {
+	padding: 0 40rpx 30rpx;
+	text-align: center;
+}
+
+.confirm-content-text {
+	font-size: 28rpx;
+	color: #64748B;
+	line-height: 1.6;
+}
+
+.confirm-buttons {
+	display: flex;
+	border-top: 1rpx solid #F1F5F9;
+}
+
+.confirm-btn {
+	flex: 1;
+	height: 96rpx;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.confirm-btn.cancel {
+	color: #64748B;
+	font-size: 30rpx;
+	font-weight: 600;
+}
+
+.confirm-btn.confirm {
+	color: #10B981;
+	font-size: 30rpx;
+	font-weight: 700;
+	border-left: 1rpx solid #F1F5F9;
 }
 </style>
