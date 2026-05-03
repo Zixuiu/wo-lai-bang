@@ -12,9 +12,6 @@
 			<view class="detail-item">
 				<view class="label">服务位置</view>
 				<view class="value">{{ need.location }}</view>
-				<view v-if="need.latitude && need.longitude" class="map-link" @click="openMap">
-					<IconFont name="map-location" :size="18" color="#EF4444" class="map-icon" /> 查看地图
-				</view>
 			</view>
 
 			<view class="detail-item" v-if="need.detailAddress">
@@ -35,7 +32,7 @@
 			<view class="detail-item">
 				<view class="label">现场图片</view>
 				<view v-if="need.image" class="image-wrapper">
-					<image :src="need.image" mode="aspectFill" class="need-image" @click="previewImage(need.image)" />
+					<image :src="need.image" mode="aspectFill" class="need-image" />
 				</view>
 				<view v-else class="no-image">暂无图片展示</view>
 			</view>
@@ -56,86 +53,20 @@
 			<view style="padding: 10px; background: #f5f5f5; margin-bottom: 10px; font-size: 12px;">
 				<text>need: {{ need ? '存在' : '不存在' }}</text><br/>
 				<text>status: {{ need ? need.status : '无' }}</text><br/>
-				<text>publisherId: {{ need ? need.publisher?.id : '无' }}</text><br/>
-				<text>currentUserId: {{ userStore.currentUser?.id }}</text><br/>
-				<text>isMatch: {{ need && need.publisher?.id === userStore.currentUser?.id ? '是' : '否' }}</text>
+				<text>点击计数: {{ clickCount }}</text>
 			</view>
 			
-			<!-- Case 1: Open need, not mine -->
-			<view v-if="need && need.status === 'open' && need.publisher.id !== userStore.currentUser.id" 
-				class="btn btn-p" @click="acceptNeed">✋ 接单帮忙</view>
-			
-			<!-- Case 2: Accepted need, involve me -->
-			<view v-else-if="need && need.status === 'accepted' && (need.publisher.id === userStore.currentUser.id || isAccepter)" 
-				class="btn btn-p" @click="goToChat">立即沟通</view>
-			
-			<!-- Case 3: Completed need, need rating -->
-			<view v-else-if="need && need.status === 'completed' && need.publisher.id === userStore.currentUser.id && !need.isRated" 
-				class="btn btn-p" @click="rateOrder">评价帮手</view>
-
-			<!-- Case 4: Already completed/rated -->
-			<view v-else-if="need && need.status === 'completed'"
-				class="btn btn-s disabled">订单已完成</view>
-
-			<!-- Case 5: Cancelled, my own need - republish and edit -->
-			<view v-else-if="need && need.status === 'cancelled' && need.publisher.id === userStore.currentUser.id" class="btn-row">
+			<!-- 直接显示测试按钮 -->
+			<view class="btn btn-p" @click="testClick">测试点击</view>
+			<view class="btn-row" style="margin-top: 10px;">
 				<view class="btn btn-p" @click="editNeed">编辑需求</view>
 				<view class="btn btn-s" @click="republishNeed">再次发布</view>
-			</view>
-
-			<!-- Case 6: Cancelled -->
-			<view v-else-if="need && need.status === 'cancelled'"
-				class="btn btn-s disabled">已取消</view>
-
-			<!-- Case 7: My own open need -->
-			<view v-else-if="need && need.status === 'open' && need.publisher.id === userStore.currentUser.id" class="btn-row">
-				<view class="btn btn-s" @click="editNeed">编辑需求</view>
-				<view class="btn btn-cancel" @click="cancelNeed">取消发布</view>
 			</view>
 		</view>
 
 		<!-- 加载中 -->
 		<view v-if="!need" class="loading">
 			<text class="loading-text">加载中...</text>
-		</view>
-
-		<!-- 接单成功弹窗 -->
-		<view v-if="acceptSuccessVisible" class="accept-mask" @click="acceptSuccessVisible = false">
-			<view class="accept-popup" @click.stop>
-				<view class="success-icon">
-					<IconFont name="circle-check" :size="80" />
-				</view>
-				<text class="accept-title">接单成功！</text>
-				<text class="accept-subtitle">请及时联系发布者，完成任务后记得完成订单</text>
-				<view class="accept-actions">
-					<view class="accept-btn" @click="acceptSuccessVisible = false">
-						<text>知道了</text>
-					</view>
-				</view>
-			</view>
-		</view>
-
-		<!-- 确认弹窗 -->
-		<view v-if="confirmVisible" class="confirm-mask" @click="confirmVisible = false">
-			<view class="confirm-popup" @click.stop>
-				<view class="confirm-title-box">
-					<text class="confirm-title-text">{{ confirmTitle }}</text>
-				</view>
-				<view class="confirm-content-box">
-					<text class="confirm-content-text">{{ confirmContent }}</text>
-				</view>
-				<view class="confirm-buttons">
-					<view class="confirm-btn cancel" v-if="confirmCancelText" @click="confirmVisible = false">
-						<text>{{ confirmCancelText }}</text>
-					</view>
-					<view class="confirm-btn confirm" v-if="confirmCancelText" @click="confirmVisible = false; if(onConfirm) onConfirm()">
-						<text>{{ confirmConfirmText }}</text>
-					</view>
-					<view class="confirm-btn confirm full" v-else @click="confirmVisible = false; if(onConfirm) onConfirm()">
-						<text>{{ confirmConfirmText }}</text>
-					</view>
-				</view>
-			</view>
 		</view>
 	</view>
 </template>
@@ -144,12 +75,8 @@
 import { useUserStore } from '@/stores/user'
 import { useNeedStore } from '@/stores/need'
 import { useOrderStore } from '@/stores/order'
-import IconFont from '@/components/icon-font/icon-font.vue'
 
 export default {
-	components: {
-		IconFont
-	},
 	setup() {
 		const userStore = useUserStore()
 		const needStore = useNeedStore()
@@ -159,55 +86,22 @@ export default {
 	data() {
 		return {
 			need: null,
-			userLatitude: 39.908823,
-			userLongitude: 116.397470,
-			distanceText: '',
-			mapMarkers: [],
-			confirmVisible: false,
-			confirmTitle: '提示',
-			confirmContent: '',
-			confirmConfirmText: '确定',
-			confirmCancelText: '取消',
-			acceptSuccessVisible: false,
-			onConfirm: null
-		}
-	},
-	computed: {
-		isAccepter() {
-			// 支持 order 对象中的 helper 字段和 potential 的 accepterId
-			return this.need && (
-				(this.need.helper && this.need.helper.id === this.userStore.currentUser.id) || 
-				(this.need.accepterId === this.userStore.currentUser.id)
-			)
+			clickCount: 0
 		}
 	},
 	onLoad(options) {
 		const id = options.id
 		if (!id) return;
 
-		// 汇总所有数据源，增强查找逻辑
 		const findFromAll = () => {
 			const sources = [
 				...(this.needStore.needs || []),
 				...(this.orderStore.orders || [])
 			]
-			// 尝试匹配 id 或 needId，并使用 == 避免类型问题
 			return sources.find(item => item.id == id || (item.needId && item.needId == id))
 		}
 
 		this.need = findFromAll()
-		
-		// 如果还没找到，尝试从本地缓存中找（兜底逻辑）
-		if (!this.need) {
-			const localNeeds = uni.getStorageSync('needs') || []
-			const localOrders = uni.getStorageSync('orders') || []
-			const localSources = [...localNeeds, ...localOrders]
-			this.need = localSources.find(item => item.id == id || (item.needId && item.needId == id))
-		}
-
-		if (this.need) {
-			this.getUserLocation()
-		}
 	},
 	methods: {
 		getStatusText(status) {
@@ -219,101 +113,24 @@ export default {
 			}
 			return map[status] || status
 		},
-		getUserLocation() {
-			uni.getLocation({
-				type: 'gcj02',
-				success: (res) => {
-					this.userLatitude = res.latitude
-					this.userLongitude = res.longitude
-				},
-				fail: () => {}
-			})
-		},
-		openMap() {
-			if (!this.need.latitude || !this.need.longitude) return
-			uni.openLocation({
-				latitude: this.need.latitude,
-				longitude: this.need.longitude,
-				name: this.need.location,
-				address: this.need.location
-			})
-		},
 		formatTime(timestamp) {
 			if (!timestamp) return ''
 			const date = new Date(timestamp)
 			return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
 		},
-		goBack() {
-			uni.navigateBack()
-		},
-			async acceptNeed() {
-			const result = await this.needStore.acceptNeed(this.need.id)
-			if (result.success) {
-				this.need.status = 'accepted'
-				this.acceptSuccessVisible = true
-				setTimeout(() => {
-					this.acceptSuccessVisible = false
-				}, 3000)
-			} else {
-				uni.showToast({ title: result.message, icon: 'none' })
-			}
-		},
-		goToChat() {
-			const targetUser = this.need.publisher.id === this.userStore.currentUser.id ? 
-				{ id: this.need.accepterId, nickname: '帮手' } : 
-				this.need.publisher;
-			
-			uni.navigateTo({
-				url: `/pages/chat/chat?userId=${targetUser.id}&nickname=${targetUser.nickname}`
-			})
-			},
-		rateOrder() {
-			uni.showToast({ title: '评价功能开发中', icon: 'none' })
-		},
-		cancelNeed() {
-			this.confirmTitle = '提示'
-			this.confirmContent = '确定要取消这个需求吗？'
-			this.confirmConfirmText = '确定'
-			this.confirmCancelText = '取消'
-			this.onConfirm = () => {
-				this.need.status = 'cancelled'
-				this.need.cancelledAt = Date.now()
-				const needInStore = this.needStore.needs.find(n => n.id === this.need.id)
-				if (needInStore) {
-					needInStore.status = 'cancelled'
-					needInStore.cancelledAt = Date.now()
-				}
-				this.sendCancelNotification()
-				this.$forceUpdate()
-				uni.showToast({ title: '已取消', icon: 'success' })
-			}
-			this.confirmVisible = true
-		},
-		sendCancelNotification() {
-			if (this.need.helper && this.need.helper.id) {
-				const notifications = uni.getStorageSync('notifications') || []
-				notifications.unshift({
-					id: Date.now(),
-					type: 'order',
-					title: '订单已取消',
-					content: '发布者已取消订单',
-					orderId: this.need.id,
-					orderTitle: this.need.title,
-					status: 'cancelled',
-					read: false,
-					createdAt: Date.now()
-				})
-				uni.setStorageSync('notifications', notifications)
-			}
-		},
-		previewImage(image) {
-			uni.previewImage({ urls: [image] })
+		testClick() {
+			this.clickCount++
+			console.log('测试按钮被点击！次数:', this.clickCount)
+			alert('按钮点击成功！次数: ' + this.clickCount)
 		},
 		editNeed() {
-			console.log('editNeed 方法被调用')
-			console.log('当前need:', this.need)
-			console.log('当前用户:', this.userStore.currentUser)
-			
+			console.log('编辑需求被调用')
+			this.clickCount++
+			if (!this.need) {
+				alert('需求不存在')
+				return
+			}
+			alert('准备编辑需求: ' + this.need.title)
 			const needData = {
 				id: this.need.id,
 				isEdit: true,
@@ -329,13 +146,16 @@ export default {
 				deadline: this.need.deadline || '',
 				category: this.need.category || '其他'
 			}
-			console.log('editData:', needData)
 			uni.setStorageSync('editData', needData)
+			alert('已保存编辑数据，准备跳转到发布页')
 			uni.navigateTo({
 				url: '/pages/publish/publish'
 			})
 		},
 		republishNeed() {
+			console.log('再次发布被调用')
+			this.clickCount++
+			alert('准备再次发布: ' + this.need.title)
 			const needData = {
 				title: this.need.title,
 				description: this.need.description,
@@ -350,6 +170,7 @@ export default {
 				category: this.need.category || '其他'
 			}
 			uni.setStorageSync('republishData', needData)
+			alert('已保存重新发布数据，准备跳转到发布页')
 			uni.navigateTo({
 				url: '/pages/publish/publish'
 			})
@@ -407,27 +228,12 @@ export default {
 .value.status {
 	color: #10B981;
 }
-.value.status.completed {
-	color: #6B7280;
-}
 
 .value.desc {
 	font-size: 15px;
 	font-weight: 400;
 	color: #4B5563;
 	line-height: 1.6;
-}
-
-.map-link {
-	margin-top: 10px;
-	font-size: 13px;
-	color: #10B981;
-	font-weight: 600;
-}
-
-.map-icon {
-	margin-right: 4px;
-	vertical-align: middle;
 }
 
 .image-wrapper {
@@ -452,11 +258,6 @@ export default {
 .deadline-text {
 	color: #EF4444;
 	font-weight: 700;
-}
-
-.btn-group {
-	margin-top: 40px;
-	padding-bottom: 40px;
 }
 
 .btn-group-fixed {
@@ -501,87 +302,6 @@ export default {
 	color: #6B7280;
 }
 
-.btn-cancel {
-	background: #FEF2F2;
-	color: #EF4444;
-}
-
-.btn.disabled {
-	opacity: 0.6;
-}
-
-.confirm-mask {
-	position: fixed;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	background: rgba(0, 0, 0, 0.5);
-	z-index: 99999;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.confirm-popup {
-	width: 560rpx;
-	background: #FFFFFF;
-	border-radius: 32rpx;
-	overflow: hidden;
-}
-
-.confirm-title-box {
-	padding: 40rpx 40rpx 20rpx;
-	text-align: center;
-}
-
-.confirm-title-text {
-	font-size: 34rpx;
-	font-weight: 700;
-	color: #1E293B;
-}
-
-.confirm-content-box {
-	padding: 0 40rpx 30rpx;
-	text-align: center;
-}
-
-.confirm-content-text {
-	font-size: 28rpx;
-	color: #64748B;
-	line-height: 1.6;
-}
-
-.confirm-buttons {
-	display: flex;
-	border-top: 1rpx solid #F1F5F9;
-}
-
-.confirm-btn {
-	flex: 1;
-	height: 96rpx;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.confirm-btn.cancel {
-	color: #64748B;
-	font-size: 30rpx;
-	font-weight: 600;
-}
-
-.confirm-btn.confirm {
-	color: #10B981;
-	font-size: 30rpx;
-	font-weight: 700;
-	border-left: 1rpx solid #F1F5F9;
-}
-
-.confirm-btn.full {
-	border-left: none;
-}
-
 .loading {
 	display: flex;
 	align-items: center;
@@ -591,66 +311,5 @@ export default {
 
 .loading-text {
 	color: #6B7280;
-}
-
-/* 接单成功弹窗样式 */
-.accept-mask {
-	position: fixed;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	background: rgba(0, 0, 0, 0.6);
-	z-index: 99999;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.accept-popup {
-	width: 560rpx;
-	background: #FFFFFF;
-	border-radius: 32rpx;
-	padding: 60rpx 40rpx 40rpx;
-	text-align: center;
-	box-shadow: 0 20rpx 60rpx rgba(0, 0, 0, 0.15);
-}
-
-.success-icon {
-	margin-bottom: 24rpx;
-}
-
-.accept-title {
-	display: block;
-	font-size: 36rpx;
-	font-weight: 700;
-	color: #1E293B;
-	margin-bottom: 16rpx;
-}
-
-.accept-subtitle {
-	display: block;
-	font-size: 26rpx;
-	color: #64748B;
-	line-height: 1.6;
-	margin-bottom: 40rpx;
-}
-
-.accept-actions {
-	display: flex;
-	justify-content: center;
-}
-
-.accept-btn {
-	flex: 1;
-	height: 80rpx;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	background: #10B981;
-	border-radius: 20rpx;
-	color: #FFFFFF;
-	font-size: 30rpx;
-	font-weight: 600;
 }
 </style>
