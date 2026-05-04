@@ -115,40 +115,40 @@
 		</view>
 
 		<!-- 订单卡片弹窗 -->
-		<view v-if="orderCardVisible" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center;" @click="orderCardVisible = false">
-			<view style="width:600rpx;background:#FFFFFF;border-radius:32rpx;overflow:hidden;" @click.stop>
-				<view style="padding:32rpx;">
-					<view style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20rpx;">
-						<text style="font-size:32rpx;font-weight:800;color:#1E293B;">订单详情</text>
-						<view style="font-size:24rpx;padding:8rpx 16rpx;border-radius:16rpx;" :class="'order-status-' + currentOrder?.status">
+		<view v-if="orderCardVisible" class="order-card-mask" @click="orderCardVisible = false">
+			<view class="order-card-popup" @click.stop>
+				<view class="order-card-content">
+					<view class="order-card-header">
+						<text class="order-card-title">订单详情</text>
+						<view class="order-card-status" :class="'order-status-' + currentOrder?.status">
 							{{ getOrderStatusText(currentOrder?.status) }}
 						</view>
 					</view>
-					<view style="font-size:28rpx;font-weight:700;color:#1E293B;margin-bottom:16rpx;">{{ currentOrder?.title }}</view>
-					<view style="display:flex;align-items:center;gap:8rpx;margin-bottom:12rpx;">
-						<text style="font-size:24rpx;color:#64748B;">酬劳</text>
-						<text style="font-size:32rpx;font-weight:800;color:#10B981;">¥{{ currentOrder?.reward }}</text>
+					<view class="order-card-order-title">{{ currentOrder?.title }}</view>
+					<view class="order-card-reward-row">
+						<text class="order-card-reward-label">酬劳</text>
+						<text class="order-card-reward-value">¥{{ currentOrder?.reward }}</text>
 					</view>
-					<view style="border-top:1rpx solid #F1F5F9;padding-top:20rpx;margin-top:20rpx;">
-						<view style="display:flex;align-items:center;gap:12rpx;margin-bottom:16rpx;">
-							<view style="width:40rpx;height:40rpx;border-radius:20rpx;background:#ECFDF5;display:flex;align-items:center;justify-content:center;">
-								<text style="font-size:20rpx;font-weight:700;color:#10B981;">发</text>
+					<view class="order-card-participants">
+						<view class="order-card-participant">
+							<view class="order-card-avatar order-card-avatar-publisher">
+								<text class="order-card-avatar-text">发</text>
 							</view>
-							<text style="font-size:28rpx;color:#1E293B;font-weight:600;">{{ currentOrder?.publisher?.nickname || '发布者' }}</text>
+							<text class="order-card-participant-name">{{ currentOrder?.publisher?.nickname || '发布者' }}</text>
 						</view>
-						<view style="display:flex;align-items:center;gap:12rpx;">
-							<view style="width:40rpx;height:40rpx;border-radius:20rpx;background:#F1F5F9;display:flex;align-items:center;justify-content:center;">
-								<text style="font-size:20rpx;font-weight:700;color:#64748B;">帮</text>
+						<view class="order-card-participant">
+							<view class="order-card-avatar order-card-avatar-helper">
+								<text class="order-card-avatar-text">帮</text>
 							</view>
-							<text style="font-size:28rpx;color:#1E293B;font-weight:600;">{{ currentOrder?.helper?.nickname || '帮手' }}</text>
+							<text class="order-card-participant-name">{{ currentOrder?.helper?.nickname || '帮手' }}</text>
 						</view>
 					</view>
-					<view style="display:flex;gap:16rpx;margin-top:24rpx;">
-						<view style="flex:1;height:88rpx;border-radius:22rpx;display:flex;align-items:center;justify-content:center;background:#F1F5F9;" @click="orderCardVisible = false">
-							<text style="font-size:28rpx;font-weight:700;color:#64748B;">关闭</text>
+					<view class="order-card-actions">
+						<view class="order-card-btn order-card-btn-secondary" @click="orderCardVisible = false">
+							<text class="order-card-btn-text">关闭</text>
 						</view>
-						<view style="flex:1;height:88rpx;border-radius:22rpx;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#10B981,#059669);" @click="goToOrderDetail">
-							<text style="font-size:28rpx;font-weight:700;color:#FFFFFF;">查看详情</text>
+						<view class="order-card-btn order-card-btn-primary" @click="goToOrderDetail">
+							<text class="order-card-btn-text order-card-btn-text-primary">查看详情</text>
 						</view>
 					</view>
 				</view>
@@ -192,9 +192,9 @@ export default {
 			if (!this.relatedOrder) return ''
 			const currentUserId = this.userStore.currentUser?.id
 			if (this.relatedOrder.publisher?.id === currentUserId) {
-				return '发单人'
-			} else if (this.relatedOrder.helper?.id === currentUserId) {
 				return '接单人'
+			} else if (this.relatedOrder.helper?.id === currentUserId) {
+				return '发单人'
 			}
 			return ''
 		}
@@ -946,5 +946,159 @@ export default {
 .order-status-open {
 	background: #DBEAFE;
 	color: #3B82F6;
+}
+
+.order-card-mask {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background: rgba(0, 0, 0, 0.5);
+	z-index: 99999;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.order-card-popup {
+	width: 600rpx;
+	background: #FFFFFF;
+	border-radius: 32rpx;
+	overflow: hidden;
+}
+
+.order-card-content {
+	padding: 32rpx;
+}
+
+.order-card-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 20rpx;
+}
+
+.order-card-title {
+	font-size: 32rpx;
+	font-weight: 800;
+	color: #1E293B;
+}
+
+.order-card-status {
+	font-size: 24rpx;
+	padding: 8rpx 16rpx;
+	border-radius: 16rpx;
+}
+
+.order-card-order-title {
+	font-size: 28rpx;
+	font-weight: 700;
+	color: #1E293B;
+	margin-bottom: 16rpx;
+}
+
+.order-card-reward-row {
+	display: flex;
+	align-items: center;
+	gap: 8rpx;
+	margin-bottom: 12rpx;
+}
+
+.order-card-reward-label {
+	font-size: 24rpx;
+	color: #64748B;
+}
+
+.order-card-reward-value {
+	font-size: 32rpx;
+	font-weight: 800;
+	color: #10B981;
+}
+
+.order-card-participants {
+	border-top: 1rpx solid #F1F5F9;
+	padding-top: 20rpx;
+	margin-top: 20rpx;
+}
+
+.order-card-participant {
+	display: flex;
+	align-items: center;
+	gap: 12rpx;
+	margin-bottom: 16rpx;
+}
+
+.order-card-participant:last-child {
+	margin-bottom: 0;
+}
+
+.order-card-avatar {
+	width: 40rpx;
+	height: 40rpx;
+	border-radius: 20rpx;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.order-card-avatar-publisher {
+	background: #ECFDF5;
+}
+
+.order-card-avatar-helper {
+	background: #F1F5F9;
+}
+
+.order-card-avatar-text {
+	font-size: 20rpx;
+	font-weight: 700;
+	color: #10B981;
+}
+
+.order-card-avatar-helper .order-card-avatar-text {
+	color: #64748B;
+}
+
+.order-card-participant-name {
+	font-size: 28rpx;
+	color: #1E293B;
+	font-weight: 600;
+}
+
+.order-card-actions {
+	display: flex;
+	gap: 16rpx;
+	margin-top: 24rpx;
+}
+
+.order-card-btn {
+	flex: 1;
+	height: 88rpx;
+	border-radius: 22rpx;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.order-card-btn-text {
+	font-size: 28rpx;
+	font-weight: 700;
+}
+
+.order-card-btn-secondary {
+	background: #F1F5F9;
+}
+
+.order-card-btn-secondary .order-card-btn-text {
+	color: #64748B;
+}
+
+.order-card-btn-primary {
+	background: linear-gradient(135deg, #10B981, #059669);
+}
+
+.order-card-btn-text-primary {
+	color: #FFFFFF;
 }
 </style>
