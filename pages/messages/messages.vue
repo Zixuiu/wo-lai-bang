@@ -209,7 +209,7 @@ export default {
 			if (allConversations.length > 0) {
 				this.conversations = allConversations
 					.filter(conv => {
-						if (!conv.relatedOrder) return false
+						if (!conv.relatedOrder) return true
 						const order = conv.relatedOrder
 						const isPublisher = order.publisher?.id === currentUserId
 						const isHelper = order.helper?.id === currentUserId
