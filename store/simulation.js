@@ -215,8 +215,8 @@ export const useSimulationStore = defineStore('simulation', {
               title: need.title,
               reward: need.reward,
               status: 'accepted',
-              publisher: need.publisher,
-              helper: user
+              publisher: { ...need.publisher },
+              helper: { ...user }
             }
           }
           
@@ -666,8 +666,8 @@ export const useSimulationStore = defineStore('simulation', {
           title: order.title,
           reward: order.reward,
           status: order.status,
-          publisher: order.publisher,
-          helper: order.helper
+          publisher: { ...order.publisher },
+          helper: { ...order.helper }
         } : null
       }
 

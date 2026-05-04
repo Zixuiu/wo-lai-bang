@@ -154,7 +154,7 @@ export const useNeedStore = defineStore('need', {
         ...needData,
         id: `n${Date.now()}`,
         createdAt: Date.now(),
-        publisher: userStore.currentUser,
+        publisher: { ...userStore.currentUser },
         status: NEED_STATUS.OPEN,
         category: needData.category || '其他',
         isUrgent: needData.isUrgent || false,
@@ -190,8 +190,8 @@ export const useNeedStore = defineStore('need', {
         location: need.location,
         latitude: need.latitude,
         longitude: need.longitude,
-        publisher: need.publisher,
-        helper: userStore.currentUser,
+        publisher: { ...need.publisher },
+        helper: { ...userStore.currentUser },
         status: NEED_STATUS.ACCEPTED,
         createdAt: Date.now(),
         image: need.image || '',
@@ -203,7 +203,7 @@ export const useNeedStore = defineStore('need', {
       }
 
       need.status = NEED_STATUS.ACCEPTED
-      need.helper = userStore.currentUser
+      need.helper = { ...userStore.currentUser }
       need.acceptedAt = Date.now()
 
       const orderStore = useOrderStore()
@@ -227,8 +227,8 @@ export const useNeedStore = defineStore('need', {
           title: need.title,
           reward: need.reward,
           status: need.status,
-          publisher: need.publisher,
-          helper: need.helper
+          publisher: { ...need.publisher },
+          helper: { ...need.helper }
         }
       }
 
