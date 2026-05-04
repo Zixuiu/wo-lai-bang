@@ -39,7 +39,7 @@
         <view class="setting-value">
           <slider
             :value="simulationStore.publishInterval / 1000"
-            :min="5"
+            :min="1"
             :max="120"
             @change="onPublishIntervalChange"
             activeColor="#4F46E5"
@@ -53,7 +53,7 @@
         <view class="setting-value">
           <slider
             :value="simulationStore.acceptInterval / 1000"
-            :min="3"
+            :min="1"
             :max="90"
             @change="onAcceptIntervalChange"
             activeColor="#4F46E5"
@@ -67,7 +67,7 @@
         <view class="setting-value">
           <slider
             :value="simulationStore.completeInterval / 1000"
-            :min="5"
+            :min="1"
             :max="60"
             @change="onCompleteIntervalChange"
             activeColor="#10B981"
@@ -81,7 +81,7 @@
         <view class="setting-value">
           <slider
             :value="simulationStore.confirmInterval / 1000"
-            :min="3"
+            :min="1"
             :max="60"
             @change="onConfirmIntervalChange"
             activeColor="#F59E0B"

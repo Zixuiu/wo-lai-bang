@@ -37,10 +37,10 @@ export const useSimulationStore = defineStore('simulation', {
     isRunning: false,
     simulationUsers: [...SIMULATION_USERS],
     activityLog: [],
-    publishInterval: 30000,
-    acceptInterval: 20000,
-    completeInterval: 20000,
-    confirmInterval: 15000,
+    publishInterval: 5000,
+    acceptInterval: 3000,
+    completeInterval: 5000,
+    confirmInterval: 3000,
     maxActiveNeeds: 10,
     simulationTimers: [],
   }),
@@ -466,7 +466,7 @@ export const useSimulationStore = defineStore('simulation', {
         if (this.isRunning) {
           this.sendRandomMessage()
         }
-      }, 25000)
+      }, 5000)
 
       const completeTimer = setInterval(() => {
         if (this.isRunning) {
@@ -484,7 +484,7 @@ export const useSimulationStore = defineStore('simulation', {
         if (this.isRunning && Math.random() < 0.3) {
           this.cancelRandomNeed()
         }
-      }, 30000)
+      }, 5000)
 
       this.simulationTimers = [publishTimer, acceptTimer, messageTimer, completeTimer, confirmTimer, cancelTimer]
     },
