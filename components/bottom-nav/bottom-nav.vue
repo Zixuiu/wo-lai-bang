@@ -42,6 +42,9 @@ export default {
 	},
 	created() {
 		this.updateBadges()
+		uni.$on('clearMessageBadge', () => {
+			this.list[3].badge = 0
+		})
 	},
 	methods: {
 		switchTab(index) {
@@ -50,14 +53,22 @@ export default {
 			}
 		},
 		updateBadges() {
-			const notifications = uni.getStorageSync('notifications') || []
-			const unreadCount = notifications.filter(n => !n.read).length
-
+			const currentUserId = uni.getStorageSync('userInfo')?.id
 			const conversations = uni.getStorageSync('conversations') || []
-			const messageUnreadCount = conversations.reduce((sum, c) => sum + (c.unread || 0), 0)
+			const messageUnreadCount = conversations
+				.filter(conv => {
+					if (!conv.relatedOrder) return true
+					const order = conv.relatedOrder
+					const isPublisher = order.publisher?.id === currentUserId
+					const isHelper = order.helper?.id === currentUserId
+					return isPublisher || isHelper
+				})
+				.reduce((sum, c) => sum + (c.unread || 0), 0)
 
 			this.list[3].badge = messageUnreadCount
 
+			const notifications = uni.getStorageSync('notifications') || []
+			const unreadCount = notifications.filter(n => !n.read).length
 			uni.setStorageSync('totalUnreadCount', unreadCount + messageUnreadCount)
 		},
 		clearMessageBadge() {

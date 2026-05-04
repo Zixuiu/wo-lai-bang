@@ -228,6 +228,8 @@ export default {
 				}
 			}
 			uni.removeTabBarBadge({ index: 3 })
+			uni.setStorageSync('totalUnreadCount', 0)
+			uni.$emit('clearMessageBadge')
 		},
 		getAvatarBg(name) {
 			const colors = [
