@@ -1,0 +1,24 @@
+# Build outputs
+unpackage/
+dist/
+
+# IDE
+.hbuilderx/
+
+# Documents (for master branch)
+代码对比报告.md
+wo-laibang-docs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Logs
+*.log
+npm-debug.log*
