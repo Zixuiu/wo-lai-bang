@@ -193,6 +193,11 @@ export const useOrderStore = defineStore('order', {
           shareCommission = order.reward * SHARE_COMMISSION_RATE
           userStore.addCommission(shareCommission, order.shareUserId, order.title, order.reward)
         }
+
+        const actualReward = order.reward - platformCommission
+        if (order.helper && order.helper.id) {
+          userStore.addBalanceToUser(order.helper.id, actualReward)
+        }
       }
 
       return { success: true }
@@ -272,6 +277,11 @@ export const useOrderStore = defineStore('order', {
         order.platformCommission = platformCommission
         order.shareCommission = shareCommission
         order.actualPlatformCommission = platformCommission - shareCommission
+
+        const actualReward = order.reward - platformCommission
+        if (order.helper && order.helper.id) {
+          userStore.addBalanceToUser(order.helper.id, actualReward)
+        }
 
         const allConvs = uni.getStorageSync('conversations') || []
         if (order.publisher?.id) {

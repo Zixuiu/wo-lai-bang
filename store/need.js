@@ -340,8 +340,6 @@ export const useNeedStore = defineStore('need', {
         }
       }
 
-      userStore.deductBalance(reward)
-
       const allConvs = uni.getStorageSync('conversations') || []
       const convIndex = allConvs.findIndex(c => c.userId === need.helper?.id)
       if (convIndex >= 0 && allConvs[convIndex].relatedOrder) {
