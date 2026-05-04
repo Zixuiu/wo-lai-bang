@@ -149,7 +149,10 @@
 						<text class="price">¥{{ need.reward }}</text>
 					</view>
 					<view class="card-body">
-						<text class="title">{{ need.title }}</text>
+						<view class="title-row">
+							<text v-if="need.isUrgent" class="urgent-badge">紧急</text>
+							<text class="title">{{ need.title }}</text>
+						</view>
 						<text class="desc">{{ need.description }}</text>
 					</view>
 					<view class="card-footer">
@@ -1090,12 +1093,28 @@ export default {
 
 .need-bento-card .price { font-size: 34rpx; font-weight: 800; color: #10B981; }
 
+.need-bento-card .title-row {
+	display: flex;
+	align-items: center;
+	gap: 8rpx;
+	margin-bottom: 8rpx;
+}
+
+.need-bento-card .urgent-badge {
+	background: #FFF7ED;
+	color: #EA580C;
+	font-size: 20rpx;
+	font-weight: 700;
+	padding: 4rpx 12rpx;
+	border-radius: 8rpx;
+	flex-shrink: 0;
+}
+
 .need-bento-card .title {
 	font-size: 30rpx;
 	font-weight: 800;
 	color: #1E293B;
-	margin-bottom: 8rpx;
-	display: block;
+	display: inline;
 }
 
 .need-bento-card .desc {

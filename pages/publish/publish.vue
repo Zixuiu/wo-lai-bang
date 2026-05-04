@@ -162,6 +162,19 @@
 							/>
 						</view>
 					</view>
+
+					<view class="input-card urgent-toggle" :class="{ active: form.isUrgent }" @click="form.isUrgent = !form.isUrgent">
+						<view class="urgent-left">
+							<IconFont name="zap" :size="32" class="urgent-icon" />
+							<view class="urgent-info">
+								<text class="urgent-title">设为紧急订单</text>
+								<text class="urgent-desc">紧急订单会在"急需帮手"区域优先展示</text>
+							</view>
+						</view>
+						<view class="toggle-switch" :class="{ on: form.isUrgent }">
+							<view class="toggle-knob"></view>
+						</view>
+					</view>
 				</view>
 
 				<view class="action-footer dual">
@@ -342,6 +355,7 @@ export default {
 				title: '',
 				description: '',
 				reward: '',
+				isUrgent: false,
 				location: '',
 				detailAddress: '',
 				address: '',
@@ -620,6 +634,7 @@ export default {
 				title: '',
 				description: '',
 				reward: '',
+				isUrgent: false,
 				location: '',
 				detailAddress: '',
 				address: '',
@@ -668,6 +683,7 @@ export default {
 					title: this.form.title.trim(),
 					description: this.form.description.trim(),
 					reward: rewardAmount,
+					isUrgent: this.form.isUrgent,
 					location: this.form.location.trim() + (this.form.detailAddress ? ' ' + this.form.detailAddress.trim() : ''),
 					address: this.form.address,
 					detailAddress: this.form.detailAddress.trim(),
@@ -1166,6 +1182,78 @@ export default {
 	justify-content: center;
 	padding: 100px 40px;
 	text-align: center;
+}
+
+.urgent-toggle {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 20rpx 24rpx;
+}
+
+.urgent-toggle .urgent-left {
+	display: flex;
+	align-items: center;
+	gap: 16rpx;
+}
+
+.urgent-toggle .urgent-icon {
+	color: #94A3B8;
+}
+
+.urgent-toggle.active .urgent-icon {
+	color: #EA580C;
+}
+
+.urgent-toggle .urgent-info {
+	display: flex;
+	flex-direction: column;
+}
+
+.urgent-toggle .urgent-title {
+	font-size: 28rpx;
+	font-weight: 700;
+	color: #1E293B;
+}
+
+.urgent-toggle .urgent-desc {
+	font-size: 22rpx;
+	color: #94A3B8;
+	margin-top: 4rpx;
+}
+
+.urgent-toggle.active {
+	background: #FFF7ED;
+	border-color: #FB923C;
+}
+
+.toggle-switch {
+	width: 88rpx;
+	height: 48rpx;
+	border-radius: 24rpx;
+	background: #E5E7EB;
+	position: relative;
+	transition: all 0.3s;
+}
+
+.toggle-switch.on {
+	background: #10B981;
+}
+
+.toggle-knob {
+	width: 40rpx;
+	height: 40rpx;
+	border-radius: 50%;
+	background: #FFFFFF;
+	position: absolute;
+	top: 4rpx;
+	left: 4rpx;
+	transition: all 0.3s;
+	box-shadow: 0 2rpx 4rpx rgba(0,0,0,0.1);
+}
+
+.toggle-switch.on .toggle-knob {
+	left: 44rpx;
 }
 .success-icon {
 	font-size: 80px;

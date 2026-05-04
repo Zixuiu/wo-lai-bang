@@ -157,7 +157,7 @@ export const useNeedStore = defineStore('need', {
         publisher: userStore.currentUser,
         status: NEED_STATUS.OPEN,
         category: needData.category || '其他',
-        isUrgent: false,
+        isUrgent: needData.isUrgent || false,
         latitude: needData.latitude || 39.909 + (Math.random() - 0.5) * 0.01,
         longitude: needData.longitude || 116.398 + (Math.random() - 0.5) * 0.01,
       }
