@@ -206,7 +206,16 @@ export default {
 		loadConversations() {
 			const allConversations = uni.getStorageSync('conversations') || []
 			if (allConversations.length > 0) {
-				this.conversations = allConversations.sort((a, b) => b.lastTime - a.lastTime)
+				const currentUserId = uni.getStorageSync('userInfo')?.id
+				this.conversations = allConversations
+					.filter(conv => {
+						if (!conv.relatedOrder) return true
+						const order = conv.relatedOrder
+						const isPublisher = order.publisher?.id === currentUserId
+						const isHelper = order.helper?.id === currentUserId
+						return isPublisher || isHelper
+					})
+					.sort((a, b) => b.lastTime - a.lastTime)
 			}
 		},
 		clearMessageBadge() {
