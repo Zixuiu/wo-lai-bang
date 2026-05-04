@@ -228,7 +228,7 @@ export const useUserStore = defineStore('user', {
     deductBalance(amount) {
       const walletKey = getWalletKey(this.currentUser.id)
       const wallet = uni.getStorageSync(walletKey) || { balance: 0 }
-      const currentBalance = parseFloat(wallet.balance || 0)
+      const currentBalance = parseFloat(wallet.balance || 0) || this.currentUser.walletBalance || 0
       const newBalance = Math.max(0, currentBalance - amount)
       wallet.balance = newBalance
       uni.setStorageSync(walletKey, wallet)
@@ -241,6 +241,13 @@ export const useUserStore = defineStore('user', {
     },
 
     addBalanceToUser(userId, amount) {
+      const walletKey = getWalletKey(userId)
+      const wallet = uni.getStorageSync(walletKey) || { balance: 0 }
+      const currentBalance = parseFloat(wallet.balance || 0)
+      const newBalance = currentBalance + amount
+      wallet.balance = newBalance
+      uni.setStorageSync(walletKey, wallet)
+
       const userTransactions = uni.getStorageSync('userTransactions') || {}
       if (!userTransactions[userId]) {
         userTransactions[userId] = {
@@ -259,7 +266,10 @@ export const useUserStore = defineStore('user', {
       uni.setStorageSync('userTransactions', userTransactions)
 
       if (userId === this.currentUser.id) {
-        this.currentUser.walletBalance += amount
+        this.currentUser.walletBalance = newBalance
+        if (this.walletInfo) {
+          this.walletInfo.balance = newBalance
+        }
         uni.setStorageSync('userInfo', this.currentUser)
       }
     },
