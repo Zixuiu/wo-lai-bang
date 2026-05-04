@@ -173,7 +173,7 @@ export default {
 	onShow() {
 		uni.hideTabBar()
 		this.loadConversations()
-		this.clearMessageBadge()
+		this.updateTabBarBadge()
 	},
 	onUnload() {
 		this.removeWebSocketListener()
@@ -190,10 +190,16 @@ export default {
 			this.updateTabBarBadge()
 		},
 		updateTabBarBadge() {
-			let totalUnread = 0
+			const notifications = uni.getStorageSync('notifications') || []
+			const unreadNotifications = notifications.filter(n => !n.read).length
+
+			let totalUnreadMessages = 0
 			this.conversations.forEach(conv => {
-				totalUnread += (conv.unread || 0)
+				totalUnreadMessages += (conv.unread || 0)
 			})
+
+			const totalUnread = unreadNotifications + totalUnreadMessages
+
 			if (totalUnread > 0) {
 				uni.setTabBarBadge({
 					index: 3,
@@ -202,6 +208,8 @@ export default {
 			} else {
 				uni.removeTabBarBadge({ index: 3 })
 			}
+
+			uni.setStorageSync('totalUnreadCount', totalUnread)
 		},
 		loadConversations() {
 			const currentUserId = uni.getStorageSync('userInfo')?.id
@@ -209,11 +217,14 @@ export default {
 			if (allConversations.length > 0) {
 				this.conversations = allConversations
 					.filter(conv => {
-						if (!conv.relatedOrder) return true
-						const order = conv.relatedOrder
-						const isPublisher = order.publisher?.id === currentUserId
-						const isHelper = order.helper?.id === currentUserId
-						return isPublisher || isHelper
+						if (conv.userId && conv.userId.startsWith('sim')) return false
+						if (conv.relatedOrder) {
+							const order = conv.relatedOrder
+							const isPublisherSim = order.publisher?.id && order.publisher.id.startsWith('sim')
+							const isHelperSim = order.helper?.id && order.helper.id.startsWith('sim')
+							if (isPublisherSim && isHelperSim) return false
+						}
+						return true
 					})
 					.sort((a, b) => b.lastTime - a.lastTime)
 			}

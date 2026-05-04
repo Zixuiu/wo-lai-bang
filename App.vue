@@ -165,7 +165,7 @@ export default {
 			const conversations = uni.getStorageSync('conversations') || []
 			const unreadMessages = conversations
 				.filter(conv => {
-					if (!conv.relatedOrder) return true
+					if (!conv.relatedOrder) return false
 					const order = conv.relatedOrder
 					const isPublisher = order.publisher?.id === currentUserId
 					const isHelper = order.helper?.id === currentUserId

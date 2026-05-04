@@ -210,7 +210,9 @@ export default {
 	},
 	onShow() {
 		this.loadMessages()
+		this.markAsRead()
 		this.initKeyboardListener()
+		this.updateTabBarBadge()
 	},
 	onUnload() {
 		this.removeWebSocketListeners()
