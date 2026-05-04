@@ -31,11 +31,16 @@ export default {
 	},
 	data() {
 		return {
-			list: [
+			messageUnreadCount: 0
+		}
+	},
+	computed: {
+		list() {
+			return [
 				{ pagePath: '/pages/index/index', text: '发现', icon: 'home', badge: 0 },
 				{ pagePath: '/pages/publish/publish', text: '发布', icon: 'plus', badge: 0 },
 				{ pagePath: '/pages/orders/orders', text: '订单', icon: 'clipboard-list', badge: 0 },
-				{ pagePath: '/pages/messages/messages', text: '消息', icon: 'mail', badge: 0 },
+				{ pagePath: '/pages/messages/messages', text: '消息', icon: 'mail', badge: this.messageUnreadCount },
 				{ pagePath: '/pages/profile/profile', text: '我的', icon: 'user', badge: 0 }
 			]
 		}
@@ -43,8 +48,18 @@ export default {
 	created() {
 		this.updateBadges()
 		uni.$on('clearMessageBadge', () => {
-			this.list[3].badge = 0
+			this.messageUnreadCount = 0
 		})
+		uni.$on('updateBadge', () => {
+			this.updateBadges()
+		})
+	},
+	mounted() {
+		this.updateBadges()
+	},
+	beforeDestroy() {
+		uni.$off('clearMessageBadge')
+		uni.$off('updateBadge')
 	},
 	methods: {
 		switchTab(index) {
@@ -57,7 +72,7 @@ export default {
 			const conversations = uni.getStorageSync('conversations') || []
 			const messageUnreadCount = conversations
 				.filter(conv => {
-					if (!conv.relatedOrder) return true
+					if (!conv.relatedOrder) return false
 					const order = conv.relatedOrder
 					const isPublisher = order.publisher?.id === currentUserId
 					const isHelper = order.helper?.id === currentUserId
@@ -65,14 +80,20 @@ export default {
 				})
 				.reduce((sum, c) => sum + (c.unread || 0), 0)
 
-			this.list[3].badge = messageUnreadCount
+			this.messageUnreadCount = messageUnreadCount
 
 			const notifications = uni.getStorageSync('notifications') || []
 			const unreadCount = notifications.filter(n => !n.read).length
 			uni.setStorageSync('totalUnreadCount', unreadCount + messageUnreadCount)
+			
+			if (messageUnreadCount > 0) {
+				uni.setTabBarBadge({ index: 3, text: messageUnreadCount > 99 ? '99+' : String(messageUnreadCount) })
+			} else {
+				uni.removeTabBarBadge({ index: 3 })
+			}
 		},
 		clearMessageBadge() {
-			this.list[3].badge = 0
+			this.messageUnreadCount = 0
 		}
 	}
 }

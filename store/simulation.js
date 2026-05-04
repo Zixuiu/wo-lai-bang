@@ -346,11 +346,23 @@ export const useSimulationStore = defineStore('simulation', {
       }
 
       const need = pendingNeeds[Math.floor(Math.random() * pendingNeeds.length)]
+      
+      const originalUserId = userStore.currentUser?.id || ''
+      
+      const isCurrentUserPublisher = need.publisher?.id === originalUserId
+      
+      if (isCurrentUserPublisher) {
+        return { confirmed: false, reason: '不代替真实用户确认订单' }
+      }
+      
       const isPublisherSimUser = this.activeUsers.some(u => u.id === need.publisher.id)
       const isHelperSimUser = this.activeUsers.some(u => u.id === need.helper?.id)
       const user = isPublisherSimUser ? need.publisher : need.helper
 
-      const originalUserId = userStore.currentUser?.id || ''
+      if (!user) {
+        return { confirmed: false, reason: '没有合适的确认用户' }
+      }
+
       const originalUser = { ...userStore.currentUser }
       const originalIsLoggedIn = userStore.isLoggedIn
 

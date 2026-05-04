@@ -204,12 +204,12 @@ export default {
 			}
 		},
 		loadConversations() {
+			const currentUserId = uni.getStorageSync('userInfo')?.id
 			const allConversations = uni.getStorageSync('conversations') || []
 			if (allConversations.length > 0) {
-				const currentUserId = uni.getStorageSync('userInfo')?.id
 				this.conversations = allConversations
 					.filter(conv => {
-						if (!conv.relatedOrder) return true
+						if (!conv.relatedOrder) return false
 						const order = conv.relatedOrder
 						const isPublisher = order.publisher?.id === currentUserId
 						const isHelper = order.helper?.id === currentUserId
