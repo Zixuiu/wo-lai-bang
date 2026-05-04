@@ -339,6 +339,7 @@ export default {
 				allConvs[index].unread = 0
 				uni.setStorageSync('conversations', allConvs)
 			}
+			uni.$emit('updateMessageBadge')
 		},
 		toggleEmoji() {
 			this.showEmoji = !this.showEmoji

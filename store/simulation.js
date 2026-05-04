@@ -647,13 +647,18 @@ export const useSimulationStore = defineStore('simulation', {
       
       const existingIndex = allConvs.findIndex(c => c.userId === convUserId)
       
+      let unread = 1
+      if (existingIndex >= 0 && allConvs[existingIndex].unread !== undefined) {
+        unread = allConvs[existingIndex].unread + 1
+      }
+      
       const conv = {
         id: `conv_${convUserId}`,
         userId: convUserId,
         nickname: convNickname,
         lastMessage: messageText,
         lastTime: Date.now(),
-        unread: 1,
+        unread: unread,
         online: true,
         relatedOrder: order ? {
           needId: order.needId,
@@ -672,6 +677,8 @@ export const useSimulationStore = defineStore('simulation', {
         allConvs.unshift(conv)
       }
       uni.setStorageSync('conversations', allConvs)
+      
+      uni.$emit('updateMessageBadge')
     }
   },
 })

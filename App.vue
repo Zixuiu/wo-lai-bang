@@ -46,6 +46,7 @@ export default {
 		this.checkGuidePage()
 		this.setupRouterGuard()
 		this.initServices()
+		this.setupMessageBadgeListener()
 	},
 	onShow: function() {
 		console.log('App Show')
@@ -138,6 +139,15 @@ export default {
 				}
 				return originalReLaunch.call(uni, options)
 			}
+		},
+
+		setupMessageBadgeListener() {
+			uni.$on('updateMessageBadge', () => {
+				this.updateTabBarBadge()
+			})
+			uni.$on('clearMessageBadge', () => {
+				this.updateTabBarBadge()
+			})
 		},
 
 		shouldCheckLogin(url) {
