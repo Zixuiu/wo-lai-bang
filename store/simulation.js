@@ -39,6 +39,8 @@ export const useSimulationStore = defineStore('simulation', {
     activityLog: [],
     publishInterval: 30000,
     acceptInterval: 20000,
+    completeInterval: 20000,
+    confirmInterval: 15000,
     maxActiveNeeds: 10,
     simulationTimers: [],
   }),
@@ -466,20 +468,25 @@ export const useSimulationStore = defineStore('simulation', {
         }
       }, 25000)
 
-      const otherTimer = setInterval(() => {
+      const completeTimer = setInterval(() => {
         if (this.isRunning) {
-          const random = Math.random()
-          if (random < 0.3) {
-            this.cancelRandomNeed()
-          } else if (random < 0.6) {
-            this.markCompleteRandomNeed()
-          } else {
-            this.confirmCompleteRandomNeed()
-          }
+          this.markCompleteRandomNeed()
         }
-      }, 45000)
+      }, this.completeInterval)
 
-      this.simulationTimers = [publishTimer, acceptTimer, messageTimer, otherTimer]
+      const confirmTimer = setInterval(() => {
+        if (this.isRunning) {
+          this.confirmCompleteRandomNeed()
+        }
+      }, this.confirmInterval)
+
+      const cancelTimer = setInterval(() => {
+        if (this.isRunning && Math.random() < 0.3) {
+          this.cancelRandomNeed()
+        }
+      }, 30000)
+
+      this.simulationTimers = [publishTimer, acceptTimer, messageTimer, completeTimer, confirmTimer, cancelTimer]
     },
 
     stopSimulation() {
@@ -507,6 +514,22 @@ export const useSimulationStore = defineStore('simulation', {
 
     setAcceptInterval(ms) {
       this.acceptInterval = ms
+      if (this.isRunning) {
+        this.stopSimulation()
+        this.startSimulation()
+      }
+    },
+
+    setCompleteInterval(ms) {
+      this.completeInterval = ms
+      if (this.isRunning) {
+        this.stopSimulation()
+        this.startSimulation()
+      }
+    },
+
+    setConfirmInterval(ms) {
+      this.confirmInterval = ms
       if (this.isRunning) {
         this.stopSimulation()
         this.startSimulation()

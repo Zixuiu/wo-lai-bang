@@ -146,7 +146,8 @@ export default {
 				const wallet = await this.userStore.fetchWalletInfo()
 				this.balance = parseFloat(wallet.balance) || 0
 			} catch (e) {
-				const wallet = uni.getStorageSync('wallet') || { balance: 0 }
+				const walletKey = `wallet_${this.userStore.currentUser.id}`
+				const wallet = uni.getStorageSync(walletKey) || { balance: 0 }
 				this.balance = parseFloat(wallet.balance) || 0
 			}
 		},

@@ -134,7 +134,8 @@ export default {
 		async loadMore() {
 			if (!this.hasMore) return
 			this.page++
-			const wallet = uni.getStorageSync('wallet') || { balance: 0 }
+			const walletKey = `wallet_${this.userStore.currentUser.id}`
+			const wallet = uni.getStorageSync(walletKey) || { balance: 0 }
 			this.balance = parseFloat(wallet.balance) || 0
 
 			const transactions = uni.getStorageSync('walletTransactions') || []
@@ -153,7 +154,8 @@ export default {
 			}
 		},
 		loadData() {
-			const wallet = uni.getStorageSync('wallet') || { balance: 0 }
+			const walletKey = `wallet_${this.userStore.currentUser.id}`
+			const wallet = uni.getStorageSync(walletKey) || { balance: 0 }
 			this.balance = parseFloat(wallet.balance) || 0
 			this.commissionEarned = wallet.commissionEarned || 0
 			this.sharedNeeds = wallet.sharedNeeds || []

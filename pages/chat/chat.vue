@@ -192,9 +192,9 @@ export default {
 			if (!this.relatedOrder) return ''
 			const currentUserId = this.userStore.currentUser?.id
 			if (this.relatedOrder.publisher?.id === currentUserId) {
-				return '接单人'
-			} else if (this.relatedOrder.helper?.id === currentUserId) {
 				return '发单人'
+			} else if (this.relatedOrder.helper?.id === currentUserId) {
+				return '接单人'
 			}
 			return ''
 		}

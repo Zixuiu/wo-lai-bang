@@ -62,6 +62,34 @@
           <text>{{ simulationStore.acceptInterval / 1000 }} 秒</text>
         </view>
       </view>
+      <view class="setting-item">
+        <view class="setting-label">完成间隔</view>
+        <view class="setting-value">
+          <slider
+            :value="simulationStore.completeInterval / 1000"
+            :min="5"
+            :max="60"
+            @change="onCompleteIntervalChange"
+            activeColor="#10B981"
+            backgroundColor="#E5E7EB"
+          />
+          <text>{{ simulationStore.completeInterval / 1000 }} 秒</text>
+        </view>
+      </view>
+      <view class="setting-item">
+        <view class="setting-label">确认间隔</view>
+        <view class="setting-value">
+          <slider
+            :value="simulationStore.confirmInterval / 1000"
+            :min="3"
+            :max="60"
+            @change="onConfirmIntervalChange"
+            activeColor="#F59E0B"
+            backgroundColor="#E5E7EB"
+          />
+          <text>{{ simulationStore.confirmInterval / 1000 }} 秒</text>
+        </view>
+      </view>
     </view>
 
     <view class="control-section">
@@ -176,6 +204,14 @@ const onPublishIntervalChange = (e) => {
 
 const onAcceptIntervalChange = (e) => {
   simulationStore.setAcceptInterval(e.detail.value * 1000)
+}
+
+const onCompleteIntervalChange = (e) => {
+  simulationStore.setCompleteInterval(e.detail.value * 1000)
+}
+
+const onConfirmIntervalChange = (e) => {
+  simulationStore.setConfirmInterval(e.detail.value * 1000)
 }
 
 const getLogIcon = (type) => {
