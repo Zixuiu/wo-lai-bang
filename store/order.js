@@ -154,6 +154,13 @@ export const useOrderStore = defineStore('order', {
       order.status = ORDER_STATUS.PENDING_CONFIRM
       order.pendingConfirmAt = Date.now()
 
+      const allConvs = uni.getStorageSync('conversations') || []
+      const convIndex = allConvs.findIndex(c => c.userId === order.publisher?.id)
+      if (convIndex >= 0 && allConvs[convIndex].relatedOrder) {
+        allConvs[convIndex].relatedOrder.status = ORDER_STATUS.PENDING_CONFIRM
+        uni.setStorageSync('conversations', allConvs)
+      }
+
       return { success: true }
     },
 
@@ -211,6 +218,22 @@ export const useOrderStore = defineStore('order', {
 
       order.status = ORDER_STATUS.CANCELLED
       order.cancelledAt = Date.now()
+
+      const allConvs = uni.getStorageSync('conversations') || []
+      if (isPublisher && order.publisher?.id) {
+        const convIndex = allConvs.findIndex(c => c.userId === order.publisher.id)
+        if (convIndex >= 0 && allConvs[convIndex].relatedOrder) {
+          allConvs[convIndex].relatedOrder.status = ORDER_STATUS.CANCELLED
+        }
+      }
+      if (isHelper && order.helper?.id) {
+        const convIndex = allConvs.findIndex(c => c.userId === order.helper.id)
+        if (convIndex >= 0 && allConvs[convIndex].relatedOrder) {
+          allConvs[convIndex].relatedOrder.status = ORDER_STATUS.CANCELLED
+        }
+      }
+      uni.setStorageSync('conversations', allConvs)
+
       return { success: true }
     },
 
@@ -249,6 +272,21 @@ export const useOrderStore = defineStore('order', {
         order.platformCommission = platformCommission
         order.shareCommission = shareCommission
         order.actualPlatformCommission = platformCommission - shareCommission
+
+        const allConvs = uni.getStorageSync('conversations') || []
+        if (order.publisher?.id) {
+          const convIndex = allConvs.findIndex(c => c.userId === order.publisher.id)
+          if (convIndex >= 0 && allConvs[convIndex].relatedOrder) {
+            allConvs[convIndex].relatedOrder.status = ORDER_STATUS.COMPLETED
+          }
+        }
+        if (order.helper?.id) {
+          const convIndex = allConvs.findIndex(c => c.userId === order.helper.id)
+          if (convIndex >= 0 && allConvs[convIndex].relatedOrder) {
+            allConvs[convIndex].relatedOrder.status = ORDER_STATUS.COMPLETED
+          }
+        }
+        uni.setStorageSync('conversations', allConvs)
       }
       return order
     },
