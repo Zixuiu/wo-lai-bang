@@ -272,9 +272,9 @@ export default {
 			const helper = item.helper || {}
 			return helper.id === this.userStore.currentUser.id
 		},
-		markComplete(item) {
+		async markComplete(item) {
 			const needId = item.needId || item.id
-			const result = this.needStore.markComplete(needId)
+			const result = await this.needStore.markComplete(needId)
 			if (result.success) {
 				item.status = 'pending_confirm'
 				uni.showToast({ title: result.message, icon: 'success' })
@@ -366,7 +366,7 @@ export default {
 			}, 500)
 		},
 		showCancelDialog(item) {
-			if (item.status !== 'accepted') return
+			if (item.status !== 'accepted' && item.status !== 'pending_confirm') return
 			this.confirmTitle = '取消订单'
 			this.confirmContent = `确定要取消"${item.title}"吗？`
 			this.confirmConfirmText = '确定'
@@ -377,24 +377,25 @@ export default {
 			this.confirmVisible = true
 		},
 		cancelOrder(item) {
+			const needId = item.needId || item.id
+			let result
+
 			if (item.needId) {
-				const need = this.needStore.needs.find(n => n.id === item.needId)
-				if (need) {
-					need.status = 'cancelled'
-					need.cancelledAt = Date.now()
-					this.sendCancelNotification(item, 'need')
-				}
+				result = this.needStore.cancelNeed(item.needId)
 			} else {
-				const order = this.orderStore.orders.find(o => o.id === item.id)
-				if (order) {
-					order.status = 'cancelled'
-					order.cancelledAt = Date.now()
-					this.sendCancelNotification(item, 'order')
-				}
+				result = this.orderStore.cancelOrder(item.id)
 			}
-			uni.showToast({ title: '已取消订单', icon: 'success' })
+
+			if (result.success) {
+				item.status = 'cancelled'
+				item.cancelledAt = Date.now()
+				this.sendCancelNotification(item)
+				uni.showToast({ title: '已取消订单', icon: 'success' })
+			} else {
+				uni.showToast({ title: result.message, icon: 'none' })
+			}
 		},
-		sendCancelNotification(item, type) {
+		sendCancelNotification(item) {
 			const isPublisher = item.publisher?.id === this.userStore.currentUser.id
 			const targetUser = isPublisher ? item.helper : item.publisher
 
@@ -413,6 +414,13 @@ export default {
 					createdAt: Date.now()
 				})
 				uni.setStorageSync('notifications', notifications)
+
+				const unreadCount = notifications.filter(n => !n.read).length
+				if (unreadCount > 0) {
+					uni.setTabBarBadge({ index: 3, text: unreadCount > 99 ? '99+' : String(unreadCount) })
+				} else {
+					uni.removeTabBarBadge({ index: 3 })
+				}
 			}
 		}
 	}

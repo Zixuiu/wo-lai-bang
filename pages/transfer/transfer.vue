@@ -231,21 +231,41 @@ export default {
 			uni.showLoading({ title: '转账中...' })
 
 			try {
-				const result = await walletApi.transfer(this.recipient.id, amt, this.remark)
+				await walletApi.transfer(this.recipient.id, amt, this.remark)
 
-				this.balance -= amt
-				this.userStore.updateWalletBalance(this.balance)
+				this.userStore.deductBalance(amt)
+				this.balance = this.userStore.walletBalance
+
+				this.userStore.addBalanceToUser(this.recipient.id, amt)
 
 				const transactions = uni.getStorageSync('walletTransactions') || []
 				transactions.unshift({
 					id: Date.now(),
-					type: 'expense',
+					type: 'transfer',
 					title: `转账给${this.recipient.nickname}`,
-					amount: amt,
+					amount: -amt,
+					recipientId: this.recipient.id,
+					recipientName: this.recipient.nickname,
 					remark: this.remark,
 					time: Date.now()
 				})
 				uni.setStorageSync('walletTransactions', transactions)
+
+				const recipientTransactions = uni.getStorageSync('recipientTransactions') || {}
+				if (!recipientTransactions[this.recipient.id]) {
+					recipientTransactions[this.recipient.id] = []
+				}
+				recipientTransactions[this.recipient.id].unshift({
+					id: Date.now(),
+					type: 'transfer_received',
+					title: `收到${this.userStore.currentUser.nickname || '用户'}的转账`,
+					amount: amt,
+					fromUserId: this.userStore.currentUser.id,
+					fromUserName: this.userStore.currentUser.nickname,
+					remark: this.remark,
+					time: Date.now()
+				})
+				uni.setStorageSync('recipientTransactions', recipientTransactions)
 
 				this.isProcessing = false
 				this.transferAmount = 0

@@ -204,30 +204,32 @@ export default {
 
 			this.isAccepting = true
 
-			setTimeout(() => {
-				this.order.status = 'accepted'
-				this.order.helper = this.userStore.currentUser
-				this.order.acceptedAt = Date.now()
-				this.order.helperConfirmed = false
-				this.order.publisherConfirmed = false
+			const result = await this.needStore.acceptNeed(this.order.id)
 
+			this.isAccepting = false
+
+			if (result.success) {
 				this.sendNotification('accepted', '有新订单被接单')
-
-				uni.setStorageSync('orders', this.orderStore.orders)
-
 				uni.showToast({ title: '接单成功', icon: 'success' })
-
 				setTimeout(() => {
 					uni.navigateBack()
 				}, 1500)
-			}, 1000)
+			} else {
+				uni.showToast({ title: result.message, icon: 'none' })
+			}
 		},
 		sendNotification(status, message) {
 			const notifications = uni.getStorageSync('notifications') || []
+			const titleMap = {
+				'accepted': '订单已被接单',
+				'pending_confirm': '订单待确认',
+				'completed': '订单已完成',
+				'cancelled': '订单已取消'
+			}
 			const newNotification = {
 				id: Date.now(),
 				type: 'order',
-				title: status === 'accepted' ? '订单已被接单' : '订单状态更新',
+				title: titleMap[status] || '订单状态更新',
 				content: message,
 				orderId: this.order.id,
 				orderTitle: this.order.title,
@@ -237,6 +239,16 @@ export default {
 			}
 			notifications.unshift(newNotification)
 			uni.setStorageSync('notifications', notifications)
+
+			const unreadCount = notifications.filter(n => !n.read).length
+			if (unreadCount > 0) {
+				uni.setTabBarBadge({
+					index: 3,
+					text: unreadCount > 99 ? '99+' : String(unreadCount)
+				})
+			} else {
+				uni.removeTabBarBadge({ index: 3 })
+			}
 		},
 		goTerms() {
 			uni.navigateTo({ url: '/pages/terms-of-service/terms-of-service' })

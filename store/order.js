@@ -24,7 +24,7 @@ const INITIAL_ORDERS = [
     longitude: 116.400,
     publisher: { id: 'u1', nickname: '热心小周', reputation: 100, completedOrders: 12 },
     helper: { id: 'u6', nickname: '大力士', reputation: 88, completedOrders: 15 },
-    status: 'accepted',
+    status: ORDER_STATUS.ACCEPTED,
     createdAt: Date.now() - 5000000,
     acceptedAt: Date.now() - 4000000,
   },
@@ -39,7 +39,7 @@ const INITIAL_ORDERS = [
     longitude: 116.398,
     publisher: { id: 'u2', nickname: '李阿姨', reputation: 85, completedOrders: 5 },
     helper: { id: 'u1', nickname: '热心小周', reputation: 100, completedOrders: 12 },
-    status: 'completed',
+    status: ORDER_STATUS.COMPLETED,
     createdAt: Date.now() - 86400000,
     acceptedAt: Date.now() - 80000000,
     completedAt: Date.now() - 70000000,
@@ -58,7 +58,7 @@ const INITIAL_ORDERS = [
     longitude: 116.401,
     publisher: { id: 'u3', nickname: '小林', reputation: 92, completedOrders: 8 },
     helper: { id: 'u1', nickname: '热心小周', reputation: 100, completedOrders: 12 },
-    status: 'completed',
+    status: ORDER_STATUS.COMPLETED,
     createdAt: Date.now() - 172800000,
     acceptedAt: Date.now() - 160000000,
     completedAt: Date.now() - 150000000,
@@ -140,23 +140,17 @@ export const useOrderStore = defineStore('order', {
       if (!order) return { success: false, message: '订单不存在' }
 
       const userStore = useUserStore()
-      const isPublisher = order.publisher?.id === userStore.currentUser.id
       const isHelper = order.helper?.id === userStore.currentUser.id
 
-      if (!isPublisher && !isHelper) {
-        return { success: false, message: '无权操作此订单' }
+      if (!isHelper) {
+        return { success: false, message: '只有帮手才能申请完成' }
       }
 
       if (order.status !== ORDER_STATUS.ACCEPTED && order.status !== ORDER_STATUS.PENDING_CONFIRM) {
         return { success: false, message: '订单状态不允许此操作' }
       }
 
-      if (isPublisher) {
-        order.publisherConfirmed = true
-      } else {
-        order.helperConfirmed = true
-      }
-
+      order.helperConfirmed = true
       order.status = ORDER_STATUS.PENDING_CONFIRM
       order.pendingConfirmAt = Date.now()
 
@@ -199,12 +193,25 @@ export const useOrderStore = defineStore('order', {
 
     cancelOrder(orderId) {
       const order = this.orders.find(o => o.id === orderId)
-      if (order) {
-        order.status = ORDER_STATUS.CANCELLED
-        order.cancelledAt = Date.now()
-        return { success: true }
+      if (!order) {
+        return { success: false, message: '订单不存在' }
       }
-      return { success: false, message: '订单不存在' }
+
+      const userStore = useUserStore()
+      const isPublisher = order.publisher?.id === userStore.currentUser.id
+      const isHelper = order.helper?.id === userStore.currentUser.id
+
+      if (!isPublisher && !isHelper) {
+        return { success: false, message: '无权取消此订单' }
+      }
+
+      if (order.status !== ORDER_STATUS.PENDING && order.status !== ORDER_STATUS.ACCEPTED) {
+        return { success: false, message: '当前状态不允许取消' }
+      }
+
+      order.status = ORDER_STATUS.CANCELLED
+      order.cancelledAt = Date.now()
+      return { success: true }
     },
 
     completeOrder(orderId) {

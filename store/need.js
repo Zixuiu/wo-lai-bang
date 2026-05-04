@@ -1,9 +1,18 @@
 import { defineStore } from 'pinia'
 import { useUserStore } from './user'
 import { useOrderStore } from './order'
+import { getChatKey } from '@/utils/chat'
 
 const COMMISSION_RATE = 0.1
 const SHARE_COMMISSION_RATE = 0.02
+
+export const NEED_STATUS = {
+  OPEN: 'open',
+  ACCEPTED: 'accepted',
+  PENDING_CONFIRM: 'pending_confirm',
+  COMPLETED: 'completed',
+  CANCELLED: 'cancelled'
+}
 
 const INITIAL_NEEDS = [
   {
@@ -15,7 +24,7 @@ const INITIAL_NEEDS = [
     latitude: 39.909,
     longitude: 116.398,
     publisher: { id: 'u2', nickname: '李阿姨', reputation: 85, completedOrders: 5 },
-    status: 'open',
+    status: NEED_STATUS.OPEN,
     category: '跑腿',
     isUrgent: false,
     createdAt: Date.now() - 3600000,
@@ -30,7 +39,7 @@ const INITIAL_NEEDS = [
     latitude: 39.911,
     longitude: 116.401,
     publisher: { id: 'u3', nickname: '小林', reputation: 92, completedOrders: 8 },
-    status: 'open',
+    status: NEED_STATUS.OPEN,
     category: '家政',
     isUrgent: true,
     createdAt: Date.now() - 7200000,
@@ -45,7 +54,7 @@ const INITIAL_NEEDS = [
     latitude: 39.905,
     longitude: 116.395,
     publisher: { id: 'u4', nickname: '王爷爷', reputation: 78, completedOrders: 3 },
-    status: 'open',
+    status: NEED_STATUS.OPEN,
     category: '家政',
     isUrgent: false,
     createdAt: Date.now() - 86400000,
@@ -59,7 +68,7 @@ const INITIAL_NEEDS = [
     latitude: 39.913,
     longitude: 116.403,
     publisher: { id: 'u5', nickname: 'IT张', reputation: 95, completedOrders: 20 },
-    status: 'open',
+    status: NEED_STATUS.OPEN,
     category: '技术',
     isUrgent: false,
     createdAt: Date.now() - 43200000,
@@ -74,18 +83,19 @@ export const useNeedStore = defineStore('need', {
     filteredNeeds: [],
     userLatitude: 39.908823,
     userLongitude: 116.397470,
+    NEED_STATUS: NEED_STATUS,
   }),
 
   getters: {
-    allNeeds: (state) => state.needs.filter(n => n.status === 'open'),
+    allNeeds: (state) => state.needs.filter(n => n.status === NEED_STATUS.OPEN),
     
-    openNeeds: (state) => state.needs.filter(n => n.status === 'open'),
+    openNeeds: (state) => state.needs.filter(n => n.status === NEED_STATUS.OPEN),
     
     filteredNeedsGetter: (state) => {
       if (state.filteredNeeds && state.filteredNeeds.length > 0) {
         return state.filteredNeeds
       }
-      let result = state.needs.filter(n => n.status === 'open')
+      let result = state.needs.filter(n => n.status === NEED_STATUS.OPEN)
 
       if (state.searchQuery.trim()) {
         const query = state.searchQuery.toLowerCase()
@@ -145,7 +155,7 @@ export const useNeedStore = defineStore('need', {
         id: `n${Date.now()}`,
         createdAt: Date.now(),
         publisher: userStore.currentUser,
-        status: 'open',
+        status: NEED_STATUS.OPEN,
         category: needData.category || '其他',
         isUrgent: false,
         latitude: needData.latitude || 39.909 + (Math.random() - 0.5) * 0.01,
@@ -158,7 +168,7 @@ export const useNeedStore = defineStore('need', {
     acceptNeed(needId) {
       const userStore = useUserStore()
       const need = this.needs.find(n => n.id === needId)
-      if (!need || need.status !== 'open') {
+      if (!need || need.status !== NEED_STATUS.OPEN) {
         return { success: false, message: '该需求已被接单' }
       }
 
@@ -182,7 +192,7 @@ export const useNeedStore = defineStore('need', {
         longitude: need.longitude,
         publisher: need.publisher,
         helper: userStore.currentUser,
-        status: 'accepted',
+        status: NEED_STATUS.ACCEPTED,
         createdAt: Date.now(),
         image: need.image || '',
         deadline: need.deadline || '',
@@ -192,7 +202,7 @@ export const useNeedStore = defineStore('need', {
         shareCommissionRate: SHARE_COMMISSION_RATE,
       }
 
-      need.status = 'accepted'
+      need.status = NEED_STATUS.ACCEPTED
       need.helper = userStore.currentUser
       need.acceptedAt = Date.now()
 
@@ -230,8 +240,7 @@ export const useNeedStore = defineStore('need', {
       uni.setStorageSync('conversations', allConvs)
 
       const allMessages = uni.getStorageSync('chatMessages') || {}
-      const ids = [userStore.currentUser.id, need.publisher.id].sort()
-      const chatKey = `chat_${ids[0]}_${ids[1]}`
+      const chatKey = getChatKey(userStore.currentUser.id, need.publisher.id)
       const systemMsg = {
         id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
         type: 'text',
@@ -256,37 +265,37 @@ export const useNeedStore = defineStore('need', {
     cancelNeed(needId) {
       const userStore = useUserStore()
       const need = this.needs.find(n => n.id === needId)
-      if (!need || need.status !== 'open' || need.publisher.id !== userStore.currentUser.id) {
+      if (!need || need.status !== NEED_STATUS.OPEN || need.publisher.id !== userStore.currentUser.id) {
         return { success: false, message: '取消失败' }
       }
-      need.status = 'cancelled'
+      need.status = NEED_STATUS.CANCELLED
       return { success: true, message: '已取消' }
     },
 
     markComplete(needId) {
       const userStore = useUserStore()
       const need = this.needs.find(n => n.id === needId)
-      if (!need || need.status !== 'accepted') {
+      if (!need || need.status !== NEED_STATUS.ACCEPTED) {
         return { success: false, message: '当前状态无法标记完成' }
       }
       if (!need.helper || need.helper.id !== userStore.currentUser.id) {
         return { success: false, message: '只有接单者才能标记完成' }
       }
       
-      need.status = 'pending_confirm'
+      need.status = NEED_STATUS.PENDING_CONFIRM
       need.markedCompleteAt = Date.now()
 
       const orderStore = useOrderStore()
       const order = orderStore.orders.find(o => o.needId === needId)
       if (order) {
-        order.status = 'pending_confirm'
+        order.status = NEED_STATUS.PENDING_CONFIRM
         order.markedCompleteAt = Date.now()
       }
 
       const allConvs = uni.getStorageSync('conversations') || []
       const convIndex = allConvs.findIndex(c => c.userId === need.publisher.id)
       if (convIndex >= 0 && allConvs[convIndex].relatedOrder) {
-        allConvs[convIndex].relatedOrder.status = 'pending_confirm'
+        allConvs[convIndex].relatedOrder.status = NEED_STATUS.PENDING_CONFIRM
         uni.setStorageSync('conversations', allConvs)
       }
 
@@ -298,27 +307,45 @@ export const useNeedStore = defineStore('need', {
     confirmComplete(needId) {
       const userStore = useUserStore()
       const need = this.needs.find(n => n.id === needId)
-      if (!need || need.status !== 'pending_confirm') {
+      if (!need || need.status !== NEED_STATUS.PENDING_CONFIRM) {
         return { success: false, message: '当前状态无法确认完成' }
       }
       if (need.publisher.id !== userStore.currentUser.id) {
         return { success: false, message: '只有发布者才能确认完成' }
       }
+
+      const helper = need.helper
+      const reward = need.reward
       
-      need.status = 'completed'
+      need.status = NEED_STATUS.COMPLETED
       need.completedAt = Date.now()
 
       const orderStore = useOrderStore()
       const order = orderStore.orders.find(o => o.needId === needId)
       if (order) {
-        order.status = 'completed'
+        order.status = NEED_STATUS.COMPLETED
         order.completedAt = Date.now()
+        
+        const platformCommission = reward * COMMISSION_RATE
+        let shareCommission = 0
+        
+        if (order.shareUserId) {
+          shareCommission = reward * SHARE_COMMISSION_RATE
+          userStore.addCommission(shareCommission, order.shareUserId, need.title, reward)
+        }
+        
+        const actualReward = reward - platformCommission
+        if (helper && helper.id) {
+          userStore.addBalanceToUser(helper.id, actualReward)
+        }
       }
+
+      userStore.deductBalance(reward)
 
       const allConvs = uni.getStorageSync('conversations') || []
       const convIndex = allConvs.findIndex(c => c.userId === need.helper?.id)
       if (convIndex >= 0 && allConvs[convIndex].relatedOrder) {
-        allConvs[convIndex].relatedOrder.status = 'completed'
+        allConvs[convIndex].relatedOrder.status = NEED_STATUS.COMPLETED
         uni.setStorageSync('conversations', allConvs)
       }
 
@@ -346,6 +373,16 @@ export const useNeedStore = defineStore('need', {
           createdAt: Date.now()
         })
         uni.setStorageSync('notifications', notifications)
+
+        const unreadCount = notifications.filter(n => !n.read).length
+        if (unreadCount > 0) {
+          uni.setTabBarBadge({
+            index: 3,
+            text: unreadCount > 99 ? '99+' : String(unreadCount)
+          })
+        } else {
+          uni.removeTabBarBadge({ index: 3 })
+        }
       }
     },
 

@@ -632,30 +632,42 @@ export default {
 			}
 			this.currentStep = 1
 			this.activeField = ''
+			this.paymentMethod = 'wallet'
 			this.timeValue = [0, 0]
 			this.deadlineValue = [0, 0]
 		},
 		async handleSubmit() {
 			if (this.isSubmitting) return
 			
-			if (!this.form.location.trim()) {
-				uni.showToast({ title: '请选择服务地点', icon: 'none' })
-				return
-			}
-			
-			if (!this.form.time) {
-				uni.showToast({ title: '请选择服务时间', icon: 'none' })
-				return
-			}
-			
 			if (!this.validate()) return
 			
 			this.isSubmitting = true
 			try {
+				const rewardAmount = Number(this.form.reward) || 0
+				
+				if (this.paymentMethod === 'wallet') {
+					if (this.walletBalance < rewardAmount) {
+						uni.showToast({ title: '钱包余额不足', icon: 'none' })
+						this.isSubmitting = false
+						return
+					}
+					this.userStore.deductBalance(rewardAmount)
+					
+					const transactions = uni.getStorageSync('walletTransactions') || []
+					transactions.unshift({
+						id: Date.now(),
+						type: 'expense',
+						title: `发布需求：${this.form.title}`,
+						amount: -rewardAmount,
+						time: Date.now()
+					})
+					uni.setStorageSync('walletTransactions', transactions)
+				}
+				
 				const newNeed = await this.needStore.addNeed({
 					title: this.form.title.trim(),
 					description: this.form.description.trim(),
-					reward: Number(this.form.reward) || 0,
+					reward: rewardAmount,
 					location: this.form.location.trim() + (this.form.detailAddress ? ' ' + this.form.detailAddress.trim() : ''),
 					address: this.form.address,
 					detailAddress: this.form.detailAddress.trim(),
