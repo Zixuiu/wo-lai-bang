@@ -1168,8 +1168,8 @@ export default {
 	text-align: center;
 }
 .success-icon {
-	font-size: 120px;
-	margin-bottom: 40px;
+	font-size: 80px;
+	margin-bottom: 20px;
 }
 .success-title {
 	font-size: 40rpx;
