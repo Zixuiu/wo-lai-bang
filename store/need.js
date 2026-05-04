@@ -325,19 +325,19 @@ export const useNeedStore = defineStore('need', {
       if (order) {
         order.status = NEED_STATUS.COMPLETED
         order.completedAt = Date.now()
-        
-        const platformCommission = reward * COMMISSION_RATE
-        let shareCommission = 0
-        
-        if (order.shareUserId) {
-          shareCommission = reward * SHARE_COMMISSION_RATE
-          userStore.addCommission(shareCommission, order.shareUserId, need.title, reward)
-        }
-        
-        const actualReward = reward - platformCommission
-        if (helper && helper.id) {
-          userStore.addBalanceToUser(helper.id, actualReward)
-        }
+      }
+
+      const platformCommission = reward * COMMISSION_RATE
+      let shareCommission = 0
+      
+      if (order && order.shareUserId) {
+        shareCommission = reward * SHARE_COMMISSION_RATE
+        userStore.addCommission(shareCommission, order.shareUserId, need.title, reward)
+      }
+      
+      const actualReward = reward - platformCommission
+      if (helper && helper.id) {
+        userStore.addBalanceToUser(helper.id, actualReward)
       }
 
       const allConvs = uni.getStorageSync('conversations') || []

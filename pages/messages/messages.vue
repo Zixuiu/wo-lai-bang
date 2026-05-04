@@ -214,20 +214,18 @@ export default {
 		loadConversations() {
 			const currentUserId = uni.getStorageSync('userInfo')?.id
 			const allConversations = uni.getStorageSync('conversations') || []
-			if (allConversations.length > 0) {
-				this.conversations = allConversations
-					.filter(conv => {
-						if (conv.userId && conv.userId.startsWith('sim')) return false
-						if (conv.relatedOrder) {
-							const order = conv.relatedOrder
-							const isPublisherSim = order.publisher?.id && order.publisher.id.startsWith('sim')
-							const isHelperSim = order.helper?.id && order.helper.id.startsWith('sim')
-							if (isPublisherSim && isHelperSim) return false
-						}
-						return true
-					})
-					.sort((a, b) => b.lastTime - a.lastTime)
-			}
+			this.conversations = allConversations
+				.filter(conv => {
+					if (conv.userId && conv.userId.startsWith('sim') && conv.userId !== currentUserId) return false
+					if (conv.relatedOrder) {
+						const order = conv.relatedOrder
+						const isPublisherSim = order.publisher?.id && order.publisher.id.startsWith('sim')
+						const isHelperSim = order.helper?.id && order.helper.id.startsWith('sim')
+						if (isPublisherSim && isHelperSim && order.publisher?.id !== currentUserId && order.helper?.id !== currentUserId) return false
+					}
+					return true
+				})
+				.sort((a, b) => b.lastTime - a.lastTime)
 		},
 		clearMessageBadge() {
 			const pages = getCurrentPages()
