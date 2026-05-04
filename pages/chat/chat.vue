@@ -317,7 +317,11 @@ export default {
 				}
 
 				if (existingIndex >= 0) {
-					allConvs[existingIndex] = conv
+					allConvs[existingIndex] = {
+						...allConvs[existingIndex],
+						...conv,
+						relatedOrder: allConvs[existingIndex].relatedOrder
+					}
 				} else {
 					allConvs.unshift(conv)
 				}
