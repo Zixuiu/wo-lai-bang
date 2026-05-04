@@ -334,19 +334,24 @@ export const useSimulationStore = defineStore('simulation', {
     confirmCompleteRandomNeed() {
       const needStore = useNeedStore()
       const userStore = useUserStore()
-      const pendingNeeds = needStore.needs.filter(n => n.status === 'pending_confirm' && this.activeUsers.some(u => u.id === n.publisher.id))
-      
+      const pendingNeeds = needStore.needs.filter(n =>
+        n.status === 'pending_confirm' &&
+        (this.activeUsers.some(u => u.id === n.publisher.id) || this.activeUsers.some(u => u.id === n.helper?.id))
+      )
+
       if (pendingNeeds.length === 0) {
         return { confirmed: false, reason: '没有待确认的需求' }
       }
 
       const need = pendingNeeds[Math.floor(Math.random() * pendingNeeds.length)]
-      const user = need.publisher
+      const isPublisherSimUser = this.activeUsers.some(u => u.id === need.publisher.id)
+      const isHelperSimUser = this.activeUsers.some(u => u.id === need.helper?.id)
+      const user = isPublisherSimUser ? need.publisher : need.helper
 
       const originalUserId = userStore.currentUser?.id || ''
       const originalUser = { ...userStore.currentUser }
       const originalIsLoggedIn = userStore.isLoggedIn
-      
+
       userStore.currentUser = user
       userStore.isLoggedIn = true
 
@@ -357,14 +362,14 @@ export const useSimulationStore = defineStore('simulation', {
 
       if (result.success) {
         const isCurrentUserHelper = need.helper?.id === originalUserId
-        
+
         if (isCurrentUserHelper && need.helper) {
-          const chatKey = this.getChatKey(need.helper.id, user.id)
+          const chatKey = this.getChatKey(need.helper.id, need.publisher.id)
           const allMessages = uni.getStorageSync('chatMessages') || {}
           if (!allMessages[chatKey]) {
             allMessages[chatKey] = []
           }
-          
+
           const confirmMsg = {
             id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             type: 'text',
@@ -372,13 +377,13 @@ export const useSimulationStore = defineStore('simulation', {
             time: Date.now(),
             isSelf: false
           }
-          
+
           allMessages[chatKey].push(confirmMsg)
           uni.setStorageSync('chatMessages', allMessages)
-          
+
           const allConvs = uni.getStorageSync('conversations') || []
-          const existingIndex = allConvs.findIndex(c => c.userId === user.id)
-          
+          const existingIndex = allConvs.findIndex(c => c.userId === need.helper.id)
+
           if (existingIndex >= 0) {
             allConvs[existingIndex].lastMessage = `太好了！谢谢您的确认！「${need.title}」圆满完成！`
             allConvs[existingIndex].lastTime = Date.now()
@@ -389,7 +394,7 @@ export const useSimulationStore = defineStore('simulation', {
           }
           uni.setStorageSync('conversations', allConvs)
         }
-        
+
         this.logActivity('confirm', `${user.nickname} 确认了 ${need.helper.nickname} 的「${need.title}」完成`, user)
         return { confirmed: true, need }
       } else {
