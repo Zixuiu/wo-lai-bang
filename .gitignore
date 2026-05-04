@@ -5,8 +5,7 @@ dist/
 # IDE
 .hbuilderx/
 
-# Documents (for master branch)
-代码对比报告.md
+# Submodule docs (managed separately)
 wo-laibang-docs/
 
 # OS files
