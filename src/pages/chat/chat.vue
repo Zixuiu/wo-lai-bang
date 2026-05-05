@@ -279,7 +279,37 @@ export default {
 			try {
 				const allMessages = uni.getStorageSync('chatMessages') || {}
 				const key = this.getChatKey()
-				this.messages = allMessages[key] || []
+				
+				// Check if data is in new format (array under chat key)
+				if (Array.isArray(allMessages[key])) {
+					this.messages = allMessages[key]
+				} else {
+					// Old format: individual msg_xxx keys stored directly
+					// Migrate: collect all msg_* entries and group by chat key
+					const migrated = {}
+					const msgKeys = Object.keys(allMessages).filter(k => k.startsWith('msg_'))
+					if (msgKeys.length > 0) {
+						const myChatKey = this.getChatKey()
+						msgKeys.forEach(msgKey => {
+							const msg = allMessages[msgKey]
+							const senderId = msg.senderId || ''
+							const receiverId = msg.receiverId || ''
+							const chatK = [senderId, receiverId].sort().join('_')
+							if (!migrated[chatK]) migrated[chatK] = []
+							migrated[chatK].push(msg)
+						})
+						// Save migrated data
+						Object.keys(migrated).forEach(chatK => {
+							allMessages[chatK] = migrated[chatK]
+						})
+						// Remove old individual msg_* keys
+						msgKeys.forEach(k => delete allMessages[k])
+						uni.setStorageSync('chatMessages', allMessages)
+						this.messages = migrated[myChatKey] || []
+					} else {
+						this.messages = []
+					}
+				}
 			} catch (e) {
 				console.error('加载消息失败:', e)
 				this.messages = []
