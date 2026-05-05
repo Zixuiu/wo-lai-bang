@@ -72,7 +72,7 @@ export const useSimulationStore = defineStore('simulation', {
       const reward = template.rewards[Math.floor(Math.random() * template.rewards.length)]
       const location = LOCATIONS[Math.floor(Math.random() * LOCATIONS.length)]
       const unit = `${1 + Math.floor(Math.random() * 10)}栋${1 + Math.floor(Math.random() * 5)}单元`
-      
+
       const user = this.randomUser
       if (!user) return null
 
@@ -91,7 +91,7 @@ export const useSimulationStore = defineStore('simulation', {
     publishRandomNeed() {
       const needStore = useNeedStore()
       const openNeeds = needStore.openNeeds.length
-      
+
       if (openNeeds >= this.maxActiveNeeds) {
         return { published: false, reason: '活跃需求已达上限' }
       }
@@ -103,7 +103,7 @@ export const useSimulationStore = defineStore('simulation', {
 
       const originalUser = useUserStore().currentUser
       const originalIsLoggedIn = useUserStore().isLoggedIn
-      
+
       useUserStore().currentUser = needData.publisher
       useUserStore().isLoggedIn = true
 
@@ -121,7 +121,7 @@ export const useSimulationStore = defineStore('simulation', {
       useUserStore().isLoggedIn = originalIsLoggedIn
 
       this.logActivity('publish', `${needData.publisher.nickname} 发布了「${needData.title}」`, needData.publisher)
-      
+
       return { published: true, need: newNeed }
     },
 
@@ -129,14 +129,14 @@ export const useSimulationStore = defineStore('simulation', {
       const needStore = useNeedStore()
       const userStore = useUserStore()
       const openNeeds = needStore.openNeeds
-      
+
       if (openNeeds.length === 0) {
         return { accepted: false, reason: '没有可接的需求' }
       }
 
       const need = openNeeds[Math.floor(Math.random() * openNeeds.length)]
       const user = this.activeUsers.find(u => u.id !== need.publisher.id)
-      
+
       if (!user) {
         return { accepted: false, reason: '没有合适的接单用户' }
       }
@@ -144,7 +144,7 @@ export const useSimulationStore = defineStore('simulation', {
       const originalUserId = userStore.currentUser?.id || ''
       const originalUser = { ...userStore.currentUser }
       const originalIsLoggedIn = userStore.isLoggedIn
-      
+
       userStore.currentUser = user
       userStore.isLoggedIn = true
 
@@ -155,23 +155,23 @@ export const useSimulationStore = defineStore('simulation', {
 
       if (result.success) {
         const isCurrentUserPublisher = need.publisher.id === originalUserId
-        
+
         console.log('=== DEBUG - acceptRandomNeed ===')
         console.log('originalUserId:', originalUserId)
         console.log('need.publisher.id:', need.publisher.id)
         console.log('isCurrentUserPublisher:', isCurrentUserPublisher)
-        
+
         if (isCurrentUserPublisher) {
           const chatKey = this.getChatKey(need.publisher.id, user.id)
           console.log('chatKey:', chatKey)
-          
+
           const allMessages = uni.getStorageSync('chatMessages') || {}
           console.log('allMessages before:', allMessages)
-          
+
           if (!allMessages[chatKey]) {
             allMessages[chatKey] = []
           }
-          
+
           const systemMsg = {
             id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             type: 'text',
@@ -179,7 +179,7 @@ export const useSimulationStore = defineStore('simulation', {
             time: Date.now(),
             isSelf: false
           }
-          
+
           const welcomeMsg = {
             id: `msg_${Date.now() + 1}_${Math.random().toString(36).substr(2, 9)}`,
             type: 'text',
@@ -187,49 +187,50 @@ export const useSimulationStore = defineStore('simulation', {
             time: Date.now() + 1000,
             isSelf: false
           }
-          
+
           allMessages[chatKey].push(systemMsg)
           allMessages[chatKey].push(welcomeMsg)
           uni.setStorageSync('chatMessages', allMessages)
-          
+
           console.log('allMessages after:', allMessages)
-          
-          const allConvs = uni.getStorageSync('conversations') || []
-          
-          const convUserId = originalUserId === need.publisher.id ? user.id : need.publisher.id
-          const convNickname = originalUserId === need.publisher.id ? user.nickname : need.publisher.nickname
-          
-          const existingIndex = allConvs.findIndex(c => c.userId === convUserId)
-          
-          const conv = {
-            id: `conv_${convUserId}`,
-            userId: convUserId,
-            nickname: convNickname,
-            lastMessage: `您好！我是${user.nickname}，很高兴接单！`,
-            lastTime: Date.now() + 1000,
-            unread: 2,
-            online: true,
-            relatedOrder: {
-              needId: need.id,
-              orderId: result.order.id,
-              title: need.title,
-              reward: need.reward,
-              status: 'accepted',
-              publisher: { ...need.publisher },
-              helper: { ...user }
+
+          // 使用安全更新方法，防止并发读写导致会话丢失
+          this.safeUpdateConversations((allConvs) => {
+            const convUserId = originalUserId === need.publisher.id ? user.id : need.publisher.id
+            const convNickname = originalUserId === need.publisher.id ? user.nickname : need.publisher.nickname
+
+            const existingIndex = allConvs.findIndex(c => c.userId === convUserId)
+
+            const conv = {
+              id: `conv_${convUserId}`,
+              userId: convUserId,
+              nickname: convNickname,
+              lastMessage: `您好！我是${user.nickname}，很高兴接单！`,
+              lastTime: Date.now() + 1000,
+              unread: 2,
+              online: true,
+              relatedOrder: {
+                needId: need.id,
+                orderId: result.order.id,
+                title: need.title,
+                reward: need.reward,
+                status: 'accepted',
+                publisher: { ...need.publisher },
+                helper: { ...user }
+              }
             }
-          }
-          
-          if (existingIndex >= 0) {
-            allConvs[existingIndex] = conv
-          } else {
-            allConvs.unshift(conv)
-          }
-          uni.setStorageSync('conversations', allConvs)
-          
-          console.log('allConvs updated:', allConvs)
+
+            if (existingIndex >= 0) {
+              // 合并更新，保留原有数据
+              allConvs[existingIndex] = { ...allConvs[existingIndex], ...conv }
+            } else {
+              allConvs.unshift(conv)
+            }
+          })
+
+          console.log('Conversation safely updated for acceptance')
         }
-        
+
         this.logActivity('accept', `${user.nickname} 接了 ${need.publisher.nickname} 的「${need.title}」`, user)
         return { accepted: true, need, user }
       } else {
@@ -240,7 +241,7 @@ export const useSimulationStore = defineStore('simulation', {
     cancelRandomNeed() {
       const needStore = useNeedStore()
       const publishedNeeds = needStore.needs.filter(n => n.status === 'open' && this.activeUsers.some(u => u.id === n.publisher.id))
-      
+
       if (publishedNeeds.length === 0) {
         return { cancelled: false, reason: '没有可取消的需求' }
       }
@@ -250,7 +251,7 @@ export const useSimulationStore = defineStore('simulation', {
 
       const originalUser = useUserStore().currentUser
       const originalIsLoggedIn = useUserStore().isLoggedIn
-      
+
       useUserStore().currentUser = user
       useUserStore().isLoggedIn = true
 
@@ -271,7 +272,7 @@ export const useSimulationStore = defineStore('simulation', {
       const needStore = useNeedStore()
       const userStore = useUserStore()
       const acceptedNeeds = needStore.needs.filter(n => n.status === 'accepted' && n.helper && this.activeUsers.some(u => u.id === n.helper.id))
-      
+
       if (acceptedNeeds.length === 0) {
         return { marked: false, reason: '没有可标记完成的需求' }
       }
@@ -282,7 +283,7 @@ export const useSimulationStore = defineStore('simulation', {
       const originalUserId = userStore.currentUser?.id || ''
       const originalUser = { ...userStore.currentUser }
       const originalIsLoggedIn = userStore.isLoggedIn
-      
+
       userStore.currentUser = user
       userStore.isLoggedIn = true
 
@@ -293,14 +294,14 @@ export const useSimulationStore = defineStore('simulation', {
 
       if (result.success) {
         const isCurrentUserPublisher = need.publisher.id === originalUserId
-        
+
         if (isCurrentUserPublisher) {
           const chatKey = this.getChatKey(need.publisher.id, user.id)
           const allMessages = uni.getStorageSync('chatMessages') || {}
           if (!allMessages[chatKey]) {
             allMessages[chatKey] = []
           }
-          
+
           const completeMsg = {
             id: `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
             type: 'text',
@@ -308,24 +309,25 @@ export const useSimulationStore = defineStore('simulation', {
             time: Date.now(),
             isSelf: false
           }
-          
+
           allMessages[chatKey].push(completeMsg)
           uni.setStorageSync('chatMessages', allMessages)
-          
-          const allConvs = uni.getStorageSync('conversations') || []
-          const existingIndex = allConvs.findIndex(c => c.userId === user.id)
-          
-          if (existingIndex >= 0) {
-            allConvs[existingIndex].lastMessage = `您好！我已经完成了「${need.title}」，麻烦您确认一下！`
-            allConvs[existingIndex].lastTime = Date.now()
-            allConvs[existingIndex].unread = (allConvs[existingIndex].unread || 0) + 1
-            if (allConvs[existingIndex].relatedOrder) {
-              allConvs[existingIndex].relatedOrder.status = 'pending_confirm'
+
+          // 使用安全更新方法，防止并发读写导致会话丢失
+          this.safeUpdateConversations((allConvs) => {
+            const existingIndex = allConvs.findIndex(c => c.userId === user.id)
+
+            if (existingIndex >= 0) {
+              allConvs[existingIndex].lastMessage = `您好！我已经完成了「${need.title}」，麻烦您确认一下！`
+              allConvs[existingIndex].lastTime = Date.now()
+              allConvs[existingIndex].unread = (allConvs[existingIndex].unread || 0) + 1
+              if (allConvs[existingIndex].relatedOrder) {
+                allConvs[existingIndex].relatedOrder.status = 'pending_confirm'
+              }
             }
-          }
-          uni.setStorageSync('conversations', allConvs)
+          })
         }
-        
+
         this.logActivity('complete', `${user.nickname} 完成了 ${need.publisher.nickname} 的「${need.title}」`, user)
         return { marked: true, need }
       } else {
@@ -346,15 +348,15 @@ export const useSimulationStore = defineStore('simulation', {
       }
 
       const need = pendingNeeds[Math.floor(Math.random() * pendingNeeds.length)]
-      
+
       const originalUserId = userStore.currentUser?.id || ''
-      
+
       const isCurrentUserPublisher = need.publisher?.id === originalUserId
-      
+
       if (isCurrentUserPublisher) {
         return { confirmed: false, reason: '不代替真实用户确认订单' }
       }
-      
+
       const isPublisherSimUser = this.activeUsers.some(u => u.id === need.publisher.id)
       const isHelperSimUser = this.activeUsers.some(u => u.id === need.helper?.id)
       const user = isPublisherSimUser ? need.publisher : need.helper
@@ -395,18 +397,19 @@ export const useSimulationStore = defineStore('simulation', {
           allMessages[chatKey].push(confirmMsg)
           uni.setStorageSync('chatMessages', allMessages)
 
-          const allConvs = uni.getStorageSync('conversations') || []
-          const existingIndex = allConvs.findIndex(c => c.userId === need.helper.id)
+          // 使用安全更新方法，防止并发读写导致会话丢失
+          this.safeUpdateConversations((allConvs) => {
+            const existingIndex = allConvs.findIndex(c => c.userId === need.helper.id)
 
-          if (existingIndex >= 0) {
-            allConvs[existingIndex].lastMessage = `太好了！谢谢您的确认！「${need.title}」圆满完成！`
-            allConvs[existingIndex].lastTime = Date.now()
-            allConvs[existingIndex].unread = (allConvs[existingIndex].unread || 0) + 1
-            if (allConvs[existingIndex].relatedOrder) {
-              allConvs[existingIndex].relatedOrder.status = 'completed'
+            if (existingIndex >= 0) {
+              allConvs[existingIndex].lastMessage = `太好了！谢谢您的确认！「${need.title}」圆满完成！`
+              allConvs[existingIndex].lastTime = Date.now()
+              allConvs[existingIndex].unread = (allConvs[existingIndex].unread || 0) + 1
+              if (allConvs[existingIndex].relatedOrder) {
+                allConvs[existingIndex].relatedOrder.status = 'completed'
+              }
             }
-          }
-          uni.setStorageSync('conversations', allConvs)
+          })
         }
 
         this.logActivity('confirm', `${user.nickname} 确认了 ${need.helper.nickname} 的「${need.title}」完成`, user)
@@ -427,7 +430,7 @@ export const useSimulationStore = defineStore('simulation', {
 
       const totalWeight = actions.reduce((sum, a) => sum + a.weight, 0)
       let random = Math.random() * totalWeight
-      
+
       let selectedAction = 'publish'
       for (const a of actions) {
         random -= a.weight
@@ -555,7 +558,7 @@ export const useSimulationStore = defineStore('simulation', {
     sendRandomMessage() {
       const orderStore = useOrderStore()
       const userStore = useUserStore()
-      const activeOrders = orderStore.orders.filter(o => 
+      const activeOrders = orderStore.orders.filter(o =>
         o.status === 'accepted' || o.status === 'pending_confirm'
       )
 
@@ -564,11 +567,11 @@ export const useSimulationStore = defineStore('simulation', {
       }
 
       const originalUserId = userStore.currentUser?.id || ''
-      
-      const ordersWithCurrentUser = activeOrders.filter(o => 
+
+      const ordersWithCurrentUser = activeOrders.filter(o =>
         o.publisher?.id === originalUserId || o.helper?.id === originalUserId
       )
-      
+
       let order
       if (ordersWithCurrentUser.length > 0) {
         order = ordersWithCurrentUser[Math.floor(Math.random() * ordersWithCurrentUser.length)]
@@ -576,7 +579,7 @@ export const useSimulationStore = defineStore('simulation', {
         // 修复：没有与当前用户相关的订单时，不创建无关会话，直接返回
         return { success: false, message: '没有与当前用户相关的活跃订单' }
       }
-      
+
       const publisher = order.publisher
       const helper = order.helper
 
@@ -598,7 +601,7 @@ export const useSimulationStore = defineStore('simulation', {
       }
 
       const messageTypes = ['greeting', 'question', 'update', 'small_talk', 'emoji']
-      
+
       let messageType
       if (order.status === 'accepted') {
         messageType = ['accepted', 'confirm', 'question', 'update', 'small_talk', 'emoji'][Math.floor(Math.random() * 6)]
@@ -640,28 +643,55 @@ export const useSimulationStore = defineStore('simulation', {
       return `chat_${ids[0]}_${ids[1]}`
     },
 
-    updateConversation(fromUser, toUser, messageText, order, originalUserId) {
-      const allConvs = uni.getStorageSync('conversations') || []
-      
-      const convUserId = originalUserId === fromUser.id ? toUser.id : fromUser.id
-      const convNickname = originalUserId === fromUser.id ? toUser.nickname : fromUser.nickname
-      
-      const existingIndex = allConvs.findIndex(c => c.userId === convUserId)
-      
-      let unread = 1
-      if (existingIndex >= 0 && allConvs[existingIndex].unread !== undefined) {
-        unread = allConvs[existingIndex].unread + 1
+    /**
+     * 安全的会话存储更新方法（带锁机制）
+     * 防止多个定时器并发读写 conversations 导致数据丢失
+     * 消息永远不会被自动删除，只有用户手动操作才能删除
+     */
+    _convLock: false,
+
+    safeUpdateConversations(updater) {
+      // 如果锁被占用，等待后重试（最多等待500ms）
+      if (this._convLock) {
+        for (let i = 0; i < 10; i++) {
+          // 同步等待：使用 while 循环 + Date.now() 模拟
+          const start = Date.now()
+          while (Date.now() - start < 50) {
+            // busy wait 50ms
+          }
+          if (!this._convLock) break
+        }
+        // 如果仍然被锁，跳过本次更新以避免数据丢失
+        if (this._convLock) {
+          console.warn('[simulation] conversations 锁超时，跳过本次更新')
+          return
+        }
       }
-      
-      const conv = {
-        id: `conv_${convUserId}`,
-        userId: convUserId,
-        nickname: convNickname,
-        lastMessage: messageText,
-        lastTime: Date.now(),
-        unread: unread,
-        online: true,
-        relatedOrder: order ? {
+      this._convLock = true
+      try {
+        const allConvs = uni.getStorageSync('conversations') || []
+        const result = updater(allConvs)
+        if (result !== false) {
+          uni.setStorageSync('conversations', allConvs)
+        }
+      } finally {
+        this._convLock = false
+      }
+    },
+
+    updateConversation(fromUser, toUser, messageText, order, originalUserId) {
+      this.safeUpdateConversations((allConvs) => {
+        const convUserId = originalUserId === fromUser.id ? toUser.id : fromUser.id
+        const convNickname = originalUserId === fromUser.id ? toUser.nickname : fromUser.nickname
+
+        const existingIndex = allConvs.findIndex(c => c.userId === convUserId)
+
+        let unread = 1
+        if (existingIndex >= 0 && allConvs[existingIndex].unread !== undefined) {
+          unread = allConvs[existingIndex].unread + 1
+        }
+
+        const newRelatedOrder = order ? {
           needId: order.needId,
           orderId: order.id,
           title: order.title,
@@ -670,15 +700,35 @@ export const useSimulationStore = defineStore('simulation', {
           publisher: { ...order.publisher },
           helper: { ...order.helper }
         } : null
-      }
 
-      if (existingIndex >= 0) {
-        allConvs[existingIndex] = conv
-      } else {
-        allConvs.unshift(conv)
-      }
-      uni.setStorageSync('conversations', allConvs)
-      
+        if (existingIndex >= 0) {
+          // 合并更新，保留原有数据，只覆盖需要更新的字段
+          // 消息永远不会被自动删除，只更新内容字段
+          const existing = allConvs[existingIndex]
+          allConvs[existingIndex] = {
+            ...existing,
+            nickname: convNickname,
+            lastMessage: messageText,
+            lastTime: Date.now(),
+            unread: unread,
+            online: true,
+            // 仅在新的 relatedOrder 存在时更新，否则保留原有的
+            relatedOrder: newRelatedOrder || existing.relatedOrder
+          }
+        } else {
+          allConvs.unshift({
+            id: `conv_${convUserId}`,
+            userId: convUserId,
+            nickname: convNickname,
+            lastMessage: messageText,
+            lastTime: Date.now(),
+            unread: unread,
+            online: true,
+            relatedOrder: newRelatedOrder
+          })
+        }
+      })
+
       uni.$emit('updateMessageBadge')
     }
   },
