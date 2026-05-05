@@ -8,5 +8,15 @@ export default defineConfig({
     alias: {
       '@': path.resolve(__dirname, 'src')
     }
+  },
+  build: {
+    rollupOptions: {
+      onwarn(warning, warn) {
+        if (warning.code === 'MISSING_EXPORT' && warning.message.includes('normalizeCssVarValue')) {
+          return
+        }
+        warn(warning)
+      }
+    }
   }
 })
