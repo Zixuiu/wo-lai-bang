@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
 import { useUserStore } from './user'
-import { useNeedStore } from './need'
 
 const COMMISSION_RATE = 0.1
 const SHARE_COMMISSION_RATE = 0.02
@@ -169,11 +168,6 @@ export const useOrderStore = defineStore('order', {
       const order = this.orders.find(o => o.id === orderId)
       if (!order) return { success: false, message: '订单不存在' }
 
-      // 防重复结算：如果订单已经完成，直接返回成功
-      if (order.status === ORDER_STATUS.COMPLETED) {
-        return { success: true, message: '订单已完成' }
-      }
-
       const userStore = useUserStore()
       const isPublisher = order.publisher?.id === userStore.currentUser.id
       const isHelper = order.helper?.id === userStore.currentUser.id
@@ -192,7 +186,6 @@ export const useOrderStore = defineStore('order', {
         order.status = ORDER_STATUS.COMPLETED
         order.completedAt = Date.now()
 
-        // 结算逻辑：发放酬劳给帮手
         const platformCommission = order.reward * COMMISSION_RATE
         let shareCommission = 0
 
@@ -205,31 +198,6 @@ export const useOrderStore = defineStore('order', {
         if (order.helper && order.helper.id) {
           userStore.addBalanceToUser(order.helper.id, actualReward)
         }
-
-        // 同步更新 needStore 状态
-        const needStore = useNeedStore()
-        const needId = order.needId || order.id
-        const need = needStore.needs.find(n => n.id === needId)
-        if (need && need.status !== 'completed') {
-          need.status = 'completed'
-          need.completedAt = Date.now()
-        }
-
-        // 更新会话状态
-        const allConvs = uni.getStorageSync('conversations') || []
-        if (order.publisher?.id) {
-          const convIndex = allConvs.findIndex(c => c.userId === order.publisher.id)
-          if (convIndex >= 0 && allConvs[convIndex].relatedOrder) {
-            allConvs[convIndex].relatedOrder.status = ORDER_STATUS.COMPLETED
-          }
-        }
-        if (order.helper?.id) {
-          const convIndex = allConvs.findIndex(c => c.userId === order.helper.id)
-          if (convIndex >= 0 && allConvs[convIndex].relatedOrder) {
-            allConvs[convIndex].relatedOrder.status = ORDER_STATUS.COMPLETED
-          }
-        }
-        uni.setStorageSync('conversations', allConvs)
       }
 
       return { success: true }

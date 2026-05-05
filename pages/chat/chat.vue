@@ -319,10 +319,11 @@ export default {
 				}
 
 				if (existingIndex >= 0) {
+					// 合并更新，保留原有的 relatedOrder 等数据
 					allConvs[existingIndex] = {
 						...allConvs[existingIndex],
 						...conv,
-						relatedOrder: allConvs[existingIndex].relatedOrder
+						relatedOrder: allConvs[existingIndex].relatedOrder || conv.relatedOrder
 					}
 				} else {
 					allConvs.unshift(conv)

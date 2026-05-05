@@ -307,14 +307,7 @@ export const useNeedStore = defineStore('need', {
     confirmComplete(needId) {
       const userStore = useUserStore()
       const need = this.needs.find(n => n.id === needId)
-      if (!need) {
-        return { success: false, message: '需求不存在' }
-      }
-      // 防重复结算：如果已经完成，直接返回成功
-      if (need.status === NEED_STATUS.COMPLETED) {
-        return { success: true, message: '订单已完成' }
-      }
-      if (need.status !== NEED_STATUS.PENDING_CONFIRM) {
+      if (!need || need.status !== NEED_STATUS.PENDING_CONFIRM) {
         return { success: false, message: '当前状态无法确认完成' }
       }
       if (need.publisher.id !== userStore.currentUser.id) {
@@ -332,7 +325,6 @@ export const useNeedStore = defineStore('need', {
       if (order) {
         order.status = NEED_STATUS.COMPLETED
         order.completedAt = Date.now()
-        order.publisherConfirmed = true
       }
 
       const platformCommission = reward * COMMISSION_RATE

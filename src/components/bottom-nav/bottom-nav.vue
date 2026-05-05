@@ -68,8 +68,17 @@ export default {
 			}
 		},
 		updateBadges() {
+			const currentUserId = uni.getStorageSync('userInfo')?.id
 			const conversations = uni.getStorageSync('conversations') || []
-			const messageUnreadCount = conversations.reduce((sum, c) => sum + (c.unread || 0), 0)
+			const messageUnreadCount = conversations
+				.filter(conv => {
+					if (!conv.relatedOrder) return false
+					const order = conv.relatedOrder
+					const isPublisher = order.publisher?.id === currentUserId
+					const isHelper = order.helper?.id === currentUserId
+					return isPublisher || isHelper
+				})
+				.reduce((sum, c) => sum + (c.unread || 0), 0)
 
 			this.messageUnreadCount = messageUnreadCount
 

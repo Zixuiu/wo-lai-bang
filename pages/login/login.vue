@@ -1,9 +1,5 @@
 <template>
 	<view class="login-container">
-		<view class="header">
-			<view class="back-space"></view>
-		</view>
-
 		<scroll-view class="content-scroll" scroll-y>
 			<view class="logo-section">
 				<view class="logo-box">
@@ -187,22 +183,13 @@ export default {
 	background: #FFFFFF;
 }
 
-.header {
-	padding: 20px 0 0;
-}
-
-.back-space {
-	width: 44px;
-	height: 44px;
-}
-
 .content-scroll {
-	height: calc(100vh - 44px);
+	height: 100vh;
 }
 
 .logo-section {
 	text-align: center;
-	padding: 60px 24px 32px;
+	padding: 80px 24px 32px;
 }
 
 .logo-box {

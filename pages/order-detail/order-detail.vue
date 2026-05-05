@@ -247,11 +247,20 @@ export default {
 
 			if (!isConfirmed) return
 
+			// 同步 orderStore 和 needStore 的状态
 			const result = this.orderStore.applyComplete(this.order.id)
 			if (result.success) {
 				this.order.status = 'pending_confirm'
 				this.order.helperConfirmed = true
 				this.order.pendingConfirmAt = Date.now()
+
+				// 同步 needStore 状态，确保 need 也进入 pending_confirm
+				const needId = this.order.needId || this.order.id
+				const needResult = this.needStore.markComplete(needId)
+				if (needResult.success) {
+					// needStore 也同步更新成功
+				}
+
 				this.sendNotification('pending_confirm', '帮手已申请完成，等待您确认')
 				uni.showToast({ title: '已申请完成', icon: 'success' })
 			} else {
@@ -272,37 +281,56 @@ export default {
 			if (!isConfirmed) return
 
 			const needId = this.order.needId || this.order.id
-			const result = this.needStore.confirmComplete(needId)
 
-			if (result.success) {
-				if (this.isPublisher) {
+			if (this.isPublisher) {
+				// 发布者确认：走 needStore.confirmComplete（含结算逻辑）
+				const result = this.needStore.confirmComplete(needId)
+
+				if (result.success) {
 					this.order.publisherConfirmed = true
-				}
-				this.order.helperConfirmed = true
-
-				if (this.order.helperConfirmed && this.order.publisherConfirmed) {
 					this.order.status = 'completed'
 					this.order.completedAt = Date.now()
 					this.sendNotification('completed', '订单已完成，双方已确认')
-				} else {
-					this.sendNotification('pending_confirm', this.isPublisher ? '发布者已确认完成，订单即将结束' : '帮手已确认完成，订单即将结束')
-				}
 
-				const orderInStore = this.orderStore.orders.find(o => o.id === this.order.id)
-				if (orderInStore) {
-					if (this.isPublisher) {
+					// 同步更新 orderStore 中的订单状态
+					const orderInStore = this.orderStore.orders.find(o => o.id === this.order.id)
+					if (orderInStore) {
 						orderInStore.publisherConfirmed = true
-					}
-					orderInStore.helperConfirmed = true
-					if (orderInStore.helperConfirmed && orderInStore.publisherConfirmed) {
 						orderInStore.status = 'completed'
 						orderInStore.completedAt = Date.now()
 					}
-				}
 
-				uni.showToast({ title: result.message, icon: 'success' })
+					uni.showToast({ title: result.message, icon: 'success' })
+				} else {
+					uni.showToast({ title: result.message, icon: 'none' })
+				}
 			} else {
-				uni.showToast({ title: result.message, icon: 'none' })
+				// 帮手确认：走 orderStore.confirmComplete（双方确认模式，含结算逻辑）
+				const result = this.orderStore.confirmComplete(this.order.id)
+
+				if (result.success) {
+					this.order.helperConfirmed = true
+
+					// 同步更新 needStore 中的 need 状态
+					const needInStore = this.needStore.needs.find(n => n.id === needId)
+					if (needInStore) {
+						needInStore.status = this.order.status
+						if (this.order.status === 'completed') {
+							needInStore.completedAt = Date.now()
+						}
+					}
+
+					if (this.order.status === 'completed') {
+						this.order.completedAt = Date.now()
+						this.sendNotification('completed', '订单已完成，双方已确认')
+					} else {
+						this.sendNotification('pending_confirm', '帮手已确认完成，等待发布者确认')
+					}
+
+					uni.showToast({ title: this.order.status === 'completed' ? '订单已完成' : '已确认，等待发布者确认', icon: 'success' })
+				} else {
+					uni.showToast({ title: result.message, icon: 'none' })
+				}
 			}
 		},
 		contactUser() {

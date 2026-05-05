@@ -216,16 +216,12 @@ export default {
 			const allConversations = uni.getStorageSync('conversations') || []
 			this.conversations = allConversations
 				.filter(conv => {
-					// 过滤模拟用户的会话（除非当前用户本身就是模拟用户）
 					if (conv.userId && conv.userId.startsWith('sim') && conv.userId !== currentUserId) return false
 					if (conv.relatedOrder) {
 						const order = conv.relatedOrder
 						const isPublisherSim = order.publisher?.id && order.publisher.id.startsWith('sim')
 						const isHelperSim = order.helper?.id && order.helper.id.startsWith('sim')
-						// 双方都是模拟用户且当前用户不是其中任何一方，过滤掉
 						if (isPublisherSim && isHelperSim && order.publisher?.id !== currentUserId && order.helper?.id !== currentUserId) return false
-						// 修复：关联订单的发布者和帮手都不是当前用户，说明是无关订单，过滤掉
-						if (currentUserId && order.publisher?.id !== currentUserId && order.helper?.id !== currentUserId) return false
 					}
 					return true
 				})

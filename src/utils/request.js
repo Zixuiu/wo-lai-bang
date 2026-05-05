@@ -101,14 +101,6 @@ const getMockData = (url, method, data) => {
 
 const request = (options) => {
   return new Promise((resolve, reject) => {
-    // Mock 模式下直接返回模拟数据，不发真实请求
-    if (CONFIG.USE_MOCK) {
-      console.log('[Mock] 拦截请求:', options.method, options.url)
-      const mockData = getMockData(options.url, options.method, options.data)
-      setTimeout(() => resolve(mockData), 300)
-      return
-    }
-
     const token = uni.getStorageSync('token')
 
     if (options.loading !== false) {

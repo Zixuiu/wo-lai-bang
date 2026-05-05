@@ -18,12 +18,6 @@ class WebSocketService {
     if (this.isConnected) return
     if (this.isManualClose) return
 
-    // Mock 模式下不建立真实 WebSocket 连接
-    if (CONFIG.USE_MOCK) {
-      console.log('[Mock] WebSocket 连接已跳过')
-      return
-    }
-
     const token = uni.getStorageSync('token')
     if (!token) {
       console.warn('WebSocket: No token available')
