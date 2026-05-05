@@ -3,6 +3,7 @@ import uni from '@dcloudio/vite-plugin-uni'
 import path from 'path'
 
 export default defineConfig({
+  root: path.resolve(__dirname, 'src'),
   plugins: [uni()],
   resolve: {
     alias: {
@@ -10,6 +11,7 @@ export default defineConfig({
     }
   },
   build: {
+    outDir: path.resolve(__dirname, 'dist'),
     rollupOptions: {
       onwarn(warning, warn) {
         if (warning.code === 'MISSING_EXPORT' && warning.message.includes('normalizeCssVarValue')) {
