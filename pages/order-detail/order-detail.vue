@@ -85,10 +85,10 @@
 				<button v-if="order.status === 'accepted' && !isPublisher && !order.helperConfirmed" class="btn btn-p" @click="applyComplete">申请完成</button>
 				<!-- 帮手已申请完成提示 -->
 				<button v-if="order.status === 'pending_confirm' && !isPublisher && order.helperConfirmed && !order.publisherConfirmed" class="btn btn-s" disabled>等待发布者确认</button>
-				<!-- 发布者确认完成按钮 -->
+				<!-- 发布者等待帮手确认 -->
 				<button v-if="order.status === 'pending_confirm' && isPublisher && order.publisherConfirmed && !order.helperConfirmed" class="btn btn-s" disabled>等待帮手确认</button>
+				<!-- 发布者确认完成按钮 -->
 				<button v-if="order.status === 'pending_confirm' && isPublisher && !order.publisherConfirmed" class="btn btn-p" @click="confirmComplete">确认完成</button>
-				<button v-if="order.status === 'pending_confirm' && !isPublisher && !order.helperConfirmed" class="btn btn-p" @click="confirmComplete">确认完成</button>
 				<!-- 联系对方 -->
 				<button v-if="order.status === 'accepted' || order.status === 'pending_confirm'" class="btn btn-s" @click="contactUser">联系对方</button>
 				<!-- 去评价 -->
@@ -223,13 +223,14 @@ export default {
 			this.confirmConfirmText = '确定'
 			this.confirmCancelText = '取消'
 			this.onConfirm = async () => {
-				this.orderStore.completeOrder(this.order.id)
-				const result = { success: true }
+				const result = this.orderStore.completeOrder(this.order.id)
 				if (result.success) {
 					this.order.status = 'completed'
 					this.order.completedAt = Date.now()
 					this.sendNotification('completed', '订单已完成')
 					uni.showToast({ title: '订单已完成', icon: 'success' })
+				} else {
+					uni.showToast({ title: result.message, icon: 'none' })
 				}
 			}
 			this.confirmVisible = true
@@ -246,13 +247,16 @@ export default {
 
 			if (!isConfirmed) return
 
-			this.order.status = 'pending_confirm'
-			this.order.helperConfirmed = true
-			this.order.pendingConfirmAt = Date.now()
-
-			this.sendNotification('pending_confirm', '帮手已申请完成，等待您确认')
-
-			uni.showToast({ title: '已申请完成', icon: 'success' })
+			const result = this.orderStore.applyComplete(this.order.id)
+			if (result.success) {
+				this.order.status = 'pending_confirm'
+				this.order.helperConfirmed = true
+				this.order.pendingConfirmAt = Date.now()
+				this.sendNotification('pending_confirm', '帮手已申请完成，等待您确认')
+				uni.showToast({ title: '已申请完成', icon: 'success' })
+			} else {
+				uni.showToast({ title: result.message, icon: 'none' })
+			}
 		},
 		async confirmComplete() {
 			const role = this.isPublisher ? '发布者' : '帮手'
@@ -267,30 +271,49 @@ export default {
 
 			if (!isConfirmed) return
 
-			if (this.isPublisher) {
-				this.order.publisherConfirmed = true
-				this.sendNotification('pending_confirm', '发布者已确认完成，订单即将结束')
-			} else {
-				this.order.helperConfirmed = true
-				this.sendNotification('pending_confirm', '帮手已确认完成，订单即将结束')
-			}
+			const needId = this.order.needId || this.order.id
+			const result = this.needStore.confirmComplete(needId)
 
-			if (this.order.helperConfirmed && this.order.publisherConfirmed) {
-				this.order.status = 'completed'
-				this.order.completedAt = Date.now()
-				this.sendNotification('completed', '订单已完成，双方已确认')
-				uni.showToast({ title: '订单已完成', icon: 'success' })
+			if (result.success) {
+				if (this.isPublisher) {
+					this.order.publisherConfirmed = true
+				}
+				this.order.helperConfirmed = true
+
+				if (this.order.helperConfirmed && this.order.publisherConfirmed) {
+					this.order.status = 'completed'
+					this.order.completedAt = Date.now()
+					this.sendNotification('completed', '订单已完成，双方已确认')
+				} else {
+					this.sendNotification('pending_confirm', this.isPublisher ? '发布者已确认完成，订单即将结束' : '帮手已确认完成，订单即将结束')
+				}
+
+				const orderInStore = this.orderStore.orders.find(o => o.id === this.order.id)
+				if (orderInStore) {
+					if (this.isPublisher) {
+						orderInStore.publisherConfirmed = true
+					}
+					orderInStore.helperConfirmed = true
+					if (orderInStore.helperConfirmed && orderInStore.publisherConfirmed) {
+						orderInStore.status = 'completed'
+						orderInStore.completedAt = Date.now()
+					}
+				}
+
+				uni.showToast({ title: result.message, icon: 'success' })
 			} else {
-				uni.showToast({ title: '已确认，等待对方确认', icon: 'success' })
+				uni.showToast({ title: result.message, icon: 'none' })
 			}
 		},
 		contactUser() {
 			const targetUser = this.isPublisher ? this.order.helper : this.order.publisher
-			if (targetUser) {
-				uni.navigateTo({
-					url: `/pages/chat/chat?userId=${targetUser.id}&nickname=${targetUser.nickname}`
-				})
+			if (!targetUser || !targetUser.id) {
+				uni.showToast({ title: '暂无联系人信息', icon: 'none' })
+				return
 			}
+			uni.navigateTo({
+				url: `/pages/chat/chat?userId=${targetUser.id}&nickname=${targetUser.nickname}`
+			})
 		},
 		async cancelOrder() {
 			const isConfirmed = await new Promise((resolve) => {
@@ -306,28 +329,63 @@ export default {
 
 			if (!isConfirmed) return
 
-			this.order.status = 'cancelled'
-			this.sendNotification('cancelled', this.isPublisher ? '您的订单已被取消' : '帮手已取消接单')
+			const needId = this.order.needId || this.order.id
+			const result = this.orderStore.cancelOrder(needId)
 
-			uni.showToast({
-				title: this.isPublisher ? '订单已取消' : '已取消接单',
-				icon: 'success'
-			})
+			if (result.success) {
+				this.order.status = 'cancelled'
+				this.order.cancelledAt = Date.now()
+				this.sendCancelNotification()
+				uni.showToast({
+					title: this.isPublisher ? '订单已取消' : '已取消接单',
+					icon: 'success'
+				})
+				setTimeout(() => {
+					uni.navigateBack()
+				}, 1500)
+			} else {
+				uni.showToast({ title: result.message, icon: 'none' })
+			}
+		},
+		sendCancelNotification() {
+			const targetUser = this.isPublisher ? this.order.helper : this.order.publisher
+			if (targetUser && targetUser.id) {
+				const notifications = uni.getStorageSync('notifications') || []
+				notifications.unshift({
+					id: Date.now(),
+					type: 'order',
+					title: '订单已取消',
+					content: this.isPublisher ? '发布者已取消订单' : '帮手已取消接单',
+					orderId: this.order.id,
+					orderTitle: this.order.title,
+					status: 'cancelled',
+					read: false,
+					createdAt: Date.now()
+				})
+				uni.setStorageSync('notifications', notifications)
 
-			setTimeout(() => {
-				uni.navigateBack()
-			}, 1500)
+				const unreadCount = notifications.filter(n => !n.read).length
+				if (unreadCount > 0) {
+					uni.setTabBarBadge({ index: 3, text: unreadCount > 99 ? '99+' : String(unreadCount) })
+				} else {
+					uni.removeTabBarBadge({ index: 3 })
+				}
+			}
 		},
 		sendNotification(status, message) {
 			const notifications = uni.getStorageSync('notifications') || []
+			const titleMap = {
+				'accepted': '订单已被接单',
+				'pending_confirm': '订单待确认',
+				'completed': '订单已完成',
+				'cancelled': '订单已取消',
+				'helper_confirmed': '帮手已确认完成',
+				'publisher_confirmed': '发布者已确认'
+			}
 			const newNotification = {
 				id: Date.now(),
 				type: 'order',
-				title: status === 'accepted' ? '订单已被接单'
-					: status === 'pending_confirm' ? '订单待确认'
-					: status === 'completed' ? '订单已完成'
-					: status === 'cancelled' ? '订单已取消'
-					: '订单状态更新',
+				title: titleMap[status] || '订单状态更新',
 				content: message,
 				orderId: this.order.id,
 				orderTitle: this.order.title,
@@ -337,6 +395,16 @@ export default {
 			}
 			notifications.unshift(newNotification)
 			uni.setStorageSync('notifications', notifications)
+
+			const unreadCount = notifications.filter(n => !n.read).length
+			if (unreadCount > 0) {
+				uni.setTabBarBadge({
+					index: 3,
+					text: unreadCount > 99 ? '99+' : String(unreadCount)
+				})
+			} else {
+				uni.removeTabBarBadge({ index: 3 })
+			}
 		},
 		goRate() {
 			uni.navigateTo({

@@ -56,34 +56,46 @@
 			<!-- Action Button -->
 			<view class="btn-group">
 				<!-- Case 1: Open need, not mine -->
-				<button v-if="need.status === 'open' && need.publisher.id !== userStore.currentUser.id" 
+				<button v-if="need.status === 'open' && need.publisher.id !== userStore.currentUser.id"
 					class="btn btn-p" @click="acceptNeed">✋ 接单帮忙</button>
-				
-				<!-- Case 2: Accepted need, involve me -->
-				<button v-else-if="need.status === 'accepted' && (need.publisher.id === userStore.currentUser.id || isAccepter)" 
+
+				<!-- Case 2: Publisher in accepted - show 立即沟通 -->
+				<button v-if="need.status === 'accepted' && need.publisher.id === userStore.currentUser.id"
 					class="btn btn-p" @click="goToChat">立即沟通</button>
-				
-				<!-- Case 3: Pending confirm, I am the publisher -->
+
+				<!-- Case 3: Helper in accepted - show 申请完成 -->
+				<button v-if="need.status === 'accepted' && isHelper"
+					class="btn btn-p" @click="applyComplete">申请完成</button>
+
+				<!-- Case 4: Helper in accepted - show 联系发布者 -->
+				<button v-if="need.status === 'accepted' && isHelper"
+					class="btn btn-s" @click="goToChat">联系发布者</button>
+
+				<!-- Case 5: Pending confirm, I am the publisher -->
 				<button v-else-if="need.status === 'pending_confirm' && need.publisher.id === userStore.currentUser.id"
 					class="btn btn-confirm" @click="confirmComplete">确认完成</button>
-				
-				<!-- Case 3: Completed need, need rating -->
-				<button v-else-if="need.status === 'completed' && need.publisher.id === userStore.currentUser.id && !need.isRated" 
+
+				<!-- Case 6: Pending confirm, I am the helper - show 等待确认 -->
+				<button v-else-if="need.status === 'pending_confirm' && isHelper"
+					class="btn btn-s" disabled>等待发布者确认</button>
+
+				<!-- Case 7: Completed need, need rating -->
+				<button v-else-if="need.status === 'completed' && need.publisher.id === userStore.currentUser.id && !need.isRated"
 					class="btn btn-p" @click="rateOrder">评价帮手</button>
 
-				<!-- Case 4: Already completed/rated -->
+				<!-- Case 8: Already completed/rated -->
 				<button v-else-if="need.status === 'completed'"
 					class="btn btn-s" disabled>订单已完成</button>
 
-				<!-- Case 5: Cancelled, my own need - republish -->
+				<!-- Case 9: Cancelled, my own need - republish -->
 				<button v-else-if="need.status === 'cancelled' && need.publisher.id === userStore.currentUser.id"
 					class="btn btn-p" @click="republishNeed">再次发布</button>
 
-				<!-- Case 6: Cancelled -->
+				<!-- Case 10: Cancelled -->
 				<button v-else-if="need.status === 'cancelled'"
 					class="btn btn-s" disabled>已取消</button>
 
-				<!-- Case 7: My own open need -->
+				<!-- Case 11: My own open need -->
 				<button v-else-if="need.status === 'open' && need.publisher.id === userStore.currentUser.id"
 					class="btn btn-s" @click="cancelNeed">取消发布</button>
 			</view>
@@ -169,11 +181,13 @@ export default {
 	},
 	computed: {
 		isAccepter() {
-			// 支持 order 对象中的 helper 字段和 potential 的 accepterId
 			return this.need && (
-				(this.need.helper && this.need.helper.id === this.userStore.currentUser.id) || 
+				(this.need.helper && this.need.helper.id === this.userStore.currentUser.id) ||
 				(this.need.accepterId === this.userStore.currentUser.id)
 			)
+		},
+		isHelper() {
+			return this.need && this.need.helper && this.need.helper.id === this.userStore.currentUser.id
 		}
 	},
 	onLoad(options) {
@@ -255,14 +269,37 @@ export default {
 			}
 		},
 		goToChat() {
-			const targetUser = this.need.publisher.id === this.userStore.currentUser.id ? 
-				{ id: this.need.accepterId, nickname: '帮手' } : 
+			const targetUser = this.need.publisher.id === this.userStore.currentUser.id ?
+				this.need.helper :
 				this.need.publisher;
-			
+
+			if (!targetUser || !targetUser.id) {
+				uni.showToast({ title: '暂无可沟通的对方', icon: 'none' });
+				return;
+			}
+
 			uni.navigateTo({
 				url: `/pages/chat/chat?userId=${targetUser.id}&nickname=${targetUser.nickname}`
 			})
-			},
+		},
+		applyComplete() {
+			this.confirmTitle = '申请完成'
+			this.confirmContent = '确定服务已完成，申请结案吗？等待发布者确认后订单将正式完成。'
+			this.confirmConfirmText = '确认'
+			this.confirmCancelText = '取消'
+			this.onConfirm = async () => {
+				const result = await this.needStore.markComplete(this.need.id)
+				if (result.success) {
+					this.need.status = 'pending_confirm'
+					this.need.markedCompleteAt = Date.now()
+					this.$forceUpdate()
+					uni.showToast({ title: result.message, icon: 'success' })
+				} else {
+					uni.showToast({ title: result.message, icon: 'none' })
+				}
+			}
+			this.confirmVisible = true
+		},
 		rateOrder() {
 			uni.showToast({ title: '评价功能开发中', icon: 'none' })
 		},
@@ -278,6 +315,11 @@ export default {
 				if (needInStore) {
 					needInStore.status = 'cancelled'
 					needInStore.cancelledAt = Date.now()
+				}
+				const orderInStore = this.orderStore.orders.find(o => o.needId === this.need.id)
+				if (orderInStore) {
+					orderInStore.status = 'cancelled'
+					orderInStore.cancelledAt = Date.now()
 				}
 				this.sendCancelNotification()
 				this.$forceUpdate()
@@ -295,6 +337,11 @@ export default {
 				if (result.success) {
 					this.need.status = 'completed'
 					this.need.completedAt = Date.now()
+					const needInStore = this.needStore.needs.find(n => n.id === this.need.id)
+					if (needInStore) {
+						needInStore.status = 'completed'
+						needInStore.completedAt = Date.now()
+					}
 					this.$forceUpdate()
 					uni.showToast({ title: result.message, icon: 'success' })
 				} else {
@@ -318,6 +365,16 @@ export default {
 					createdAt: Date.now()
 				})
 				uni.setStorageSync('notifications', notifications)
+
+				const unreadCount = notifications.filter(n => !n.read).length
+				if (unreadCount > 0) {
+					uni.setTabBarBadge({
+						index: 3,
+						text: unreadCount > 99 ? '99+' : String(unreadCount)
+					})
+				} else {
+					uni.removeTabBarBadge({ index: 3 })
+				}
 			}
 		},
 		previewImage(image) {

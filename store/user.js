@@ -193,7 +193,7 @@ export const useUserStore = defineStore('user', {
       uni.setStorageSync('userInfo', this.currentUser)
     },
 
-    addCommission(amount, orderTitle) {
+    addCommission(amount, shareUserId, orderTitle, reward) {
       if (!this.currentUser.commissionEarned) {
         this.currentUser.commissionEarned = 0
       }
@@ -215,6 +215,49 @@ export const useUserStore = defineStore('user', {
       }
 
       uni.setStorageSync('userInfo', this.currentUser)
+    },
+
+    deductBalance(amount) {
+      const wallet = uni.getStorageSync('wallet') || { balance: 0 }
+      const currentBalance = parseFloat(wallet.balance || 0)
+      const newBalance = Math.max(0, currentBalance - amount)
+      wallet.balance = newBalance
+      uni.setStorageSync('wallet', wallet)
+
+      if (this.walletInfo) {
+        this.walletInfo.balance = newBalance
+      }
+      this.currentUser.walletBalance = newBalance
+      uni.setStorageSync('userInfo', this.currentUser)
+    },
+
+    addBalanceToUser(userId, amount) {
+      const userTransactions = uni.getStorageSync('userTransactions') || {}
+      if (!userTransactions[userId]) {
+        userTransactions[userId] = {
+          balance: 0,
+          transactions: []
+        }
+      }
+      userTransactions[userId].balance += amount
+      userTransactions[userId].transactions.unshift({
+        id: `trans_${Date.now()}`,
+        type: 'order_reward',
+        amount: amount,
+        time: Date.now(),
+        status: 'completed'
+      })
+      uni.setStorageSync('userTransactions', userTransactions)
+
+      if (userId === this.currentUser.id) {
+        this.currentUser.walletBalance += amount
+        uni.setStorageSync('userInfo', this.currentUser)
+      }
+    },
+
+    updateBalanceFromWallet() {
+      const wallet = uni.getStorageSync('wallet') || { balance: 0 }
+      this.balance = parseFloat(wallet.balance) || 0
     }
   }
 })

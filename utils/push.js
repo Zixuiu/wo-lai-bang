@@ -205,4 +205,41 @@ class PushService {
 
 const pushService = new PushService()
 
+export function createOrderNotification(orderId, orderTitle, status, targetUserId) {
+  const statusMessages = {
+    'accepted': { title: '订单已被接单', content: '有新的帮手接单了，赶快去沟通吧' },
+    'pending_confirm': { title: '订单待确认', content: '帮手已申请完成，等待您确认' },
+    'completed': { title: '订单已完成', content: '双方已确认完成，订单已结束' },
+    'cancelled': { title: '订单已取消', content: '订单已被取消' },
+    'helper_confirmed': { title: '帮手已确认完成', content: '帮手已确认完成，等待您确认' },
+    'publisher_confirmed': { title: '发布者已确认', content: '发布者已确认完成，订单即将结束' }
+  }
+
+  const messageInfo = statusMessages[status] || { title: '订单状态更新', content: '订单状态发生了变化' }
+
+  const notification = {
+    id: Date.now(),
+    type: 'order',
+    title: messageInfo.title,
+    content: messageInfo.content,
+    orderId: orderId,
+    orderTitle: orderTitle,
+    status: status,
+    targetUserId: targetUserId,
+    read: false,
+    createdAt: Date.now()
+  }
+
+  const notifications = uni.getStorageSync('notifications') || []
+  notifications.unshift(notification)
+  if (notifications.length > 100) {
+    notifications.splice(100)
+  }
+  uni.setStorageSync('notifications', notifications)
+
+  pushService.updateTabBarBadge()
+
+  return notification
+}
+
 export default pushService

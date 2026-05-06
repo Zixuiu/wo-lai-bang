@@ -92,11 +92,18 @@
 </template>
 
 <script>
+import { useOrderStore } from '@/store/order'
+import { useNeedStore } from '@/store/need'
 import IconFont from '@/components/icon-font/icon-font.vue'
 
 export default {
   components: {
     IconFont
+  },
+  setup() {
+    const orderStore = useOrderStore()
+    const needStore = useNeedStore()
+    return { orderStore, needStore }
   },
   data() {
     return {
@@ -117,8 +124,24 @@ export default {
   },
   onLoad(options) {
     const orderId = options.orderId
-    const orders = uni.getStorageSync('orders') || []
-    this.order = orders.find(n => n.id === orderId)
+    let order = this.orderStore.orders.find(o => o.id === orderId)
+    
+    if (!order) {
+      const needs = this.needStore.needs || []
+      order = needs.find(n => n.id === orderId)
+    }
+    
+    if (!order) {
+      const localOrders = uni.getStorageSync('orders') || []
+      order = localOrders.find(o => o.id === orderId)
+    }
+    
+    if (!order) {
+      const localNeeds = uni.getStorageSync('needs') || []
+      order = localNeeds.find(n => n.id === orderId)
+    }
+    
+    this.order = order
   },
   methods: {
     setRating(n) {
@@ -154,17 +177,35 @@ export default {
           this.order.tags = [...this.selectedTags]
           this.order.ratedAt = Date.now()
           this.order.isAnonymous = this.isAnonymous
+          this.order.isRated = true
+
+          const orderInStore = this.orderStore.orders.find(o => o.id === this.order.id)
+          if (orderInStore) {
+            Object.assign(orderInStore, this.order)
+          }
+          
+          const needInStore = this.needStore.needs.find(n => n.id === this.order.id)
+          if (needInStore) {
+            Object.assign(needInStore, this.order)
+          }
 
           const orders = uni.getStorageSync('orders') || []
-          const index = orders.findIndex(o => o.id === this.order.id)
-          if (index > -1) {
-            orders[index] = this.order
+          const orderIndex = orders.findIndex(o => o.id === this.order.id)
+          if (orderIndex > -1) {
+            orders[orderIndex] = this.order
           } else {
             orders.push(this.order)
           }
           uni.setStorageSync('orders', orders)
 
-          const userInfo = uni.getStorageSync('currentUser') || {}
+          const needs = uni.getStorageSync('needs') || []
+          const needIndex = needs.findIndex(n => n.id === this.order.id)
+          if (needIndex > -1) {
+            needs[needIndex] = this.order
+          }
+          uni.setStorageSync('needs', needs)
+
+          const userInfo = uni.getStorageSync('userInfo') || {}
           const ratings = uni.getStorageSync('orderRatings') || []
           ratings.push({
             id: Date.now(),

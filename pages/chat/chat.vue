@@ -161,6 +161,7 @@
 import { useUserStore } from '@/store/user'
 import IconFont from '@/components/icon-font/icon-font.vue'
 import websocketService from '@/utils/websocket'
+import { getChatKey } from '@/utils/chat'
 
 export default {
 	components: {
@@ -191,9 +192,9 @@ export default {
 			if (!this.relatedOrder) return ''
 			const currentUserId = this.userStore.currentUser?.id
 			if (this.relatedOrder.publisher?.id === currentUserId) {
-				return '接单人'
-			} else if (this.relatedOrder.helper?.id === currentUserId) {
 				return '发单人'
+			} else if (this.relatedOrder.helper?.id === currentUserId) {
+				return '接单人'
 			}
 			return ''
 		}
@@ -251,6 +252,7 @@ export default {
 		},
 		onWsConnect() {
 			console.log('Chat: WebSocket connected')
+			this.resendPendingMessages()
 		},
 		onWsDisconnect() {
 			console.log('Chat: WebSocket disconnected')
@@ -285,10 +287,7 @@ export default {
 			})
 		},
 		getChatKey() {
-			const id1 = this.userStore.currentUser?.id || 'anonymous'
-			const id2 = this.userId || 'unknown'
-			const ids = [id1, id2].sort()
-			return `chat_${ids[0]}_${ids[1]}`
+			return getChatKey(this.userStore.currentUser?.id, this.userId)
 		},
 		saveMessages() {
 			try {
@@ -354,7 +353,8 @@ export default {
 				type: 'text',
 				text: this.inputText.trim(),
 				time: Date.now(),
-				isSelf: true
+				isSelf: true,
+				sendStatus: 'sending'
 			}
 
 			this.messages.push(msg)
@@ -365,8 +365,76 @@ export default {
 			})
 
 			if (websocketService.isConnected) {
-				websocketService.sendMessage(this.userId, msg.text, 'text')
+				try {
+					websocketService.sendMessage(this.userId, msg.text, 'text')
+					msg.sendStatus = 'sent'
+				} catch (e) {
+					msg.sendStatus = 'failed'
+					this.retrySendMessage(msg)
+				}
+			} else {
+				msg.sendStatus = 'offline'
+				this.savePendingMessage(msg)
 			}
+		},
+		retrySendMessage(msg) {
+			let retryCount = 0
+			const maxRetries = 3
+			const retryInterval = setInterval(() => {
+				if (websocketService.isConnected) {
+					try {
+						websocketService.sendMessage(this.userId, msg.text, 'text')
+						msg.sendStatus = 'sent'
+						this.saveMessages()
+						clearInterval(retryInterval)
+					} catch (e) {
+						retryCount++
+						if (retryCount >= maxRetries) {
+							msg.sendStatus = 'failed'
+							this.saveMessages()
+							clearInterval(retryInterval)
+						}
+					}
+				} else {
+					retryCount++
+					if (retryCount >= maxRetries) {
+						msg.sendStatus = 'failed'
+						this.saveMessages()
+						this.savePendingMessage(msg)
+						clearInterval(retryInterval)
+					}
+				}
+			}, 2000)
+		},
+		savePendingMessage(msg) {
+			const pending = uni.getStorageSync('pendingMessages') || []
+			pending.push({
+				...msg,
+				targetUserId: this.userId,
+				targetNickname: this.nickname
+			})
+			uni.setStorageSync('pendingMessages', pending)
+		},
+		resendPendingMessages() {
+			const pending = uni.getStorageSync('pendingMessages') || []
+			if (pending.length === 0) return
+			
+			const userPending = pending.filter(m => m.targetUserId === this.userId)
+			if (userPending.length === 0) return
+			
+			userPending.forEach(msg => {
+				if (websocketService.isConnected) {
+					try {
+						websocketService.sendMessage(this.userId, msg.text, 'text')
+						msg.sendStatus = 'sent'
+					} catch (e) {
+						msg.sendStatus = 'failed'
+					}
+				}
+			})
+			
+			const otherPending = pending.filter(m => m.targetUserId !== this.userId)
+			uni.setStorageSync('pendingMessages', otherPending)
 		},
 		chooseImage() {
 			uni.chooseImage({
@@ -385,7 +453,8 @@ export default {
 				type: 'image',
 				imageUrl: imageUrl,
 				time: Date.now(),
-				isSelf: true
+				isSelf: true,
+				sendStatus: 'sending'
 			}
 
 			this.messages.push(msg)
@@ -395,8 +464,46 @@ export default {
 			})
 
 			if (websocketService.isConnected) {
-				websocketService.sendImageMessage(this.userId, imageUrl)
+				try {
+					websocketService.sendImageMessage(this.userId, imageUrl)
+					msg.sendStatus = 'sent'
+				} catch (e) {
+					msg.sendStatus = 'failed'
+					this.retrySendImage(msg)
+				}
+			} else {
+				msg.sendStatus = 'offline'
+				this.savePendingMessage(msg)
 			}
+		},
+		retrySendImage(msg) {
+			let retryCount = 0
+			const maxRetries = 3
+			const retryInterval = setInterval(() => {
+				if (websocketService.isConnected) {
+					try {
+						websocketService.sendImageMessage(this.userId, msg.imageUrl)
+						msg.sendStatus = 'sent'
+						this.saveMessages()
+						clearInterval(retryInterval)
+					} catch (e) {
+						retryCount++
+						if (retryCount >= maxRetries) {
+							msg.sendStatus = 'failed'
+							this.saveMessages()
+							clearInterval(retryInterval)
+						}
+					}
+				} else {
+					retryCount++
+					if (retryCount >= maxRetries) {
+						msg.sendStatus = 'failed'
+						this.saveMessages()
+						this.savePendingMessage(msg)
+						clearInterval(retryInterval)
+					}
+				}
+			}, 2000)
 		},
 		previewImage(imageUrl) {
 			uni.previewImage({
