@@ -210,20 +210,22 @@ export default {
 			}
 
 			uni.setStorageSync('totalUnreadCount', totalUnread)
+
+			uni.$emit('updateBadge')
 		},
 		loadConversations() {
 			const currentUserId = uni.getStorageSync('userInfo')?.id
 			const allConversations = uni.getStorageSync('conversations') || []
 			this.conversations = allConversations
 				.filter(conv => {
-					if (conv.userId && conv.userId.startsWith('sim') && conv.userId !== currentUserId) return false
-					if (conv.relatedOrder) {
-						const order = conv.relatedOrder
-						const isPublisherSim = order.publisher?.id && order.publisher.id.startsWith('sim')
-						const isHelperSim = order.helper?.id && order.helper.id.startsWith('sim')
-						if (isPublisherSim && isHelperSim && order.publisher?.id !== currentUserId && order.helper?.id !== currentUserId) return false
-					}
-					return true
+					if (!conv.relatedOrder) return true
+					const order = conv.relatedOrder
+					const isPublisher = order.publisher?.id === currentUserId
+					const isHelper = order.helper?.id === currentUserId
+					const isPublisherSim = order.publisher?.id && order.publisher.id.startsWith('sim')
+					const isHelperSim = order.helper?.id && order.helper.id.startsWith('sim')
+					if (isPublisherSim && isHelperSim && !isPublisher && !isHelper) return false
+					return isPublisher || isHelper
 				})
 				.sort((a, b) => b.lastTime - a.lastTime)
 		},
@@ -239,6 +241,7 @@ export default {
 			uni.removeTabBarBadge({ index: 3 })
 			uni.setStorageSync('totalUnreadCount', 0)
 			uni.$emit('clearMessageBadge')
+			uni.$emit('updateBadge')
 		},
 		getAvatarBg(name) {
 			const colors = [

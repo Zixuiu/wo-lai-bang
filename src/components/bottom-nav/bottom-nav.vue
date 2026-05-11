@@ -56,10 +56,17 @@ export default {
 	},
 	mounted() {
 		this.updateBadges()
+		this.badgeTimer = setInterval(() => {
+			this.updateBadges()
+		}, 3000)
 	},
 	beforeDestroy() {
 		uni.$off('clearMessageBadge')
 		uni.$off('updateBadge')
+		if (this.badgeTimer) {
+			clearInterval(this.badgeTimer)
+			this.badgeTimer = null
+		}
 	},
 	methods: {
 		switchTab(index) {
@@ -72,22 +79,24 @@ export default {
 			const conversations = uni.getStorageSync('conversations') || []
 			const messageUnreadCount = conversations
 				.filter(conv => {
-					if (!conv.relatedOrder) return false
+					if (!conv.relatedOrder) return true
 					const order = conv.relatedOrder
 					const isPublisher = order.publisher?.id === currentUserId
 					const isHelper = order.helper?.id === currentUserId
+					if (!order.publisher?.id && !order.helper?.id) return true
 					return isPublisher || isHelper
 				})
 				.reduce((sum, c) => sum + (c.unread || 0), 0)
 
-			this.messageUnreadCount = messageUnreadCount
-
 			const notifications = uni.getStorageSync('notifications') || []
-			const unreadCount = notifications.filter(n => !n.read).length
-			uni.setStorageSync('totalUnreadCount', unreadCount + messageUnreadCount)
-			
-			if (messageUnreadCount > 0) {
-				uni.setTabBarBadge({ index: 3, text: messageUnreadCount > 99 ? '99+' : String(messageUnreadCount) })
+			const unreadNotifications = notifications.filter(n => !n.read).length
+
+			this.messageUnreadCount = messageUnreadCount
+			const totalUnread = unreadNotifications + messageUnreadCount
+			uni.setStorageSync('totalUnreadCount', totalUnread)
+
+			if (totalUnread > 0) {
+				uni.setTabBarBadge({ index: 3, text: totalUnread > 99 ? '99+' : String(totalUnread) })
 			} else {
 				uni.removeTabBarBadge({ index: 3 })
 			}
