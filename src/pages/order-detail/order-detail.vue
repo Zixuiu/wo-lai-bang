@@ -93,6 +93,8 @@
 				<button v-if="order.status === 'accepted' || order.status === 'pending_confirm'" class="btn btn-s" @click="contactUser">联系对方</button>
 				<!-- 去评价 -->
 				<button v-if="order.status === 'completed' && !order.rating && !isPublisher" class="btn btn-p" @click="goRate">去评价</button>
+				<!-- 已完成的联系按钮 -->
+				<button v-if="order.status === 'completed'" class="btn btn-s" @click="contactUser">联系对方</button>
 				<!-- 订单已结束 -->
 				<button v-if="order.status === 'completed'" class="btn btn-s" disabled>订单已结束</button>
 				<!-- 已取消 - 再次发布 -->

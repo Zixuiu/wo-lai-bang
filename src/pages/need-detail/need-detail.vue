@@ -82,13 +82,9 @@
 				<!-- Case 7: Completed need, need rating -->
 				<button v-if="need.status === 'completed' && need.publisher.id === userStore.currentUser.id && !need.isRated"
 					class="btn btn-p" @click="rateOrder">评价帮手</button>
-				<button v-if="need.status === 'completed' && need.publisher.id === userStore.currentUser.id && !need.isRated"
+				<button v-if="need.status === 'completed' && need.publisher.id === userStore.currentUser.id"
 					class="btn btn-s" @click="goToChat">联系帮手</button>
-
-				<!-- Case 8: Already completed/rated -->
-				<button v-else-if="need.status === 'completed'"
-					class="btn btn-s" disabled>订单已完成</button>
-				<button v-if="need.status === 'completed' && need.helper && need.helper.id === userStore.currentUser.id"
+				<button v-if="need.status === 'completed' && isHelper"
 					class="btn btn-s" @click="goToChat">联系发布者</button>
 
 				<!-- Case 9: Cancelled, my own need - republish -->
