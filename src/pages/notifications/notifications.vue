@@ -200,10 +200,13 @@ export default {
 			const conversations = uni.getStorageSync('conversations') || []
 			const unreadMessages = conversations
 				.filter(conv => {
-					if (!conv.relatedOrder) return false
+					if (!conv.relatedOrder) return true
 					const order = conv.relatedOrder
 					const isPublisher = order.publisher?.id === currentUserId
 					const isHelper = order.helper?.id === currentUserId
+					const isPublisherSim = order.publisher?.id && order.publisher.id.startsWith('sim')
+					const isHelperSim = order.helper?.id && order.helper.id.startsWith('sim')
+					if (isPublisherSim && isHelperSim && !isPublisher && !isHelper) return false
 					return isPublisher || isHelper
 				})
 				.reduce((sum, c) => sum + (c.unread || 0), 0)
@@ -216,6 +219,7 @@ export default {
 			} else {
 				uni.removeTabBarBadge({ index: 3 })
 			}
+			uni.$emit('updateBadge')
 		},
 		markAllRead() {
 			this.notifications.forEach(n => {

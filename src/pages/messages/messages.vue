@@ -100,45 +100,12 @@
 		</view>
 
 		<!-- 订单卡片弹窗 -->
-		<view v-if="orderCardVisible" style="position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:99999;display:flex;align-items:center;justify-content:center;" @click="orderCardVisible = false">
-			<view style="width:600rpx;background:#FFFFFF;border-radius:32rpx;overflow:hidden;" @click.stop>
-				<view style="padding:32rpx;">
-					<view style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20rpx;">
-						<text style="font-size:32rpx;font-weight:800;color:#1E293B;">订单详情</text>
-						<view style="font-size:24rpx;padding:8rpx 16rpx;border-radius:16rpx;" :class="'order-status-' + currentOrder?.status">
-							{{ getOrderStatusText(currentOrder?.status) }}
-						</view>
-					</view>
-					<view style="font-size:28rpx;font-weight:700;color:#1E293B;margin-bottom:16rpx;">{{ currentOrder?.title }}</view>
-					<view style="display:flex;align-items:center;gap:8rpx;margin-bottom:12rpx;">
-						<text style="font-size:24rpx;color:#64748B;">酬劳</text>
-						<text style="font-size:32rpx;font-weight:800;color:#10B981;">¥{{ currentOrder?.reward }}</text>
-					</view>
-					<view style="border-top:1rpx solid #F1F5F9;padding-top:20rpx;margin-top:20rpx;">
-						<view style="display:flex;align-items:center;gap:12rpx;margin-bottom:16rpx;">
-							<view style="width:40rpx;height:40rpx;border-radius:20rpx;background:#ECFDF5;display:flex;align-items:center;justify-content:center;">
-								<text style="font-size:20rpx;font-weight:700;color:#10B981;">发</text>
-							</view>
-							<text style="font-size:28rpx;color:#1E293B;font-weight:600;">{{ currentOrder?.publisher?.nickname || '发布者' }}</text>
-						</view>
-						<view style="display:flex;align-items:center;gap:12rpx;">
-							<view style="width:40rpx;height:40rpx;border-radius:20rpx;background:#F1F5F9;display:flex;align-items:center;justify-content:center;">
-								<text style="font-size:20rpx;font-weight:700;color:#64748B;">帮</text>
-							</view>
-							<text style="font-size:28rpx;color:#1E293B;font-weight:600;">{{ currentOrder?.helper?.nickname || '帮手' }}</text>
-						</view>
-					</view>
-					<view style="display:flex;gap:16rpx;margin-top:24rpx;">
-						<view style="flex:1;height:88rpx;border-radius:22rpx;display:flex;align-items:center;justify-content:center;background:#F1F5F9;" @click="orderCardVisible = false">
-							<text style="font-size:28rpx;font-weight:700;color:#64748B;">关闭</text>
-						</view>
-						<view style="flex:1;height:88rpx;border-radius:22rpx;display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#10B981,#059669);" @click="goToOrderDetail">
-							<text style="font-size:28rpx;font-weight:700;color:#FFFFFF;">查看详情</text>
-						</view>
-					</view>
-				</view>
-			</view>
-		</view>
+		<OrderCardModal
+			:visible="orderCardVisible"
+			:order="currentOrder"
+			@update:visible="orderCardVisible = $event"
+			@view-detail="goToOrderDetail"
+		/>
 	</view>
 </template>
 
@@ -146,11 +113,13 @@
 import BottomNav from '@/components/bottom-nav/bottom-nav.vue'
 import IconFont from '@/components/icon-font/icon-font.vue'
 import websocketService from '@/utils/websocket'
+import OrderCardModal from '@/components/order-card-modal/order-card-modal.vue'
 
 export default {
 	components: {
 		BottomNav,
-		IconFont
+		IconFont,
+		OrderCardModal
 	},
 	data() {
 		return {
@@ -225,7 +194,7 @@ export default {
 					const isPublisherSim = order.publisher?.id && order.publisher.id.startsWith('sim')
 					const isHelperSim = order.helper?.id && order.helper.id.startsWith('sim')
 					if (isPublisherSim && isHelperSim && !isPublisher && !isHelper) return false
-					return isPublisher || isHelper
+					return true
 				})
 				.sort((a, b) => b.lastTime - a.lastTime)
 		},
@@ -338,16 +307,6 @@ export default {
 		viewOrder(conv) {
 			this.currentOrder = conv.relatedOrder
 			this.orderCardVisible = true
-		},
-		getOrderStatusText(status) {
-			const map = {
-				'open': '待接单',
-				'accepted': '进行中',
-				'pending_confirm': '待确认',
-				'completed': '已完成',
-				'cancelled': '已取消'
-			}
-			return map[status] || status
 		},
 		goToOrderDetail() {
 			if (this.currentOrder && this.currentOrder.needId) {
@@ -613,28 +572,4 @@ export default {
 	font-weight: 600;
 }
 
-.order-status-accepted {
-	background: #ECFDF5;
-	color: #10B981;
-}
-
-.order-status-pending_confirm {
-	background: #FFFBEB;
-	color: #F59E0B;
-}
-
-.order-status-completed {
-	background: #F1F5F9;
-	color: #64748B;
-}
-
-.order-status-cancelled {
-	background: #FEE2E2;
-	color: #EF4444;
-}
-
-.order-status-open {
-	background: #DBEAFE;
-	color: #3B82F6;
-}
 </style>

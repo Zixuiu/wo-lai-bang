@@ -341,11 +341,12 @@ export const useNeedStore = defineStore('need', {
       }
 
       const allConvs = uni.getStorageSync('conversations') || []
-      const convIndex = allConvs.findIndex(c => c.userId === need.helper?.id)
-      if (convIndex >= 0 && allConvs[convIndex].relatedOrder) {
-        allConvs[convIndex].relatedOrder.status = NEED_STATUS.COMPLETED
-        uni.setStorageSync('conversations', allConvs)
-      }
+      allConvs.forEach((conv, index) => {
+        if (conv.relatedOrder && conv.relatedOrder.needId === needId) {
+          conv.relatedOrder.status = NEED_STATUS.COMPLETED
+        }
+      })
+      uni.setStorageSync('conversations', allConvs)
 
       this.sendCompleteNotification(need, 'publisher')
       

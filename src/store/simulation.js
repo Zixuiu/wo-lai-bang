@@ -336,9 +336,13 @@ export const useSimulationStore = defineStore('simulation', {
     confirmCompleteRandomNeed() {
       const needStore = useNeedStore()
       const userStore = useUserStore()
+      const originalUserId = userStore.currentUser?.id || ''
+
       const pendingNeeds = needStore.needs.filter(n =>
         n.status === 'pending_confirm' &&
-        (this.activeUsers.some(u => u.id === n.publisher.id) || this.activeUsers.some(u => u.id === n.helper?.id))
+        (this.activeUsers.some(u => u.id === n.publisher.id) ||
+         this.activeUsers.some(u => u.id === n.helper?.id) ||
+         (n.helper?.id === originalUserId && n.publisher?.id !== originalUserId))
       )
 
       if (pendingNeeds.length === 0) {
@@ -346,18 +350,17 @@ export const useSimulationStore = defineStore('simulation', {
       }
 
       const need = pendingNeeds[Math.floor(Math.random() * pendingNeeds.length)]
-      
-      const originalUserId = userStore.currentUser?.id || ''
-      
+
       const isCurrentUserPublisher = need.publisher?.id === originalUserId
-      
+
       if (isCurrentUserPublisher) {
         return { confirmed: false, reason: '不代替真实用户确认订单' }
       }
-      
+
       const isPublisherSimUser = this.activeUsers.some(u => u.id === need.publisher.id)
       const isHelperSimUser = this.activeUsers.some(u => u.id === need.helper?.id)
-      const user = isPublisherSimUser ? need.publisher : need.helper
+      const user = isPublisherSimUser ? need.publisher :
+                   (isHelperSimUser ? need.helper : need.publisher)
 
       if (!user) {
         return { confirmed: false, reason: '没有合适的确认用户' }

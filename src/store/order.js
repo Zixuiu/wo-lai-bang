@@ -155,11 +155,12 @@ export const useOrderStore = defineStore('order', {
       order.pendingConfirmAt = Date.now()
 
       const allConvs = uni.getStorageSync('conversations') || []
-      const convIndex = allConvs.findIndex(c => c.userId === order.publisher?.id)
-      if (convIndex >= 0 && allConvs[convIndex].relatedOrder) {
-        allConvs[convIndex].relatedOrder.status = ORDER_STATUS.PENDING_CONFIRM
-        uni.setStorageSync('conversations', allConvs)
-      }
+      allConvs.forEach((conv) => {
+        if (conv.relatedOrder && conv.relatedOrder.needId === order.needId) {
+          conv.relatedOrder.status = ORDER_STATUS.PENDING_CONFIRM
+        }
+      })
+      uni.setStorageSync('conversations', allConvs)
 
       return { success: true }
     },
@@ -198,6 +199,14 @@ export const useOrderStore = defineStore('order', {
         if (order.helper && order.helper.id) {
           userStore.addBalanceToUser(order.helper.id, actualReward)
         }
+
+        const allConvs = uni.getStorageSync('conversations') || []
+        allConvs.forEach((conv) => {
+          if (conv.relatedOrder && (conv.relatedOrder.needId === order.needId || conv.relatedOrder.orderId === order.id)) {
+            conv.relatedOrder.status = ORDER_STATUS.COMPLETED
+          }
+        })
+        uni.setStorageSync('conversations', allConvs)
       }
 
       return { success: true }

@@ -83,7 +83,9 @@ export default {
 					const order = conv.relatedOrder
 					const isPublisher = order.publisher?.id === currentUserId
 					const isHelper = order.helper?.id === currentUserId
-					if (!order.publisher?.id && !order.helper?.id) return true
+					const isPublisherSim = order.publisher?.id && order.publisher.id.startsWith('sim')
+					const isHelperSim = order.helper?.id && order.helper.id.startsWith('sim')
+					if (isPublisherSim && isHelperSim && !isPublisher && !isHelper) return false
 					return isPublisher || isHelper
 				})
 				.reduce((sum, c) => sum + (c.unread || 0), 0)
