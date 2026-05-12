@@ -88,9 +88,9 @@ export const useNeedStore = defineStore('need', {
 
   getters: {
     allNeeds: (state) => state.needs.filter(n => n.status === NEED_STATUS.OPEN),
-    
+
     openNeeds: (state) => state.needs.filter(n => n.status === NEED_STATUS.OPEN),
-    
+
     filteredNeedsGetter: (state) => {
       if (state.filteredNeeds && state.filteredNeeds.length > 0) {
         return state.filteredNeeds
@@ -135,12 +135,12 @@ export const useNeedStore = defineStore('need', {
 
       return result
     },
-    
+
     publishedNeeds: (state) => {
       const userStore = useUserStore()
       return state.needs.filter(n => n.publisher.id === userStore.currentUser.id)
     },
-    
+
     allPublishedNeeds: (state) => {
       const userStore = useUserStore()
       return state.needs.filter(n => n.publisher.id === userStore.currentUser.id)
@@ -167,9 +167,18 @@ export const useNeedStore = defineStore('need', {
 
     acceptNeed(needId) {
       const userStore = useUserStore()
+
+      if (!userStore.isLoggedIn || !userStore.currentUser?.id) {
+        return { success: false, message: '请先登录后再接单' }
+      }
+
       const need = this.needs.find(n => n.id === needId)
       if (!need || need.status !== NEED_STATUS.OPEN) {
         return { success: false, message: '该需求已被接单' }
+      }
+
+      if (need.publisher.id === userStore.currentUser.id) {
+        return { success: false, message: '不能接自己的订单' }
       }
 
       const alreadyAccepted = need.helper && need.helper.id === userStore.currentUser.id
@@ -281,7 +290,7 @@ export const useNeedStore = defineStore('need', {
       if (!need.helper || need.helper.id !== userStore.currentUser.id) {
         return { success: false, message: '只有接单者才能标记完成' }
       }
-      
+
       need.status = NEED_STATUS.PENDING_CONFIRM
       need.markedCompleteAt = Date.now()
 
@@ -300,7 +309,7 @@ export const useNeedStore = defineStore('need', {
       }
 
       this.sendCompleteNotification(need, 'helper')
-      
+
       return { success: true, message: '已标记完成，等待发布者确认' }
     },
 
@@ -316,7 +325,7 @@ export const useNeedStore = defineStore('need', {
 
       const helper = need.helper
       const reward = need.reward
-      
+
       need.status = NEED_STATUS.COMPLETED
       need.completedAt = Date.now()
 
@@ -325,15 +334,15 @@ export const useNeedStore = defineStore('need', {
       if (order) {
         order.status = NEED_STATUS.COMPLETED
         order.completedAt = Date.now()
-        
+
         const platformCommission = reward * COMMISSION_RATE
         let shareCommission = 0
-        
+
         if (order.shareUserId) {
           shareCommission = reward * SHARE_COMMISSION_RATE
           userStore.addCommission(shareCommission, order.shareUserId, need.title, reward)
         }
-        
+
         const actualReward = reward - platformCommission
         if (helper && helper.id) {
           userStore.addBalanceToUser(helper.id, actualReward)
@@ -350,7 +359,7 @@ export const useNeedStore = defineStore('need', {
       }
 
       this.sendCompleteNotification(need, 'publisher')
-      
+
       return { success: true, message: '确认完成，订单已结束' }
     },
 
