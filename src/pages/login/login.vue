@@ -189,7 +189,7 @@ export default {
 
 .logo-section {
 	text-align: center;
-	padding: 80px 24px 32px;
+	padding: 48px 24px 24px;
 }
 
 .logo-box {
