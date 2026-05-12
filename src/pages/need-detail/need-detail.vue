@@ -55,12 +55,16 @@
 
 			<!-- Action Button -->
 			<view class="btn-group">
-				<!-- Case 1: Open need, not mine -->
-				<button v-if="need.status === 'open' && need.publisher.id !== userStore.currentUser.id"
+				<!-- Case 1: Open need, not mine, and user is logged in -->
+				<button v-if="need.status === 'open' && need.publisher.id !== userStore.currentUser?.id && isLoggedIn"
 					class="btn btn-p" @click="acceptNeed">✋ 接单帮忙</button>
 
+				<!-- Case 1b: Open need, not mine, but not logged in -->
+				<button v-if="need.status === 'open' && need.publisher.id !== userStore.currentUser?.id && !isLoggedIn"
+					class="btn btn-p" @click="goToLogin">登录后接单</button>
+
 				<!-- Case 2: Publisher in accepted - show 立即沟通 -->
-				<button v-if="need.status === 'accepted' && need.publisher.id === userStore.currentUser.id"
+				<button v-if="need.status === 'accepted' && need.publisher.id === userStore.currentUser?.id"
 					class="btn btn-p" @click="goToChat">立即沟通</button>
 
 				<!-- Case 3: Helper in accepted - show 申请完成 -->
@@ -72,7 +76,7 @@
 					class="btn btn-s" @click="goToChat">联系发布者</button>
 
 				<!-- Case 5: Pending confirm, I am the publisher -->
-				<button v-else-if="need.status === 'pending_confirm' && need.publisher.id === userStore.currentUser.id"
+				<button v-else-if="need.status === 'pending_confirm' && need.publisher.id === userStore.currentUser?.id"
 					class="btn btn-confirm" @click="confirmComplete">确认完成</button>
 
 				<!-- Case 6: Pending confirm, I am the helper - show 等待确认 -->
@@ -80,7 +84,7 @@
 					class="btn btn-s" disabled>等待发布者确认</button>
 
 				<!-- Case 7: Completed need, need rating -->
-				<button v-else-if="need.status === 'completed' && need.publisher.id === userStore.currentUser.id && !need.isRated"
+				<button v-else-if="need.status === 'completed' && need.publisher.id === userStore.currentUser?.id && !need.isRated"
 					class="btn btn-p" @click="rateOrder">评价帮手</button>
 
 				<!-- Case 8: Already completed/rated -->
@@ -88,7 +92,7 @@
 					class="btn btn-s" disabled>订单已完成</button>
 
 				<!-- Case 9: Cancelled, my own need - republish -->
-				<button v-else-if="need.status === 'cancelled' && need.publisher.id === userStore.currentUser.id"
+				<button v-else-if="need.status === 'cancelled' && need.publisher.id === userStore.currentUser?.id"
 					class="btn btn-p" @click="republishNeed">再次发布</button>
 
 				<!-- Case 10: Cancelled -->
@@ -96,7 +100,7 @@
 					class="btn btn-s" disabled>已取消</button>
 
 				<!-- Case 11: My own open need -->
-				<button v-else-if="need.status === 'open' && need.publisher.id === userStore.currentUser.id"
+				<button v-else-if="need.status === 'open' && need.publisher.id === userStore.currentUser?.id"
 					class="btn btn-s" @click="cancelNeed">取消发布</button>
 			</view>
 		</scroll-view>
@@ -180,14 +184,17 @@ export default {
 		}
 	},
 	computed: {
+		isLoggedIn() {
+			return !!(this.userStore.currentUser && this.userStore.isLoggedIn)
+		},
 		isAccepter() {
-			return this.need && (
+			return this.need && this.userStore.currentUser && (
 				(this.need.helper && this.need.helper.id === this.userStore.currentUser.id) ||
 				(this.need.accepterId === this.userStore.currentUser.id)
 			)
 		},
 		isHelper() {
-			return this.need && this.need.helper && this.need.helper.id === this.userStore.currentUser.id
+			return this.need && this.userStore.currentUser && this.need.helper && this.need.helper.id === this.userStore.currentUser.id
 		}
 	},
 	onLoad(options) {
@@ -205,7 +212,7 @@ export default {
 		}
 
 		this.need = findFromAll()
-		
+
 		// 如果还没找到，尝试从本地缓存中找（兜底逻辑）
 		if (!this.need) {
 			const localNeeds = uni.getStorageSync('needs') || []
@@ -256,7 +263,10 @@ export default {
 		goBack() {
 			uni.navigateBack()
 		},
-			async acceptNeed() {
+		goToLogin() {
+			uni.navigateTo({ url: '/pages/login/login' })
+		},
+		async acceptNeed() {
 			const result = await this.needStore.acceptNeed(this.need.id)
 			if (result.success) {
 				this.need.status = 'accepted'
@@ -298,7 +308,7 @@ export default {
 					uni.showToast({ title: result.message, icon: 'none' })
 				}
 			}
-			this.confirmVisible = true
+			this.confVisible = true
 		},
 		rateOrder() {
 			uni.showToast({ title: '评价功能开发中', icon: 'none' })
