@@ -1,9 +1,6 @@
 <template>
 	<view class="about-container">
 		<view class="header">
-			<view class="back-btn" @click="goBack">
-				<text class="back-icon">‹</text>
-			</view>
 			<text class="header-title">关于我们</text>
 			<view class="header-right"></view>
 		</view>
@@ -124,9 +121,6 @@ export default {
 				this.version = widgetInfo.version
 			})
 		},
-		goBack() {
-			uni.navigateBack()
-		},
 		goPrivacy() {
 			uni.navigateTo({
 				url: '/pages/privacy-policy/privacy-policy'
@@ -182,20 +176,6 @@ export default {
 	padding: 44px 24px 20px;
 	background: #FFFFFF;
 	position: relative;
-}
-
-.back-btn {
-	width: 44px;
-	height: 44px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.back-icon {
-	font-size: 32px;
-	color: #10B981;
-	font-weight: 600;
 }
 
 .header-title {

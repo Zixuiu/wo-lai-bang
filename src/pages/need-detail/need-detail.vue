@@ -253,10 +253,7 @@ export default {
 			const date = new Date(timestamp)
 			return `${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}-${date.getDate().toString().padStart(2, '0')} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`
 		},
-		goBack() {
-			uni.navigateBack()
-		},
-			async acceptNeed() {
+		async acceptNeed() {
 			if (!this.userStore.isLoggedIn || !this.userStore.token) {
 				uni.showToast({ title: '请先登录后再接单', icon: 'none' })
 				setTimeout(() => {
@@ -419,11 +416,6 @@ export default {
 
 .nav-header {
 	padding: 44px 20px 10px;
-}
-
-.back-btn {
-	font-size: 24px;
-	color: #10B981;
 }
 
 .screen {

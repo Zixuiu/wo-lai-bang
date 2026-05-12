@@ -1,4 +1,4 @@
-﻿<template>
+<template>
 	<view class="blacklist-container">
 		<view class="header">
 			<text class="header-title">黑名单</text>
@@ -100,10 +100,7 @@ export default {
 			}
 			this.confirmVisible = true
 		},
-		goBack() {
-			uni.navigateBack()
 		}
-	}
 }
 </script>
 
@@ -119,13 +116,6 @@ export default {
 	justify-content: space-between;
 	padding: 44px 24px 20px;
 	background: #FFFFFF;
-}
-
-.back-btn {
-	font-size: 18px;
-	color: #10B981;
-	font-weight: 600;
-	width: 44px;
 }
 
 .header-title {

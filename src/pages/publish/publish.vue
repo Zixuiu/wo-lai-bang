@@ -596,13 +596,6 @@ export default {
 			}
 			this.confirmVisible = true
 		},
-		goBack() {
-			if (this.currentStep > 1) {
-				this.prevStep()
-			} else {
-				uni.navigateBack()
-			}
-		},
 		validate() {
 			if (!this.form.category) {
 				uni.showToast({ title: '请先选择分类', icon: 'none' })
@@ -727,11 +720,6 @@ export default {
 	justify-content: space-between;
 	align-items: center;
 	background: #FFFFFF;
-}
-.back-btn {
-	font-size: 16px;
-	color: #10B981;
-	font-weight: 600;
 }
 .header-title { font-size: 36rpx; font-weight: 800; color: #1E293B; }
 .header-right { width: 50px; }

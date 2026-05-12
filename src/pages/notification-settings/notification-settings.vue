@@ -1,9 +1,6 @@
 <template>
 	<view class="container">
 		<view class="header">
-			<view class="back-btn" @click="goBack">
-				<IconFont name="chevron-left" :size="24" />
-			</view>
 			<text class="header-title">通知设置</text>
 			<view class="header-right"></view>
 		</view>
@@ -232,8 +229,6 @@ export default {
 			this.settings[key] = !this.settings[key]
 			this.saveSettings()
 		},
-		goBack() {
-			uni.navigateBack()
 		}
 	}
 }
@@ -252,14 +247,6 @@ export default {
 	background: #FFFFFF;
 	gap: 16rpx;
 	border-bottom: 1rpx solid #F1F5F9;
-}
-
-.back-btn {
-	width: 40px;
-	height: 40px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
 }
 
 .header-title {

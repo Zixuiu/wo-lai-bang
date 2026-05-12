@@ -1,4 +1,4 @@
-﻿<template>
+<template>
 	<view class="forgot-container">
 		<view class="header">
 			<text class="header-title">找回密码</text>
@@ -226,10 +226,7 @@ export default {
 		goLogin() {
 			uni.redirectTo({ url: '/pages/login/login' })
 		},
-		goBack() {
-			uni.navigateBack()
 		}
-	}
 }
 </script>
 
@@ -246,13 +243,6 @@ export default {
 	padding: 44px 24px 20px;
 	background: #FFFFFF;
 }
-.back-btn {
-	font-size: 18px;
-	color: #10B981;
-	font-weight: 600;
-	width: 44px;
-}
-
 .header-title {
 	flex: 1;
 	font-size: 18px;

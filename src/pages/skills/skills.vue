@@ -1,4 +1,4 @@
-﻿<template>
+<template>
 	<view class="skills-container">
 		<view class="header">
 			<text class="header-title">我的技能</text>
@@ -182,10 +182,7 @@ export default {
 			}
 			this.confirmVisible = true
 		},
-		goBack() {
-			uni.navigateBack()
 		}
-	}
 }
 </script>
 
@@ -201,13 +198,6 @@ export default {
 	justify-content: space-between;
 	padding: 44px 24px 20px;
 	background: #FFFFFF;
-}
-
-.back-btn {
-	font-size: 18px;
-	color: #10B981;
-	font-weight: 600;
-	width: 60px;
 }
 
 .header-title {

@@ -441,9 +441,6 @@ export default {
 				url: `/pages/rate/rate?orderId=${this.order.id}`
 			})
 		},
-		goBack() {
-			uni.navigateBack()
-		},
 		previewImage(image) {
 			uni.previewImage({ urls: [image] })
 		},
@@ -476,11 +473,6 @@ export default {
 
 .nav-header {
 	padding: 44px 20px 10px;
-}
-
-.back-btn {
-	font-size: 24px;
-	color: #10B981;
 }
 
 .screen {

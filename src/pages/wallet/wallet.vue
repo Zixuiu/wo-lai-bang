@@ -193,10 +193,7 @@ export default {
 		showAll() {
 			uni.showToast({ title: '查看全部交易记录', icon: 'none' })
 		},
-		goBack() {
-			uni.navigateBack()
 		}
-	}
 }
 </script>
 
@@ -215,13 +212,6 @@ export default {
 }
 
 .header-left {
-	width: 44px;
-}
-
-.back-btn {
-	font-size: 18px;
-	color: #10B981;
-	font-weight: 600;
 	width: 44px;
 }
 

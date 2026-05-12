@@ -1,9 +1,6 @@
 <template>
 	<view class="payment-password-container">
 		<view class="header">
-			<view class="back-btn" @click="goBack">
-				<IconFont name="chevron-left" :size="24" />
-			</view>
 			<text class="header-title">支付密码</text>
 			<view class="header-right"></view>
 		</view>
@@ -148,8 +145,6 @@ export default {
 		resetPassword() {
 			uni.navigateTo({ url: '/pages/forgot-payment-password/forgot-payment-password' })
 		},
-		goBack() {
-			uni.navigateBack()
 		}
 	}
 }
@@ -167,13 +162,6 @@ export default {
 	justify-content: space-between;
 	padding: 44px 24px 20px;
 	background: #FFFFFF;
-}
-
-.back-btn {
-	font-size: 18px;
-	color: #10B981;
-	font-weight: 600;
-	width: 44px;
 }
 
 .header-title {

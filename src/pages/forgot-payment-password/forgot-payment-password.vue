@@ -1,9 +1,6 @@
 <template>
 	<view class="container">
 		<view class="header">
-			<view class="back-btn" @click="goBack">
-				<IconFont name="chevron-left" :size="24" />
-			</view>
 			<text class="header-title">忘记支付密码</text>
 			<view class="header-right"></view>
 		</view>
@@ -210,7 +207,7 @@ export default {
 				await this.resetPassword()
 				this.isSubmitting = false
 			} else {
-				this.goBack()
+				uni.navigateBack()
 			}
 		},
 		verifyCode() {
@@ -235,8 +232,6 @@ export default {
 				}, 1000)
 			})
 		},
-		goBack() {
-			uni.navigateBack()
 		}
 	}
 }
@@ -255,14 +250,6 @@ export default {
 	background: #FFFFFF;
 	gap: 16rpx;
 	border-bottom: 1rpx solid #F1F5F9;
-}
-
-.back-btn {
-	width: 40px;
-	height: 40px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
 }
 
 .header-title {

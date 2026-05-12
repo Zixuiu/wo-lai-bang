@@ -1,9 +1,6 @@
 <template>
 	<view class="container">
 		<view class="header">
-			<view class="back-btn" @click="goBack">
-				<IconFont name="chevron-left" :size="24" />
-			</view>
 			<text class="header-title">提现</text>
 			<view class="header-right"></view>
 		</view>
@@ -261,9 +258,7 @@ export default {
 				uni.showToast({ title: e.message || '提现失败', icon: 'none' })
 			}
 		},
-		goBack() {
-			uni.navigateBack()
-		}
+		
 	}
 }
 </script>
@@ -281,14 +276,6 @@ export default {
 	background: #FFFFFF;
 	gap: 16rpx;
 	border-bottom: 1rpx solid #F1F5F9;
-}
-
-.back-btn {
-	width: 40px;
-	height: 40px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
 }
 
 .header-title {

@@ -1,9 +1,6 @@
 <template>
 	<view class="privacy-container">
 		<view class="header">
-			<view class="back-btn" @click="goBack">
-				<text class="back-icon">‹</text>
-			</view>
 			<text class="header-title">隐私政策</text>
 			<view class="header-right"></view>
 		</view>
@@ -79,9 +76,7 @@
 <script>
 export default {
 	methods: {
-		goBack() {
-			uni.navigateBack()
-		}
+		
 	}
 }
 </script>
@@ -100,19 +95,7 @@ export default {
 	background: #FFFFFF;
 }
 
-.back-btn {
-	width: 44px;
-	height: 44px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
 
-.back-icon {
-	font-size: 32px;
-	color: #10B981;
-	font-weight: 600;
-}
 
 .header-title {
 	flex: 1;

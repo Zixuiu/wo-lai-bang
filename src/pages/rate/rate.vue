@@ -1,9 +1,6 @@
 <template>
   <view class="container">
     <view class="header">
-      <view class="back-btn" @click="goBack">
-        <IconFont name="chevron-left" :size="24" />
-      </view>
       <text class="header-title">评价订单</text>
       <view class="header-right"></view>
     </view>
@@ -231,9 +228,6 @@ export default {
         }, 1500)
       }, 1000)
     },
-    goBack() {
-      uni.navigateBack()
-    }
   }
 }
 </script>
@@ -253,13 +247,7 @@ export default {
   border-bottom: 1rpx solid #F1F5F9;
 }
 
-.back-btn {
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+
 
 .header-title {
   flex: 1;

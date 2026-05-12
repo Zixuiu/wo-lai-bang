@@ -1,9 +1,6 @@
 <template>
 	<view class="container">
 		<view class="header">
-			<view class="back-btn" @click="goBack">
-				<IconFont name="chevron-left" :size="24" />
-			</view>
 			<text class="header-title">消息通知</text>
 			<view class="header-right" @click="markAllRead" v-if="hasUnread">
 				<text class="mark-read-btn">全部已读</text>
@@ -239,8 +236,6 @@ export default {
 		touchEnd(e, id) {
 			this.startX = 0
 		},
-		goBack() {
-			uni.navigateBack()
 		}
 	}
 }
@@ -259,15 +254,6 @@ export default {
 	align-items: center;
 	gap: 16rpx;
 	border-bottom: 1rpx solid #F1F5F9;
-}
-
-.back-btn {
-	width: 40px;
-	height: 40px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	color: #1E293B;
 }
 
 .header-title {

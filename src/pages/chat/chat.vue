@@ -559,9 +559,6 @@ export default {
 			const minutes = date.getMinutes().toString().padStart(2, '0')
 			return `${hours}:${minutes}`
 		},
-		goBack() {
-			uni.navigateBack()
-		},
 		loadRelatedOrder() {
 			const allConversations = uni.getStorageSync('conversations') || []
 			const conv = allConversations.find(c => c.userId == this.userId)
@@ -609,13 +606,6 @@ export default {
 }
 
 .header-left {
-	width: 44px;
-}
-
-.back-btn {
-	font-size: 18px;
-	color: #10B981;
-	font-weight: 600;
 	width: 44px;
 }
 

@@ -1,9 +1,7 @@
 <template>
 	<view class="container">
 		<view class="header">
-			<view class="back-btn" @click="goBack">
-				<IconFont name="chevron-left" :size="24" />
-			</view>
+			
 			<text class="header-title">交易流水</text>
 			<view class="header-right"></view>
 		</view>
@@ -144,9 +142,6 @@ export default {
 			const min = date.getMinutes().toString().padStart(2, '0')
 			return `${month}月${day}日 ${hour}:${min}`
 		},
-		goBack() {
-			uni.navigateBack()
-		}
 	}
 }
 </script>
@@ -166,13 +161,7 @@ export default {
 	border-bottom: 1rpx solid #F1F5F9;
 }
 
-.back-btn {
-	width: 40px;
-	height: 40px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
+
 
 .header-title {
 	flex: 1;
