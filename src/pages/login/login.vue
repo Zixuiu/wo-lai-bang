@@ -202,7 +202,7 @@ export default {
 
 .logo-section {
 	text-align: center;
-	padding: 60px 24px 32px;
+	padding: 20px 24px 24px;
 }
 
 .logo-box {

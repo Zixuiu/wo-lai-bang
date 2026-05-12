@@ -80,10 +80,8 @@ export default {
 			apiService.disconnect()
 		},
 		checkGuidePage() {
-			const hasSeenGuide = uni.getStorageSync('hasSeenGuide')
-			if (!hasSeenGuide) {
-				uni.reLaunch({ url: '/pages/guide/guide' })
-			}
+			// 引导页已禁用，用户直接进入首页
+			uni.setStorageSync('hasSeenGuide', true)
 		},
 		setupRouterGuard() {
 			const originalNavigateTo = uni.navigateTo
