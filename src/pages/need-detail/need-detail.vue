@@ -257,6 +257,13 @@ export default {
 			uni.navigateBack()
 		},
 			async acceptNeed() {
+			if (!this.userStore.isLoggedIn || !this.userStore.token) {
+				uni.showToast({ title: '请先登录后再接单', icon: 'none' })
+				setTimeout(() => {
+					uni.navigateTo({ url: '/pages/login/login' })
+				}, 500)
+				return
+			}
 			const result = await this.needStore.acceptNeed(this.need.id)
 			if (result.success) {
 				this.need.status = 'accepted'

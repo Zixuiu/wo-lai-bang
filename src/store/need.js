@@ -167,6 +167,11 @@ export const useNeedStore = defineStore('need', {
 
     acceptNeed(needId) {
       const userStore = useUserStore()
+
+      if (!userStore.isLoggedIn || !userStore.currentUser?.id) {
+        return { success: false, message: '请先登录后再接单' }
+      }
+
       const need = this.needs.find(n => n.id === needId)
       if (!need || need.status !== NEED_STATUS.OPEN) {
         return { success: false, message: '该需求已被接单' }

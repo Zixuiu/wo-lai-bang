@@ -565,6 +565,13 @@ export default {
 			uni.showToast({ title: '为您匹配最佳任务', icon: 'none' })
 		},
 		async acceptNeed(need) {
+			if (!this.userStore.isLoggedIn || !this.userStore.token) {
+				uni.showToast({ title: '请先登录后再接单', icon: 'none' })
+				setTimeout(() => {
+					uni.navigateTo({ url: '/pages/login/login' })
+				}, 500)
+				return
+			}
 			const result = await this.needStore.acceptNeed(need.id)
 			if (result.success) {
 				need.status = 'accepted'
