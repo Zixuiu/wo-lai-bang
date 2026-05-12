@@ -1,9 +1,7 @@
 <template>
 	<view class="payment-password-container">
 		<view class="header">
-			<view class="back-btn" @click="goBack">
-				<IconFont name="chevron-left" :size="24" />
-			</view>
+			<view class="header-left"></view>
 			<text class="header-title">支付密码</text>
 			<view class="header-right"></view>
 		</view>

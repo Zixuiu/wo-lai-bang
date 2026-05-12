@@ -1,9 +1,7 @@
 <template>
 	<view class="container">
 		<view class="header">
-			<view class="back-btn" @click="goBack">
-				<IconFont name="chevron-left" :size="24" />
-			</view>
+			<view class="header-left"></view>
 			<text class="header-title">消息通知</text>
 			<view class="header-right" @click="markAllRead" v-if="hasUnread">
 				<text class="mark-read-btn">全部已读</text>

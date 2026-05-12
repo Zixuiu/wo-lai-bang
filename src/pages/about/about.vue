@@ -1,9 +1,7 @@
 <template>
 	<view class="about-container">
 		<view class="header">
-			<view class="back-btn" @click="goBack">
-				<text class="back-icon">‹</text>
-			</view>
+			<view class="header-left"></view>
 			<text class="header-title">关于我们</text>
 			<view class="header-right"></view>
 		</view>
