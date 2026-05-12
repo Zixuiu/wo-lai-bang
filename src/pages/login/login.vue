@@ -1,71 +1,65 @@
 <template>
 	<view class="login-container">
-		<view class="header">
-			<view class="back-space"></view>
+		<view class="logo-section">
+			<view class="logo-box">
+				<IconFont name="flower" :size="40" />
+			</view>
+			<text class="app-name">我来帮</text>
+			<text class="app-slogan">邻里互助，温暖你我</text>
 		</view>
 
-		<scroll-view class="content-scroll" scroll-y>
-			<view class="logo-section">
-				<view class="logo-box">
-					<IconFont name="flower" :size="40" />
-				</view>
-				<text class="app-name">我来帮</text>
-				<text class="app-slogan">邻里互助，温暖你我</text>
+		<view class="form-card">
+			<view class="hint-block">
+				<text class="hint-badge">欢迎回来</text>
+				<text class="hint-title">登录您的账号</text>
 			</view>
 
-			<view class="form-card">
-				<view class="hint-block">
-					<text class="hint-badge">欢迎回来</text>
-					<text class="hint-title">登录您的账号</text>
-				</view>
-
-				<view class="input-group">
-					<label class="input-label">手机号码</label>
-					<view class="input-wrapper">
-						<IconFont name="phone" :size="72" class="input-icon" />
-						<input
-							class="input-field"
-							v-model="form.phone"
-							type="number"
-							maxlength="11"
-							placeholder="请输入手机号"
-						/>
-					</view>
-				</view>
-
-				<view class="input-group">
-					<label class="input-label">登录密码</label>
-					<view class="input-wrapper">
-						<IconFont name="lock" :size="72" class="input-icon" />
-						<input
-							class="input-field"
-							v-model="form.password"
-							:password="!showPassword"
-							placeholder="请输入密码"
-						/>
-						<view class="toggle-pwd" @click="showPassword = !showPassword">
-							<IconFont :name="showPassword ? 'eye-off' : 'eye'" :size="72" />
-						</view>
-					</view>
-				</view>
-
-				<view class="forgot-row">
-					<text class="forgot-link" @click="goForgot">忘记密码？</text>
-				</view>
-
-				<button class="btn-primary" @click="handleLogin" :disabled="isLoading">
-					<view v-if="isLoading" class="spinner"></view>
-					<text v-else>登 录</text>
-				</button>
-
-				<view class="register-hint">
-					<text class="hint-text">还没有账号？</text>
-					<text class="link-action" @click="goRegister">立即注册</text>
+			<view class="input-group">
+				<label class="input-label">手机号码</label>
+				<view class="input-wrapper">
+					<IconFont name="phone" :size="72" class="input-icon" />
+					<input
+						class="input-field"
+						v-model="form.phone"
+						type="number"
+						maxlength="11"
+						placeholder="请输入手机号"
+					/>
 				</view>
 			</view>
 
-			<view class="bottom-safe"></view>
-		</scroll-view>
+			<view class="input-group">
+				<label class="input-label">登录密码</label>
+				<view class="input-wrapper">
+					<IconFont name="lock" :size="72" class="input-icon" />
+					<input
+						class="input-field"
+						v-model="form.password"
+						:password="!showPassword"
+						placeholder="请输入密码"
+					/>
+					<view class="toggle-pwd" @click="showPassword = !showPassword">
+						<IconFont :name="showPassword ? 'eye-off' : 'eye'" :size="72" />
+					</view>
+				</view>
+			</view>
+
+			<view class="forgot-row">
+				<text class="forgot-link" @click="goForgot">忘记密码？</text>
+			</view>
+
+			<button class="btn-primary" @click="handleLogin" :disabled="isLoading">
+				<view v-if="isLoading" class="spinner"></view>
+				<text v-else>登 录</text>
+			</button>
+
+			<view class="register-hint">
+				<text class="hint-text">还没有账号？</text>
+				<text class="link-action" @click="goRegister">立即注册</text>
+			</view>
+		</view>
+
+		<view class="bottom-safe"></view>
 	</view>
 </template>
 
@@ -185,112 +179,100 @@ export default {
 .login-container {
 	min-height: 100vh;
 	background: #FFFFFF;
-}
-
-.header {
-	padding: 20px 0 0;
-}
-
-.back-space {
-	width: 44px;
-	height: 44px;
-}
-
-.content-scroll {
-	height: calc(100vh - 44px);
+	padding: 60rpx 40rpx 0;
 }
 
 .logo-section {
 	text-align: center;
-	padding: 20px 24px 24px;
+	padding: 0 24rpx 48rpx;
 }
 
 .logo-box {
-	width: 80px;
-	height: 80px;
+	width: 120rpx;
+	height: 120rpx;
 	background: linear-gradient(135deg, #10B981, #34D399);
-	border-radius: 24px;
-	margin: 0 auto 20px;
+	border-radius: 32rpx;
+	margin: 0 auto 24rpx;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	box-shadow: 0 12px 32px rgba(16, 185, 129, 0.25);
+	box-shadow: 0 12rpx 32rpx rgba(16, 185, 129, 0.25);
 }
 
 .app-name {
-	font-size: 28px;
+	font-size: 40rpx;
 	font-weight: 900;
 	color: #1E293B;
 	display: block;
-	margin-bottom: 8px;
+	margin-bottom: 8rpx;
 	letter-spacing: -0.5px;
 }
 
 .app-slogan {
-	font-size: 14px;
+	font-size: 24rpx;
 	color: #64748B;
 	font-weight: 500;
 }
 
 .form-card {
-	margin: 0 24px;
-	padding: 28px 24px 32px;
+	margin: 0;
+	padding: 0;
 }
 
 .hint-block {
-	margin-bottom: 28px;
+	margin-bottom: 32rpx;
 }
 
 .hint-badge {
-	font-size: 11px;
+	font-size: 22rpx;
 	color: #10B981;
 	font-weight: 800;
 	text-transform: uppercase;
 	letter-spacing: 1px;
 	display: block;
-	margin-bottom: 6px;
+	margin-bottom: 6rpx;
 }
 
 .hint-title {
-	font-size: 22px;
+	font-size: 36rpx;
 	font-weight: 800;
 	color: #1E293B;
 	line-height: 1.3;
 }
 
 .input-group {
-	margin-bottom: 18px;
+	margin-bottom: 24rpx;
 }
 
 .input-label {
-	font-size: 12px;
+	font-size: 24rpx;
 	color: #64748B;
 	font-weight: 700;
 	text-transform: uppercase;
 	letter-spacing: 0.5px;
-	margin-bottom: 8px;
+	margin-bottom: 12rpx;
 	display: block;
 }
 
 .input-wrapper {
 	background: #F8FAFC;
-	border-radius: 14px;
-	padding: 14px 16px;
+	border-radius: 24rpx;
+	padding: 28rpx 32rpx;
 	border: 1px solid transparent;
 	display: flex;
 	align-items: center;
-	gap: 12px;
+	gap: 16rpx;
 	transition: all 0.3s;
 }
 
 .input-wrapper:focus-within {
 	background: #FFFFFF;
 	border-color: #10B981;
-	box-shadow: 0 6px 16px rgba(16, 185, 129, 0.08);
+	box-shadow: 0 6rpx 16rpx rgba(16, 185, 129, 0.08);
 }
 
 .input-icon {
-	width: 20px;
+	width: 32rpx;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -298,7 +280,7 @@ export default {
 
 .input-field {
 	flex: 1;
-	font-size: 15px;
+	font-size: 30rpx;
 	font-weight: 600;
 	color: #1E293B;
 	border: none;
@@ -317,25 +299,25 @@ export default {
 .forgot-row {
 	display: flex;
 	justify-content: flex-end;
-	margin-bottom: 24px;
+	margin-bottom: 32rpx;
 }
 
 .forgot-link {
-	font-size: 13px;
+	font-size: 26rpx;
 	color: #10B981;
 	font-weight: 600;
 }
 
 .btn-primary {
 	width: 100%;
-	height: 52px;
+	height: 96rpx;
 	background: linear-gradient(135deg, #10B981, #059669);
 	color: #FFFFFF;
-	border-radius: 26px;
+	border-radius: 48rpx;
 	font-weight: 800;
-	font-size: 16px;
+	font-size: 32rpx;
 	border: none;
-	box-shadow: 0 8px 24px rgba(16, 185, 129, 0.35);
+	box-shadow: 0 8rpx 24rpx rgba(16, 185, 129, 0.35);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -344,7 +326,7 @@ export default {
 
 .btn-primary:active:not(:disabled) {
 	transform: translateY(-2px);
-	box-shadow: 0 12px 32px rgba(16, 185, 129, 0.4);
+	box-shadow: 0 12rpx 32rpx rgba(16, 185, 129, 0.4);
 }
 
 .btn-primary:disabled {
@@ -353,8 +335,8 @@ export default {
 }
 
 .spinner {
-	width: 20px;
-	height: 20px;
+	width: 32rpx;
+	height: 32rpx;
 	border: 2px solid rgba(255, 255, 255, 0.3);
 	border-top-color: #FFFFFF;
 	border-radius: 50%;
@@ -369,22 +351,22 @@ export default {
 	display: flex;
 	justify-content: center;
 	align-items: center;
-	margin-top: 24px;
+	margin-top: 32rpx;
 }
 
 .hint-text {
-	font-size: 14px;
+	font-size: 28rpx;
 	color: #64748B;
 }
 
 .link-action {
-	font-size: 14px;
+	font-size: 28rpx;
 	color: #10B981;
 	font-weight: 700;
-	margin-left: 4px;
+	margin-left: 8rpx;
 }
 
 .bottom-safe {
-	height: 40px;
+	height: 120rpx;
 }
 </style>
