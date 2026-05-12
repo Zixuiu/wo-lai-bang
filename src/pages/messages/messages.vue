@@ -183,20 +183,8 @@ export default {
 			uni.$emit('updateBadge')
 		},
 		loadConversations() {
-			const currentUserId = uni.getStorageSync('userInfo')?.id
 			const allConversations = uni.getStorageSync('conversations') || []
-			this.conversations = allConversations
-				.filter(conv => {
-					if (!conv.relatedOrder) return true
-					const order = conv.relatedOrder
-					const isPublisher = order.publisher?.id === currentUserId
-					const isHelper = order.helper?.id === currentUserId
-					const isPublisherSim = order.publisher?.id && order.publisher.id.startsWith('sim')
-					const isHelperSim = order.helper?.id && order.helper.id.startsWith('sim')
-					if (isPublisherSim && isHelperSim && !isPublisher && !isHelper) return false
-					return true
-				})
-				.sort((a, b) => b.lastTime - a.lastTime)
+			this.conversations = [...allConversations].sort((a, b) => b.lastTime - a.lastTime)
 		},
 		clearMessageBadge() {
 			const pages = getCurrentPages()

@@ -200,16 +200,14 @@ export const useSimulationStore = defineStore('simulation', {
           const convNickname = originalUserId === need.publisher.id ? user.nickname : need.publisher.nickname
           
           const existingIndex = allConvs.findIndex(c => c.userId === convUserId)
-          
-          const conv = {
-            id: `conv_${convUserId}`,
-            userId: convUserId,
-            nickname: convNickname,
-            lastMessage: `您好！我是${user.nickname}，很高兴接单！`,
-            lastTime: Date.now() + 1000,
-            unread: 2,
-            online: true,
-            relatedOrder: {
+
+          if (existingIndex >= 0) {
+            const existing = allConvs[existingIndex]
+            existing.lastMessage = `您好！我是${user.nickname}，很高兴接单！`
+            existing.lastTime = Date.now() + 1000
+            existing.unread = (existing.unread || 0) + 2
+            existing.online = true
+            existing.relatedOrder = {
               needId: need.id,
               orderId: result.order.id,
               title: need.title,
@@ -218,16 +216,27 @@ export const useSimulationStore = defineStore('simulation', {
               publisher: { ...need.publisher },
               helper: { ...user }
             }
-          }
-          
-          if (existingIndex >= 0) {
-            allConvs[existingIndex] = conv
           } else {
-            allConvs.unshift(conv)
+            allConvs.unshift({
+              id: `conv_${convUserId}`,
+              userId: convUserId,
+              nickname: convNickname,
+              lastMessage: `您好！我是${user.nickname}，很高兴接单！`,
+              lastTime: Date.now() + 1000,
+              unread: 2,
+              online: true,
+              relatedOrder: {
+                needId: need.id,
+                orderId: result.order.id,
+                title: need.title,
+                reward: need.reward,
+                status: 'accepted',
+                publisher: { ...need.publisher },
+                helper: { ...user }
+              }
+            })
           }
           uni.setStorageSync('conversations', allConvs)
-          
-          console.log('allConvs updated:', allConvs)
         }
         
         this.logActivity('accept', `${user.nickname} 接了 ${need.publisher.nickname} 的「${need.title}」`, user)
@@ -654,30 +663,44 @@ export const useSimulationStore = defineStore('simulation', {
       if (existingIndex >= 0 && allConvs[existingIndex].unread !== undefined) {
         unread = allConvs[existingIndex].unread + 1
       }
-      
-      const conv = {
-        id: `conv_${convUserId}`,
-        userId: convUserId,
-        nickname: convNickname,
-        lastMessage: messageText,
-        lastTime: Date.now(),
-        unread: unread,
-        online: true,
-        relatedOrder: order ? {
-          needId: order.needId,
-          orderId: order.id,
-          title: order.title,
-          reward: order.reward,
-          status: order.status,
-          publisher: { ...order.publisher },
-          helper: { ...order.helper }
-        } : null
-      }
 
       if (existingIndex >= 0) {
-        allConvs[existingIndex] = conv
+        const existing = allConvs[existingIndex]
+        existing.lastMessage = messageText
+        existing.lastTime = Date.now()
+        existing.unread = unread
+        existing.online = true
+        existing.nickname = convNickname
+        if (order) {
+          existing.relatedOrder = {
+            needId: order.needId || order.id,
+            orderId: order.id,
+            title: order.title,
+            reward: order.reward,
+            status: order.status,
+            publisher: order.publisher ? { ...order.publisher } : existing.relatedOrder?.publisher,
+            helper: order.helper ? { ...order.helper } : existing.relatedOrder?.helper
+          }
+        }
       } else {
-        allConvs.unshift(conv)
+        allConvs.unshift({
+          id: `conv_${convUserId}`,
+          userId: convUserId,
+          nickname: convNickname,
+          lastMessage: messageText,
+          lastTime: Date.now(),
+          unread: unread,
+          online: true,
+          relatedOrder: order ? {
+            needId: order.needId || order.id,
+            orderId: order.id,
+            title: order.title,
+            reward: order.reward,
+            status: order.status,
+            publisher: { ...order.publisher },
+            helper: { ...order.helper }
+          } : null
+        })
       }
       uni.setStorageSync('conversations', allConvs)
       

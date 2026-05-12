@@ -75,20 +75,8 @@ export default {
 			}
 		},
 		updateBadges() {
-			const currentUserId = uni.getStorageSync('userInfo')?.id
 			const conversations = uni.getStorageSync('conversations') || []
-			const messageUnreadCount = conversations
-				.filter(conv => {
-					if (!conv.relatedOrder) return true
-					const order = conv.relatedOrder
-					const isPublisher = order.publisher?.id === currentUserId
-					const isHelper = order.helper?.id === currentUserId
-					const isPublisherSim = order.publisher?.id && order.publisher.id.startsWith('sim')
-					const isHelperSim = order.helper?.id && order.helper.id.startsWith('sim')
-					if (isPublisherSim && isHelperSim && !isPublisher && !isHelper) return false
-					return isPublisher || isHelper
-				})
-				.reduce((sum, c) => sum + (c.unread || 0), 0)
+			const messageUnreadCount = conversations.reduce((sum, c) => sum + (c.unread || 0), 0)
 
 			const notifications = uni.getStorageSync('notifications') || []
 			const unreadNotifications = notifications.filter(n => !n.read).length

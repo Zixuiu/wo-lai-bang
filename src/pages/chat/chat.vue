@@ -307,24 +307,22 @@ export default {
 				const allConvs = uni.getStorageSync('conversations') || []
 				const existingIndex = allConvs.findIndex(c => c.userId == this.userId)
 				const lastMsg = this.messages.length > 0 ? this.messages[this.messages.length - 1] : null
-				const conv = {
-					id: `conv_${this.userId}`,
-					userId: this.userId,
-					nickname: this.nickname,
-					lastMessage: lastMsg ? (lastMsg.type === 'text' ? lastMsg.text : '[图片]') : '',
-					lastTime: Date.now(),
-					unread: 0,
-					online: true
-				}
 
 				if (existingIndex >= 0) {
-					// 合并更新，保留原有的 relatedOrder 等数据
-					allConvs[existingIndex] = {
-						...allConvs[existingIndex],
-						...conv,
-						relatedOrder: allConvs[existingIndex].relatedOrder || conv.relatedOrder
-					}
+					allConvs[existingIndex].lastMessage = lastMsg ? (lastMsg.type === 'text' ? lastMsg.text : '[图片]') : ''
+					allConvs[existingIndex].lastTime = Date.now()
+					allConvs[existingIndex].unread = 0
+					allConvs[existingIndex].online = true
 				} else {
+					const conv = {
+						id: `conv_${this.userId}`,
+						userId: this.userId,
+						nickname: this.nickname,
+						lastMessage: lastMsg ? (lastMsg.type === 'text' ? lastMsg.text : '[图片]') : '',
+						lastTime: Date.now(),
+						unread: 0,
+						online: true
+					}
 					allConvs.unshift(conv)
 				}
 				uni.setStorageSync('conversations', allConvs)
